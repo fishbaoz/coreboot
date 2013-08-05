@@ -31,6 +31,7 @@
 #include <cpu/x86/mtrr.h>
 #include "agesawrapper.h"
 #include "cpu/x86/bist.h"
+<<<<<<< HEAD
 #include "cpu/x86/lapic.h"
 //#include "superio/fintek/f81865f/f81865f_early_serial.c"
 #include "drivers/pc80/i8254.c"
@@ -63,7 +64,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 	__writemsr (0x20d, (0x1000000000ull - CACHE_ROM_SIZE) | 0x800);
 
 	/* All cores: set pstate 0 (1600 MHz) early to save a few ms of boot time */
-	__writemsr (0xc0010062, 0);
+	//__writemsr (0xc0010062, 0);
 
 	if (!cpu_init_detectedx && boot_cpu()) {
 		post_code(0x30);
@@ -73,6 +74,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		//f81865f_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 		console_init();
 	}
+	//for (;;);
 
 	/* Halt if there was a built in self test failure */
 	post_code(0x34);
