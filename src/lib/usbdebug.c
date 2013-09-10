@@ -38,6 +38,8 @@
 #define DBGP_EP_BUSY		(1<<2)
 #define DBGP_EP_STATMASK	(DBGP_EP_VALID | DBGP_EP_ENABLED)
 
+#define AMI_DEBUGRX	1
+
 struct dbgp_pipe
 {
 	u8 devnum;
@@ -48,6 +50,9 @@ struct dbgp_pipe
 
 	u8 bufidx;
 	char buf[8];
+	/* TODO: AMI DebugRx */
+	u16 sum;
+	u16 length;
 };
 
 #define DBGP_MAX_ENDPOINTS	4
@@ -201,7 +206,11 @@ host_retry:
 	lpid = DBGP_PID_GET(rd_pids);
 
 	/* If I get an ACK or in-sync DATA PID, we are done. */
-	if ((lpid == USB_PID_ACK) || (lpid == pipe->pid)) {
+	if ((lpid == USB_PID_ACK) || (lpid == pipe->pid)
+	    #if AMI_DEBUGRX	/* TODO: Is AMI DEBUGRX special? */
+	    || (lpid == USB_PID_NYET)
+	    #endif
+		) {
 		if (DBGP_LEN(rd_ctrl))
 			pipe->pid ^= USB_PID_DATA_TOGGLE;
 	}
@@ -807,7 +816,12 @@ debug_dev_found:
 	/* Perform a small write. */
 	configured = 0;
 small_write:
-	ret = dbgp_bulk_write(ehci_debug, &info->ep_pipe[DBGP_CONSOLE_EPOUT], "USB\r\n",5);
+	if (AMI_DEBUGRX) {	/* TODO: if (AMIDebugRx) */
+		ret = dbgp_bulk_write(ehci_debug, &info->ep_pipe[DBGP_CONSOLE_EPOUT], "\x7E\xFF\x02\xFD\x03USB", 8);
+		ret = dbgp_bulk_write(ehci_debug, &info->ep_pipe[DBGP_CONSOLE_EPOUT], "\r\n\x90\x5D\x0D\x00\x7F", 7);
+	} else {
+		ret = dbgp_bulk_write(ehci_debug, &info->ep_pipe[DBGP_CONSOLE_EPOUT], "USB\r\n",5);
+	}
 	if (ret < 0) {
 		dprintk(BIOS_INFO, "dbgp_bulk_write failed: %d\n", ret);
 		if (!configured) {
@@ -833,6 +847,8 @@ small_write:
 	info->ep_pipe[DBGP_SETUP_EP0].status |= DBGP_EP_ENABLED | DBGP_EP_VALID;
 	info->ep_pipe[DBGP_CONSOLE_EPOUT].status |= DBGP_EP_ENABLED | DBGP_EP_VALID;
 	info->ep_pipe[DBGP_CONSOLE_EPIN].status |= DBGP_EP_ENABLED | DBGP_EP_VALID;
+	info->ep_pipe[DBGP_CONSOLE_EPOUT].sum = 0;
+	info->ep_pipe[DBGP_CONSOLE_EPOUT].length = 0;
 	return 0;
 err:
 	/* Things didn't work so remove my claim */
@@ -892,6 +908,22 @@ void usbdebug_tx_byte(struct dbgp_pipe *pipe, unsigned char data)
 {
 	if (!dbgp_try_get(pipe))
 		return;
+	if (AMI_DEBUGRX) {	/* TODO: if (AMIDebugRx) */
+		if (pipe->length == 0) { /* Start of data package */
+			/* 7E FF 02 FD 03 */
+			pipe->buf[0] = 0x7E;
+			pipe->buf[1] = 0xFF;
+			pipe->buf[2] = 0x02;
+			pipe->buf[3] = 0xFD;
+			pipe->buf[4] = 0x03;
+			pipe->bufidx = 5;
+			pipe->length = 5;
+			pipe->sum = 0x5AA5 + 0xFF + 0x02 + 0xFD + 0x03;
+		}
+		pipe->sum += data;
+		pipe->length ++;
+	}
+
 	pipe->buf[pipe->bufidx++] = data;
 	if (pipe->bufidx >= 8) {
 		dbgp_bulk_write_x(pipe, pipe->buf, pipe->bufidx);
@@ -902,11 +934,30 @@ void usbdebug_tx_byte(struct dbgp_pipe *pipe, unsigned char data)
 
 void usbdebug_tx_flush(struct dbgp_pipe *pipe)
 {
+	u8 suffix[5];
+	u8 sufidx;
+
 	if (!dbgp_try_get(pipe))
 		return;
 	if (pipe->bufidx > 0) {
+		if (AMI_DEBUGRX) {	/* TODO: AMI DebugRx */
+			*(u16 *)(&suffix[0]) = pipe->sum;
+			*(u16 *)(&suffix[2]) = pipe->length + 4 - 1; /* TODO: Check if the length take 2 bytes. */
+			suffix[4] = 0x7F;
+			sufidx = 0;
+			while (pipe->bufidx < 8) {
+				pipe->buf[pipe->bufidx++] = suffix[sufidx++];
+			}
+		}
+
 		dbgp_bulk_write_x(pipe, pipe->buf, pipe->bufidx);
 		pipe->bufidx = 0;
+		if (AMI_DEBUGRX) {	/* TODO: AMI DebugRx */
+			if (sufidx != 5) /* Do not send a empty packet, which hangs the port. */
+				dbgp_bulk_write_x(pipe, (const char *)&suffix[sufidx], 5 - sufidx);
+			pipe->length = 0;
+		}
+
 	}
 	dbgp_put(pipe);
 }
