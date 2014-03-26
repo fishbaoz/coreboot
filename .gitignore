@@ -1,7 +1,6 @@
 .config
 .config.old
 .xcompile
-.ccwrap
 build/
 coreboot-builds/
 payloads/external/FILO/filo/
@@ -9,15 +8,15 @@ payloads/external/GRUB2/grub2/
 payloads/external/SeaBIOS/seabios/
 util/crossgcc/acpica-unix-*/
 util/crossgcc/binutils-*/
-util/crossgcc/build-*binutils/
-util/crossgcc/build-*expat/
-util/crossgcc/build-*gcc/
-util/crossgcc/build-*gdb/
-util/crossgcc/build-*gmp/
-util/crossgcc/build-*libelf/
-util/crossgcc/build-*mpc/
-util/crossgcc/build-*mpfr/
-util/crossgcc/build-*python/
+util/crossgcc/build-binutils/
+util/crossgcc/build-expat/
+util/crossgcc/build-gcc/
+util/crossgcc/build-gdb/
+util/crossgcc/build-gmp/
+util/crossgcc/build-libelf/
+util/crossgcc/build-mpc/
+util/crossgcc/build-mpfr/
+util/crossgcc/build-python/
 util/crossgcc/expat-*/
 util/crossgcc/gcc-*/
 util/crossgcc/gdb-*/
@@ -30,6 +29,10 @@ util/crossgcc/Python-*/
 util/crossgcc/tarballs/
 util/crossgcc/w32api-*/
 util/crossgcc/xgcc/
+util/crossgcc/xgcc-*/
+
+src/vendorcode/amd/agesa/f1*-*/
+.svn
 
 *.\#
 *.bin
@@ -38,6 +41,28 @@ util/crossgcc/xgcc/
 *.o
 *.out
 *.swp
+*.vcxproj
+*.mak
+*.inf
+*.cif
+*.dxs
+*.vcproj
+*.sln
+*.orig
+*.dsc
+*.dec
+*.bat
+
+src/vendorcode/amd/agesa/f15cz/AMDTools/
+src/vendorcode/amd/agesa/f15cz/UefiUdk/
+src/vendorcode/amd/agesa/f15cz/UEFI/
+src/vendorcode/amd/agesa/f15cz/Addendum/
+src/vendorcode/amd/agesa/f15cz/Conf/
+src/vendorcode/amd/agesa/f15cz/Proc/Recovery/
+src/vendorcode/amd/agesa/f15cz/Lib/IA32/
+src/vendorcode/amd/agesa/f15cz/Lib/x64/
+
+Doxyfile*
 
 # Development friendly files
 tags

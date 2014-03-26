@@ -35,6 +35,7 @@ find src util -name .svn -type d -prune -o \
 	-name \*~ -prune -o \
 	-name kconfig -type d -prune -o \
 	-name romcc -type d -prune -o \
+	-name SPClient\* -type d -prune -o \
 	-name crossgcc -type d -prune -o \
 	-name vendorcode -type d -prune -o \
 	-type f -exec \

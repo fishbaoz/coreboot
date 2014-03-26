@@ -37,6 +37,13 @@
 #include "src/drivers/pc80/i8259.c"
 #include "cbmem.h"
 
+#define _SIMNOW_  1
+
+#if _SIMNOW_
+#include "superio/smsc/mec1308/mec1308_early_serial.c"
+#endif
+
+
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 void disable_cache_as_ram(void);
 
@@ -52,8 +59,8 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 	 *  even though the register is not documented in the Kabini BKDG.
 	 *  Otherwise the serial output is bad code.
 	 */
-	outb(0xD2, 0xcd6);
-	outb(0x00, 0xcd7);
+	//outb(0xD2, 0xcd6);
+	//outb(0x00, 0xcd7);
 
 	val = agesawrapper_amdinitmmio();
 
@@ -61,7 +68,11 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 	if (!cpu_init_detectedx && boot_cpu()) {
 		post_code(0x30);
+		#if _SIMNOW_
+		mec1308_early_init(0x2e);
+		#endif
 
+//		for (;;);
 		post_code(0x31);
 		console_init();
 	}
@@ -76,9 +87,9 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 	printk(BIOS_DEBUG, "cpu_init_detectedx = %08lx \n", cpu_init_detectedx);
 
 	/* On Larne, after LpcClkDrvSth is set, it needs some time to be stable, because of the buffer ICS551M */
-	int i;
-	for(i = 0; i < 200000; i++)
-		val = inb(0xcd6);
+	//int i;
+	//for(i = 0; i < 200000; i++)
+	//	val = inb(0xcd6);
 
 	post_code(0x37);
 	val = agesawrapper_amdinitreset();

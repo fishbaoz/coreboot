@@ -224,7 +224,7 @@ AGESA_STATUS Fch_Oem_config(UINT32 Func, UINT32 FchData, VOID *ConfigPtr)
 		/* Azalia Controller Front Panel OEM Table Pointer */
 
 		/* Fan Control */
-		oem_fan_control(FchParams_env);
+		//oem_fan_control(FchParams_env);
 
 		/* XHCI configuration */
 #if CONFIG_HUDSON_XHCI_ENABLE
