@@ -146,7 +146,7 @@ UINT8 spd_buffer[0x100] = {
 	0x11,			/* Upper of tRAS, tRC */
 	0x18,			/* tRAS: 35ns*/
 	0x81,			/* tRC: 48.125 */
-	0x80, 0x07,		/* tRFC: ?? 240ns*/
+	0xD0, 0x02,		/* tRFC: ?? 90ns   (240ns: 0x80, 0x07) */
 	0x3C,			/* tWTR: 7.5ns. */
 	0x3C,			/* tRTP: 7.5ns */
 	0x01, 0x00,		/* tFAW: ?? 32ns*/
