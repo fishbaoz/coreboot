@@ -125,28 +125,28 @@ UINT8 spd_buffer[0x100] = {
 #else
 UINT8 spd_buffer[0x100] = {
 	0x92, 0x11, 0x0B, 0x03,
-	0x00,	/* 4:Bits 6 ~ 4: 000 = (8 banks), 001 = (16 banks), 010 = 5 (32 banks),011 = 6 (64 banks)*/
+	0x04,	/* 4:Bits 6 ~ 4: 000 = (8 banks), 001 = (16 banks), 010 = 5 (32 banks),011 = 6 (64 banks)*/
 		/* Bits 3 ~ 0:0000 = 256 Mb, 0001 = 512 Mb, 0010 = 1 Gb, 0011 = 2 Gb, 0100 = 4 Gb, 0101 = 8 Gb, 0110 = 16 Gb */
 	0x19,   /* 5: bit 5~3: 000 = 12, 001 = 13, 010 = 14, 011 = 15, 100 = 16
 		      Bit 2~0: 000 = 9, 001 = 10, 010 = 11, 011 = 12 */
-	0x02,   /*  */
+	0x00,   /*  */
 	0x02 | 1 << 3, /*bit 5~3:000 = 1 Rank 001 = 2 Ranks 010 = 3 Ranks  011 = 4 Ranks,
 			 bit 2~0: 000 = 4 bits 001 = 8 bits 010 = 16 bits 011 = 32 bits */
 	0x03,
-	0x11,	/* FTB: 0x51: 5 ps, 0x52: 2.5 ps, 0x11: 1ps */
+	0x52,	/* FTB: 0x51: 5 ps, 0x52: 2.5 ps, 0x11: 1ps */
 	0x01, 0x08,		/* MTB: */
 	0x0A,			/* tCK: A: 1.25ns: C:1.5ns */
 	0x00,
 	0xFE, 0x00,		/* CAS Latency */
-	[16] = 0x69,		/* tAAmin: 13.125ns */
-	0x78,			/* tWRmin: 15ns */
-	0x69,			/* tRCDmin: 13.125ns */
+	[16] = 0x6E,		/* tAAmin: 0x69:13.125ns, 0x6E: 13.75 */
+	0x78,			/* tWRmin: 15ns. All DDR3 */
+	0x6E,			/* tRCDmin: see tAAmin */
 	0x30,			/* tRRD: 6ns */
-	0x69,			/* tRP: 13.125ns */
+	0x6E,			/* tRP: see tAAmin */
 	0x11,			/* Upper of tRAS, tRC */
 	0x18,			/* tRAS: 35ns*/
-	0x81,			/* tRC: 48.125 */
-	0xD0, 0x02,		/* tRFC: ?? 90ns   (240ns: 0x80, 0x07) */
+	0x86,			/* tRC: 0x81:48.125 0x86:48.75 */
+	0x80, 0x07,		/* tRFC: ?? 90ns   (240ns: 0x80, 0x07) */
 	0x3C,			/* tWTR: 7.5ns. */
 	0x3C,			/* tRTP: 7.5ns */
 	0x01, 0x00,		/* tFAW: ?? 32ns*/
