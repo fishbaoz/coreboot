@@ -204,7 +204,7 @@ agesawrapper_amdinitreset (
 	AmdParamStruct.StdHeader.Func = 0;
 	AmdParamStruct.StdHeader.ImageBasePtr = 0;
 	AmdCreateStruct (&AmdParamStruct);
-	AmdResetParams.HtConfig.Depth = 0;
+	//AmdResetParams.HtConfig.Depth = 0;
 #if !CONFIG_HUDSON_XHCI_ENABLE
 	AmdResetParams.FchInterface.Xhci0Enable = FALSE;
 #endif
