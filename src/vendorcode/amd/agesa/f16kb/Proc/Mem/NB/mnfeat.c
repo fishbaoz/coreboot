@@ -663,11 +663,14 @@ MemNCompareTestPatternUnb (
   //
   NibbleErrSts = NBPtr->GetBitField (NBPtr, BFNibbleErrSts);
 
+  printk(BIOS_DEBUG, "\n");
   for (i = 0; i < ColumnCount ; i++) {
     Pass |= ((NibbleErrSts & 0x03) > 0 ) ? (1 << i) : 0;
     NibbleErrSts >>= 2;
+    printk(BIOS_DEBUG, " %x ", FailingBitMaskPtr[i]);
     FailingBitMaskPtr[i] = FailingBitMask[i];
   }
+  printk(BIOS_DEBUG, "\n");
   Pass = ~Pass;
   return Pass;
 }

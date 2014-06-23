@@ -456,11 +456,13 @@ MemNCompareTestPatternNb (
     i = 0;
   }
 
+  printk(BIOS_DEBUG, "------------[%x]=%02x, %02x---------------------\n", i, Buffer[i], Pattern[i]);
   for (; i < ByteCount; i++) {
     if (Buffer[i] != Pattern[i]) {
       // if bytelane n fails
       Pass &= ~((UINT16)1 << (i % 8));    // clear bit n
       FailingBitMask[i % NBPtr->TechPtr->MaxByteLanes ()] |= (Buffer[i] ^ Pattern[i]);
+      printk(BIOS_DEBUG, "------------[%x]=%02x, %02x---------------------\n", i, Buffer[i], Pattern[i]);
     }
 
     if (NBPtr->Ganged && ((i & 7) == 7)) {
