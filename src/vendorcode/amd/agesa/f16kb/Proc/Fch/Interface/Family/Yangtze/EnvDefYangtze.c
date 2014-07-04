@@ -65,7 +65,7 @@ CONST FCH_INTERFACE ROMDATA FchInterfaceDefault = {
   2,
   IrRxTx0Tx1,          // IrConfig
   TRUE,                // UmiGen2
-  SataAhci, //SataNativeIde, //simnow,            // SataClass
+  SataNativeIde, //simnow,            // SataClass
   TRUE,                // SataEnable
   TRUE,                // IdeEnable
   TRUE,                // SataIdeMode
@@ -166,7 +166,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
       FALSE,                 // IdeEnable
       01,                    // SataClkMode
     },
-    SataAhci,           // SataClass
+    SataNativeIde, //SataAhci,           // SataClass
     1,                       // SataIdeMode
     0,                       // SataDisUnusedIdePChannel
     0,                       // SataDisUnusedIdeSChannel
