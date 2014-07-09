@@ -18,3 +18,4 @@
  */
 
 /* No Super I/O device or functionality yet */
+#include "../../../../drivers/pc80/ps2_controller.asl"

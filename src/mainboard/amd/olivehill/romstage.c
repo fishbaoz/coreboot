@@ -49,6 +49,8 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 void disable_cache_as_ram(void);
 
 #define SERIAL_DEV PNP_DEV(0x4e, W83627DHG_SP1)
+#define DUMMY_DEV PNP_DEV(0x4e, 0)
+
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
 	u32 val;
@@ -74,6 +76,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		mec1308_early_init(0x2e);
 		#endif
 		w83627dhg_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
+		w83627dhg_set_clksel_24(DUMMY_DEV);
 
 //		for (;;);
 		post_code(0x31);
