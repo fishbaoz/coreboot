@@ -119,7 +119,7 @@ GfxConfigEnvInterface (
     Gfx->LvdsMaxPixelClockFreq = EnvParamsPtr->GnbEnvConfiguration.LvdsMaxPixelClockFreq;
     Gfx->LcdBitDepthControlValue = EnvParamsPtr->GnbEnvConfiguration.LcdBitDepthControlValue;
     Gfx->Lvds24bbpPanelMode = EnvParamsPtr->GnbEnvConfiguration.Lvds24bbpPanelMode;
-    Gfx->LvdsMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscControl.Value;
+    Gfx->LvdsMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscControl.Value | 2;
     Gfx->PcieRefClkSpreadSpectrum = EnvParamsPtr->GnbEnvConfiguration.PcieRefClkSpreadSpectrum;
     Gfx->GnbRemoteDisplaySupport = EnvParamsPtr->GnbEnvConfiguration.GnbRemoteDisplaySupport;
     Gfx->LVDSVoltAdjust = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscVoltAdjustment;

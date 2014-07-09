@@ -37,16 +37,18 @@
 #include "src/drivers/pc80/i8259.c"
 #include "cbmem.h"
 
-#define _SIMNOW_  1
+#define _SIMNOW_  0
 
 #if _SIMNOW_
 #include "superio/smsc/mec1308/mec1308_early_serial.c"
 #endif
 
+#include "superio/winbond/w83627dhg/w83627dhg.h"
 
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 void disable_cache_as_ram(void);
 
+#define SERIAL_DEV PNP_DEV(0x4e, W83627DHG_SP1)
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
 	u32 val;
@@ -71,6 +73,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		#if _SIMNOW_
 		mec1308_early_init(0x2e);
 		#endif
+		w83627dhg_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 
 //		for (;;);
 		post_code(0x31);
