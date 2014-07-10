@@ -661,7 +661,7 @@ UINT32 agesawrapper_amdS3Save(VOID)
 	printk(BIOS_DEBUG, "NvStorageSize=%x, NvStorage=%x\n",
 	       (unsigned int)AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
 	       (unsigned int)AmdS3SaveParamsPtr->S3DataBlock.NvStorage);
-
+#if 0
 	Status = OemAgesaSaveS3Info (
 		S3DataType,
 		AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
@@ -680,7 +680,7 @@ UINT32 agesawrapper_amdS3Save(VOID)
 			AmdS3SaveParamsPtr->S3DataBlock.VolatileStorage);
 	}
 	OemAgesaSaveMtrr();
-
+#endif
 	AmdReleaseStruct (&AmdInterfaceParams);
 
 	return (UINT32)Status;
