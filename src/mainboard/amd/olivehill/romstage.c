@@ -43,7 +43,13 @@
 #include "superio/smsc/mec1308/mec1308_early_serial.c"
 #endif
 
+#define W83627 0
+
+#if W83627
 #include "superio/winbond/w83627dhg/w83627dhg.h"
+#else
+#include "superio/smsc/sio1036/sio1036_early_init.c"
+#endif
 
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 void disable_cache_as_ram(void);
@@ -75,9 +81,12 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		#if _SIMNOW_
 		mec1308_early_init(0x2e);
 		#endif
+#if W83627
 		w83627dhg_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 		w83627dhg_set_clksel_24(DUMMY_DEV);
-
+#else
+		sio1036_early_init(0x4E);
+#endif
 //		for (;;);
 		post_code(0x31);
 		console_init();
