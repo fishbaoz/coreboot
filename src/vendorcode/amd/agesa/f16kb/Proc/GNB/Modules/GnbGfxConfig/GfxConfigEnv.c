@@ -119,11 +119,11 @@ GfxConfigEnvInterface (
     Gfx->LvdsMaxPixelClockFreq = EnvParamsPtr->GnbEnvConfiguration.LvdsMaxPixelClockFreq;
     Gfx->LcdBitDepthControlValue = EnvParamsPtr->GnbEnvConfiguration.LcdBitDepthControlValue;
     Gfx->Lvds24bbpPanelMode = EnvParamsPtr->GnbEnvConfiguration.Lvds24bbpPanelMode;
-    Gfx->LvdsMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscControl.Value | 2;
+    Gfx->LvdsMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscControl.Value | 0;
     Gfx->PcieRefClkSpreadSpectrum = EnvParamsPtr->GnbEnvConfiguration.PcieRefClkSpreadSpectrum;
     Gfx->GnbRemoteDisplaySupport = EnvParamsPtr->GnbEnvConfiguration.GnbRemoteDisplaySupport;
     Gfx->LVDSVoltAdjust = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscVoltAdjustment;
-    Gfx->DisplayMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.DisplayMiscControl.Value;
+    Gfx->DisplayMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.DisplayMiscControl.Value | 1;
     Gfx->DpFixedVoltSwingType = EnvParamsPtr->GnbEnvConfiguration.DpFixedVoltSwingType;
     GfxGetUmaInfo (&Gfx->UmaInfo, StdHeader);
   }

@@ -43,7 +43,7 @@
 #include "superio/smsc/mec1308/mec1308_early_serial.c"
 #endif
 
-#define W83627 0
+#define W83627 1
 
 #if W83627
 #include "superio/winbond/w83627dhg/w83627dhg.h"
