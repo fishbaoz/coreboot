@@ -7,7 +7,7 @@ CFLAGS=-O2 -D_GNU_SOURCE -DGETPIR -Wall
 
 all: testio
 
-testio: testio.o
+testio: testio.o uart8250io.o
 	$(CC) $(CFLAGS) -o getpir $^
 
 clean:

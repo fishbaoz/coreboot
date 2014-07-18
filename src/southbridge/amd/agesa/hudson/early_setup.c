@@ -77,6 +77,7 @@ void hudson_pci_port80(void)
 void hudson_lpc_port80(void)
 {
 	u8 byte;
+	u32 dword;
 	device_t dev;
 
 	/* Enable LPC controller */
