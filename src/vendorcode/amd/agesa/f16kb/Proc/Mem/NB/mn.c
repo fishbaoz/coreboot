@@ -116,7 +116,7 @@ MemNCmnInitDefaultsNb (
   //
   // Memory Map/Mgt.
   // Mask Bottom IO with 0xF8 to force hole size to have granularity of 128MB
-  RefPtr->BottomIo = 0xE0;
+  RefPtr->BottomIo = 0xA0;
   RefPtr->UmaMode = UserOptions.CfgUmaMode;
   RefPtr->UmaSize = UserOptions.CfgUmaSize;
   RefPtr->MemHoleRemapping = TRUE;

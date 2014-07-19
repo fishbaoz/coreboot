@@ -52,6 +52,7 @@ static void lpc_init(device_t dev)
 	/* Disable the timeout mechanism on LPC */
 	byte = pci_read_config8(dev, 0x48);
 	byte &= ~(1 << 7);
+	byte |= 1 << 5;
 	pci_write_config8(dev, 0x48, byte);
 
 	/* Disable LPC MSI Capability */
@@ -67,6 +68,8 @@ static void lpc_init(device_t dev)
 	byte = pci_read_config8(dev, 0xBB);
 	byte |= 1 << 0 | 1 << 3;
 	pci_write_config8(dev, 0xBB, byte);
+
+	pci_write_config32(dev, 0x60, 0xf00df00d);
 
 	rtc_check_update_cmos_date(RTC_HAS_ALTCENTURY);
 
@@ -104,6 +107,11 @@ static void hudson_lpc_read_resources(device_t dev)
 	//res->base = 0xfec00000;
 	//res->size = 0x00001000;
 	//res->flags = IORESOURCE_MEM | IORESOURCE_ASSIGNED | IORESOURCE_FIXED;
+
+	res = new_resource(dev, 3); /* IOAPIC */
+	res->base = 0xf00d8000;
+	res->size = 0x00010000;
+	res->flags = IORESOURCE_MEM | IORESOURCE_ASSIGNED | IORESOURCE_FIXED;
 
 	compact_resources(dev);
 }
