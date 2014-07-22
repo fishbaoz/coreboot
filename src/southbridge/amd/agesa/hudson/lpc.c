@@ -110,7 +110,7 @@ static void hudson_lpc_read_resources(device_t dev)
 
 	res = new_resource(dev, 3); /* IOAPIC */
 	res->base = 0xf00d8000;
-	res->size = 0x00010000;
+	res->size = 0x00004000;
 	res->flags = IORESOURCE_MEM | IORESOURCE_ASSIGNED | IORESOURCE_FIXED;
 
 	compact_resources(dev);

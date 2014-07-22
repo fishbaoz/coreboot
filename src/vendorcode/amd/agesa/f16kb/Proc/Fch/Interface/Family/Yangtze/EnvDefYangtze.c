@@ -61,9 +61,9 @@
  *----------------------------------------------------------------------------------------
  */
 CONST FCH_INTERFACE ROMDATA FchInterfaceDefault = {
-  SdAmda,              // SdConfig
-  2,
-  IrRxTx0Tx1,          // IrConfig
+  SdDisable, //SdAmda,              // SdConfig
+  1,
+  IrDisable, //IrRxTx0Tx1,          // IrConfig
   TRUE,                // UmiGen2
   SataNativeIde, //simnow,            // SataClass
   TRUE,                // SataEnable
@@ -257,7 +257,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_AZALIA
-    2,              // AzaliaEnable
+    1,              // AzaliaEnable
     TRUE,                   // AzaliaMsiEnable
     0x00000000,              // AzaliaSsid
     1,                       // AzaliaPinCfg
