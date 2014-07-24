@@ -153,7 +153,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_SATA
-    FALSE,                   // SataMsiEnable
+   TRUE, //FALSE,                   // SataMsiEnable
     0x00000000,              // SataIdeSsid
     0x00000000,              // SataRaidSsid
     0x00000000,              // SataRaid5Ssid
@@ -320,7 +320,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_HPET
-    TRUE,                    // HpetEnable
+    FALSE, //TRUE,                    // HpetEnable
     TRUE,                    // HpetMsiDis
     0xFED00000               // HpetBase
   },

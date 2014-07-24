@@ -162,7 +162,7 @@
 //#define BLDCFG_CFG_LCD_BACK_LIGHT_CONTROL         OEM_LCD_BACK_LIGHT_CONTROL
 #define BLDCFG_CFG_ABM_SUPPORT                    TRUE
 
-#define BLDCFG_CFG_GNB_HD_AUDIO                   TRUE
+#define BLDCFG_CFG_GNB_HD_AUDIO                   FALSE //TRUE
 //#define BLDCFG_IGPU_SUBSYSTEM_ID            OEM_IGPU_SSID
 //#define BLDCFG_IGPU_HD_AUDIO_SUBSYSTEM_ID   OEM_IGPU_HD_AUDIO_SSID
 //#define BLFCFG_APU_PCIE_PORTS_SUBSYSTEM_ID  OEM_APU_PCIE_PORTS_SSID
@@ -346,7 +346,7 @@ CONST AP_MTRR_SETTINGS ROMDATA KabiniApMtrrSettingsList[] =
 //#define BLDCFG_IR_PIN_CONTROL	0x33
 
 GPIO_CONTROL   olivehill_gpio[] = {
-	{183, Function1, GpioIn | GpioOutEnB | PullUpB},
+//	{183, Function1, GpioIn | GpioOutEnB | PullUpB},
 	{-1}
 };
 //#define BLDCFG_FCH_GPIO_CONTROL_LIST           (&olivehill_gpio[0])
