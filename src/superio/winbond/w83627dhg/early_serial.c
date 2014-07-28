@@ -82,7 +82,7 @@ void w83627dhg_set_clksel_24(device_t dev)
 
 	pnp_enter_ext_func_mode(dev);
 	reg8 = pnp_read_config(dev, 0x24);
-	reg8 &= ~(1 << 6); /* Set CLKSEL (clock input on pin 1) to 48MHz. */
+	reg8 &= ~(1 << 6); /* Set CLKSEL (clock input on pin 1) to 24MHz. */
 	pnp_write_config(dev, 0x24, reg8);
 	pnp_exit_ext_func_mode(dev);
 }
