@@ -59,7 +59,7 @@ Device(SUPERIO_DEV) {
 	Name (_STR, Unicode("Winbond W83627DHG Super I/O"))
 	Name (_UID, SUPERIO_UID(SUPERIO_DEV,))
 
-	/* Mutex for accesses to the configuration ports */
+	/* Mutex for accesses to the configuration ports. TODO: test */
 	Mutex(CRMX, 1)
 
 	/* SuperIO configuration ports */
