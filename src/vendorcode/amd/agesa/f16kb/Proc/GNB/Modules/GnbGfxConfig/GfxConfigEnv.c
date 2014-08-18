@@ -123,7 +123,7 @@ GfxConfigEnvInterface (
     Gfx->PcieRefClkSpreadSpectrum = EnvParamsPtr->GnbEnvConfiguration.PcieRefClkSpreadSpectrum;
     Gfx->GnbRemoteDisplaySupport = EnvParamsPtr->GnbEnvConfiguration.GnbRemoteDisplaySupport;
     Gfx->LVDSVoltAdjust = EnvParamsPtr->GnbEnvConfiguration.LvdsMiscVoltAdjustment;
-    Gfx->DisplayMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.DisplayMiscControl.Value | 1;
+    Gfx->DisplayMiscControl.Value = EnvParamsPtr->GnbEnvConfiguration.DisplayMiscControl.Value | 0;
     Gfx->DpFixedVoltSwingType = EnvParamsPtr->GnbEnvConfiguration.DpFixedVoltSwingType;
     GfxGetUmaInfo (&Gfx->UmaInfo, StdHeader);
   }

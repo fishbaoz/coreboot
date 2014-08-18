@@ -456,7 +456,7 @@ int asmlinkage interrupt_handler(u32 intnumber,
 	cs = cs_ip >> 16;
 	flags = stackflags;
 
-#if 1 //CONFIG_REALMODE_DEBUG
+#if CONFIG_REALMODE_DEBUG
 	printk(BIOS_DEBUG, "oprom: INT# 0x%x\n", intnumber);
 	printk(BIOS_DEBUG, "oprom: eax: %08x ebx: %08x ecx: %08x edx: %08x\n",
 		      eax, ebx, ecx, edx);

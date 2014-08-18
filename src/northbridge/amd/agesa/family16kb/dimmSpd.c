@@ -224,7 +224,7 @@ AGESA_STATUS AmdMemoryReadSPD (UINT32 unused1, UINT32 unused2, AGESA_READ_SPD_PA
 		return AGESA_ERROR;
 	if (info->DimmId       >= DIMENSION(config->spdAddrLookup[0][0]))
 		return AGESA_ERROR;
-#if 1
+#if CONFIG_BOARD_AMD_OLIVEHILL
 	if ((info->SocketId == 0) && (info->MemChannelId == 0) && (info->DimmId == 0)) {
 		int i;
 		for (i=0; i<256; i++)
