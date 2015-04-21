@@ -1,0 +1,22 @@
+//----------------------------------------------------------------------------
+// PSP FW Delivery Release Note
+// 
+// Copyright 2014, Advanced Micro Devices, Inc.
+// Image Version number: PSP BootLoader: 00.01.01.11, PSP SecureOS: 00.01.01.11
+// Date:   2/12/2014
+//----------------------------------------------------------------------------
+
+Files:
+	PspBootLoader.HVB.sbin - PSP offchip BootLoader, Hardware Validated Boot
+        PspBootLoader.Bypass.sbin - PSP bootloader with HVB bypass enabled
+	PspRecovery.sbin       - PSP Recovery boot loader
+	PspSecureOs.sbin       - PSP secure OS, signed with production key version
+	PspNvram.bin           - NV storage pattern used to populate the SPI-ROM.
+	PspTrustlets.bin       - PSP Trustlet binaries
+	
+Features and fixes:
+
+- Bug fix for unconditional Debug Unlock on ML A0.
+
+Note that secure unlock is unconditionally unlocked on A0.
+

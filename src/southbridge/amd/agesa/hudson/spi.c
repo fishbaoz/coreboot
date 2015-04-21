@@ -122,7 +122,7 @@ int spi_xfer(struct spi_slave *slave, const void *dout,
 
 	readoffby1 = bytesout ? 0 : 1;
 
-#if CONFIG_SOUTHBRIDGE_AMD_AGESA_YANGTZE
+#if CONFIG_SOUTHBRIDGE_AMD_AGESA_YANGTZE || CONFIG_SOUTHBRIDGE_AMD_AGESA_AVALON || CONFIG_SOUTHBRIDGE_AMD_AGESA_KERN
 	spi_write(0x1E, 5);
 	spi_write(0x1F, bytesout); /* SpiExtRegIndx [5] - TxByteCount */
 	spi_write(0x1E, 6);

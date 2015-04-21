@@ -31,6 +31,10 @@ util/crossgcc/tarballs/
 util/crossgcc/w32api-*/
 util/crossgcc/xgcc/
 site-local
+util/crossgcc/xgcc-*/
+
+src/vendorcode/amd/agesa/f1*-*/
+.svn
 
 *.\#
 *.bin
@@ -39,6 +43,29 @@ site-local
 *.o
 *.out
 *.swp
+*.vcxproj
+*.mak
+*.inf
+*.cif
+*.dxs
+*.vcproj
+*.sln
+*.orig
+*.dsc
+*.dec
+*.bat
+
+src/vendorcode/amd/agesa/f15cz/AMDTools/
+src/vendorcode/amd/agesa/f15cz/UefiUdk/
+#src/vendorcode/amd/agesa/f15cz/UEFI/
+src/vendorcode/amd/agesa/f15cz/Addendum/
+src/vendorcode/amd/agesa/f15cz/Conf/
+src/vendorcode/amd/agesa/f15cz/Proc/Recovery/
+src/vendorcode/amd/agesa/f15cz/Lib/IA32/
+src/vendorcode/amd/agesa/f15cz/Lib/x64/
+src/vendorcode/amd/agesa/trunk/
+
+Doxyfile*
 
 # Development friendly files
 tags

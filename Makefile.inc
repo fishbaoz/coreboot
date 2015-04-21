@@ -22,7 +22,7 @@ GIT:=$(shell [ -d "$(top)/.git" ] && command -v git)
 #######################################################################
 # misleadingly named, this is the coreboot version
 export KERNELVERSION := $(strip $(if $(GIT),\
-	$(shell git describe --dirty --always || git describe),\
+	$(shell git describe --always || git describe),\
 	4.0$(KERNELREVISION)))
 
 #######################################################################

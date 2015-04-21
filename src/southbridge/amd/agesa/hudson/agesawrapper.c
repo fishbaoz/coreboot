@@ -24,7 +24,11 @@
 #include <northbridge/amd/agesa/BiosCallOuts.h>
 #include "cpuRegisters.h"
 #include "cpuCacheInit.h"
+#if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15_CZ)
+#include "cpuApComm.h"
+#else
 #include "cpuApicUtilities.h"
+#endif
 #include "cpuEarlyInit.h"
 #include "cpuLateInit.h"
 #include "Dispatcher.h"

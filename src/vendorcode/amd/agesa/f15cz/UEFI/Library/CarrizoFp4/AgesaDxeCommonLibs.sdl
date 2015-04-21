@@ -1,0 +1,581 @@
+#;*****************************************************************************
+#;
+#; Copyright 2008 - 2015 ADVANCED MICRO DEVICES, INC.  All Rights Reserved.
+#;
+#; AMD is granting you permission to use this software (the Materials)
+#; pursuant to the terms and conditions of your Software License Agreement
+#; with AMD.  This header does *NOT* give you permission to use the Materials
+#; or any rights under AMD's intellectual property.  Your use of any portion
+#; of these Materials shall constitute your acceptance of those terms and
+#; conditions.  If you do not agree to the terms and conditions of the Software
+#; License Agreement, please do not use any portion of these Materials.
+#;
+#; CONFIDENTIALITY:  The Materials and all other information, identified as
+#; confidential and provided to you by AMD shall be kept confidential in
+#; accordance with the terms and conditions of the Software License Agreement.
+#;
+#; LIMITATION OF LIABILITY: THE MATERIALS AND ANY OTHER RELATED INFORMATION
+#; PROVIDED TO YOU BY AMD ARE PROVIDED "AS IS" WITHOUT ANY EXPRESS OR IMPLIED
+#; WARRANTY OF ANY KIND, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+#; MERCHANTABILITY, NONINFRINGEMENT, TITLE, FITNESS FOR ANY PARTICULAR PURPOSE,
+#; OR WARRANTIES ARISING FROM CONDUCT, COURSE OF DEALING, OR USAGE OF TRADE.
+#; IN NO EVENT SHALL AMD OR ITS LICENSORS BE LIABLE FOR ANY DAMAGES WHATSOEVER
+#; (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, BUSINESS
+#; INTERRUPTION, OR LOSS OF INFORMATION) ARISING OUT OF AMD'S NEGLIGENCE,
+#; GROSS NEGLIGENCE, THE USE OF OR INABILITY TO USE THE MATERIALS OR ANY OTHER
+#; RELATED INFORMATION PROVIDED TO YOU BY AMD, EVEN IF AMD HAS BEEN ADVISED OF
+#; THE POSSIBILITY OF SUCH DAMAGES.  BECAUSE SOME JURISDICTIONS PROHIBIT THE
+#; EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES,
+#; THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+#;
+#; AMD does not assume any responsibility for any errors which may appear in
+#; the Materials or any other related information provided to you by AMD, or
+#; result from use of the Materials or any related information.
+#;
+#; You agree that you will not reverse engineer or decompile the Materials.
+#;
+#; NO SUPPORT OBLIGATION: AMD is not obligated to furnish, support, or make any
+#; further information, software, technical information, know-how, or show-how
+#; available to you.  Additionally, AMD retains the right to modify the
+#; Materials at any time, without notice, and is not obligated to provide such
+#; modified Materials to you.
+#;
+#; U.S. GOVERNMENT RESTRICTED RIGHTS: The Materials are provided with
+#; "RESTRICTED RIGHTS." Use, duplication, or disclosure by the Government is
+#; subject to the restrictions as set forth in FAR 52.227-14 and
+#; DFAR252.227-7013, et seq., or its successor.  Use of the Materials by the
+#; Government constitutes acknowledgement of AMD's proprietary rights in them.
+#;
+#; EXPORT ASSURANCE:  You agree and certify that neither the Materials, nor any
+#; direct product thereof will be exported directly or indirectly, into any
+#; country prohibited by the United States Export Administration Act and the
+#; regulations thereunder, without the required authorization from the U.S.
+#; government nor will be used for any purpose prohibited by the same.
+#;*****************************************************************************
+
+TOKEN
+    Name = "AgesaDxeCommonLibs"
+    Value = "1"
+    Help = "This is master token to control the whole sdl file"
+    TokenType = Boolean
+    TargetEQU = Yes
+    TargetMAK = Yes
+    Master = Yes
+    Token = "AMD_INTERNAL" "=" "0"
+End
+
+MODULE
+    Help = "Include FchProtocolLib.mak to project"
+    File = "FchProtocolLib.mak"
+    Path = "$(AGESA_ROOT)\UEFI\Protocol\FchProtocolLib\"
+End
+
+MODULE
+    Help = "Include AMD_Lib.mak to project"
+    File = "AMD_Lib.mak"
+    Path = "$(AGESA_ROOT)\Lib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Common.mak to project"
+    File = "AMD_Proc_Common.mak"
+    Path = "$(AGESA_ROOT)\Proc\Common\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_CPU.mak to project"
+    File = "AMD_Proc_CPU.mak"
+    Path = "$(AGESA_ROOT)\Proc\CPU\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_CPU_Family_0x15.mak to project"
+    File = "AMD_Proc_CPU_Family_0x15.mak"
+    Path = "$(AGESA_ROOT)\Proc\CPU\Family\0x15\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_CPU_Family_0x15_CZ.mak to project"
+    File = "AMD_Proc_CPU_Family_0x15_CZ.mak"
+    Path = "$(AGESA_ROOT)\Proc\CPU\Family\0x15\CZ\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_CPU_Feature.mak to project"
+    File = "AMD_Proc_CPU_Feature.mak"
+    Path = "$(AGESA_ROOT)\Proc\CPU\Feature\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Common.mak to project"
+    File = "AMD_Proc_Fch_Common.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Common\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern.mak to project"
+    File = "AMD_Proc_Fch_Kern.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernAzalia.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernAzalia.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernAzalia\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernHwAcpi.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernHwAcpi.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernHwAcpi\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernHwm.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernHwm.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernHwm\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernImc.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernImc.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernImc\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernInterface.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernInterface.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernInterface\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernIr.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernIr.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernIr\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernPcie.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernPcie.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernPcie\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernSata.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernSata.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernSata\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernSd.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernSd.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernSd\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernSpi.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernSpi.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernSpi\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Fch_Kern_KernUsb.mak to project"
+    File = "AMD_Proc_Fch_Kern_KernUsb.mak"
+    Path = "$(AGESA_ROOT)\Proc\Fch\Kern\KernUsb\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB.mak to project"
+    File = "AMD_Proc_GNB.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Common.mak to project"
+    File = "AMD_Proc_GNB_Common.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Common\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbAzaliaLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbAzaliaLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbAzaliaLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbCommonLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbCommonLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbCommonLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbFamTranslation.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbFamTranslation.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbFamTranslation\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbGfxConfig.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbGfxConfig.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbGfxConfig\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbGfxInitLibV1.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbGfxInitLibV1.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbGfxInitLibV1\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbGfxIntTableV5.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbGfxIntTableV5.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbGfxIntTableV5\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbInitCZ.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbInitCZ.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbInitCZ\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbIoapic.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbIoapic.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbIoapic\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbIommuIvrs.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbIommuIvrs.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbIommuIvrs\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbIommuScratch.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbIommuScratch.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbIommuScratch\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbIvrsLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbIvrsLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbIvrsLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbNbInitLibV4.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbNbInitLibV4.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbNbInitLibV4\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbNbInitLibV5.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbNbInitLibV5.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbNbInitLibV5\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieAlibV2.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieAlibV2.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieAlibV2\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieAspm.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieAspm.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieAspm\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieClkPm.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieClkPm.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieClkPm\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieCommClkCfg.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieCommClkCfg.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieCommClkCfg\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieConfig.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieConfig.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieConfig\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieInitLibV1.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieInitLibV1.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieInitLibV1\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieInitLibV4.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieInitLibV4.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieInitLibV4\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieInitLibV5.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieInitLibV5.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieInitLibV5\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieMaxPayload.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieMaxPayload.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieMaxPayload\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbPcieTrainingV2.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbPcieTrainingV2.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbPcieTrainingV2\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbSbIommuLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbSbIommuLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbSbIommuLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbSbLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbSbLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbSbLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbSmuLibV8.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbSmuLibV8.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbSmuLibV8\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbSSocketLib.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbSSocketLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbSSocketLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbSview.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbSview.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbSview\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbTable.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbTable.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbTable\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_GNB_Modules_GnbUraLibV1.mak to project"
+    File = "AMD_Proc_GNB_Modules_GnbUraLibV1.mak"
+    Path = "$(AGESA_ROOT)\Proc\GNB\Modules\GnbUraLibV1\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Control.mak to project"
+    File = "AMD_Proc_IDS_Control.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Control\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Debug.mak to project"
+    File = "AMD_Proc_IDS_Debug.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Debug\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Family_0x15.mak to project"
+    File = "AMD_Proc_IDS_Family_0x15.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Family\0x15\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Family_0x15_CZ.mak to project"
+    File = "AMD_Proc_IDS_Family_0x15_CZ.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Family\0x15\CZ\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Library.mak to project"
+    File = "AMD_Proc_IDS_Library.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Library\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_IDS_Perf.mak to project"
+    File = "AMD_Proc_IDS_Perf.mak"
+    Path = "$(AGESA_ROOT)\Proc\IDS\Perf\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_AMP.mak to project"
+    File = "AMD_Proc_Mem_Feat_AMP.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\AMP\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_CHINTLV.mak to project"
+    File = "AMD_Proc_Mem_Feat_CHINTLV.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\CHINTLV\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_CRAT.mak to project"
+    File = "AMD_Proc_Mem_Feat_CRAT.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\CRAT\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_CSINTLV.mak to project"
+    File = "AMD_Proc_Mem_Feat_CSINTLV.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\CSINTLV\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_DATAEYE.mak to project"
+    File = "AMD_Proc_Mem_Feat_DATAEYE.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\DATAEYE\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_DMI.mak to project"
+    File = "AMD_Proc_Mem_Feat_DMI.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\DMI\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_ECC.mak to project"
+    File = "AMD_Proc_Mem_Feat_ECC.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\ECC\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_EXCLUDIMM.mak to project"
+    File = "AMD_Proc_Mem_Feat_EXCLUDIMM.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\EXCLUDIMM\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_IDENDIMM.mak to project"
+    File = "AMD_Proc_Mem_Feat_IDENDIMM.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\IDENDIMM\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_INTLVRN.mak to project"
+    File = "AMD_Proc_Mem_Feat_INTLVRN.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\INTLVRN\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_LVDDR3.mak to project"
+    File = "AMD_Proc_Mem_Feat_LVDDR3.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\LVDDR3\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_LVDDR4.mak to project"
+    File = "AMD_Proc_Mem_Feat_LVDDR4.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\LVDDR4\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_MEMCLR.mak to project"
+    File = "AMD_Proc_Mem_Feat_MEMCLR.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\MEMCLR\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_ODTHERMAL.mak to project"
+    File = "AMD_Proc_Mem_Feat_ODTHERMAL.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\ODTHERMAL\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_PARTRN.mak to project"
+    File = "AMD_Proc_Mem_Feat_PARTRN.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\PARTRN\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_S3.mak to project"
+    File = "AMD_Proc_Mem_Feat_S3.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\S3\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Feat_TABLE.mak to project"
+    File = "AMD_Proc_Mem_Feat_TABLE.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Feat\TABLE\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Main.mak to project"
+    File = "AMD_Proc_Mem_Main.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Main\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_Main_CZ.mak to project"
+    File = "AMD_Proc_Mem_Main_CZ.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\Main\CZ\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_NB.mak to project"
+    File = "AMD_Proc_Mem_NB.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\NB\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Mem_NB_CZ.mak to project"
+    File = "AMD_Proc_Mem_NB_CZ.mak"
+    Path = "$(AGESA_ROOT)\Proc\Mem\NB\CZ\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Psp_PspBaseLib.mak to project"
+    File = "AMD_Proc_Psp_PspBaseLib.mak"
+    Path = "$(AGESA_ROOT)\Proc\Psp\PspBaseLib\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Topology.mak to project"
+    File = "AMD_Proc_Topology.mak"
+    Path = "$(AGESA_ROOT)\Proc\Topology\"
+End
+
+MODULE
+    Help = "Include AMD_Proc_Topology_Fam15.mak to project"
+    File = "AMD_Proc_Topology_Fam15.mak"
+    Path = "$(AGESA_ROOT)\Proc\Topology\Fam15\"
+End
+
+MODULE
+    Help = "Include AMD_UEFI_Fch_Kern_Dxe_FchDxeLib.mak to project"
+    File = "AMD_UEFI_Fch_Kern_Dxe_FchDxeLib.mak"
+    Path = "$(AGESA_ROOT)\UEFI\Fch\Kern\Dxe\FchDxeLib\"
+End
+
+MODULE
+    Help = "Include AMD_UEFI_Fch_Kern_Smm_FchSmmLib.mak to project"
+    File = "AMD_UEFI_Fch_Kern_Smm_FchSmmLib.mak"
+    Path = "$(AGESA_ROOT)\UEFI\Fch\Kern\Smm\FchSmmLib\"
+End
+
+MODULE
+    Help = "Include AMD_UEFI_Proc_Common.mak to project"
+    File = "AMD_UEFI_Proc_Common.mak"
+    Path = "$(AGESA_ROOT)\UEFI\Proc\Common\"
+End
+
+MODULE
+    Help = "Include AMD_UEFI_Proc_Dxe.mak to project"
+    File = "AMD_UEFI_Proc_Dxe.mak"
+    Path = "$(AGESA_ROOT)\UEFI\Proc\Dxe\"
+End

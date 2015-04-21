@@ -54,6 +54,16 @@ static const struct pci_driver usb_1_driver __pci_driver = {
 	.device = PCI_DEVICE_ID_ATI_SB900_USB_18_2,
 };
 
+static const struct pci_driver usb_0_driver_cz __pci_driver = {
+	.ops = &usb_ops,
+	.vendor = PCI_VENDOR_ID_AMD,
+	.device = 0x7907,
+};
+static const struct pci_driver usb_1_driver_cz __pci_driver = {
+	.ops = &usb_ops,
+	.vendor = PCI_VENDOR_ID_AMD,
+	.device = 0x7908,
+};
 /* the pci id of usb ctrl 0 and 1 are the same. */
 /*
  * static const struct pci_driver usb_3_driver __pci_driver = {

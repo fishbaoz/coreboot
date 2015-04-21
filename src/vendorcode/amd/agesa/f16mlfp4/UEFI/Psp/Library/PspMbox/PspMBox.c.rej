@@ -1,0 +1,11 @@
+--- src/vendorcode/amd/agesa/f16mlfp4/UEFI/Psp/Library/PspMbox/PspMBox.c
++++ src/vendorcode/amd/agesa/f16mlfp4/UEFI/Psp/Library/PspMbox/PspMBox.c
+@@ -65,7 +65,7 @@
+  * government nor will be used for any purpose prohibited by the same.
+  *
+  ***************************************************************************/
+-#include "Tiano.h"
++//#include "Tiano.h"
+ #include "PspMbox.h"
+ #include "PspBaseLib.h"
+ #include "PspDebug.h"

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xsd\spring-beans-2.0.xsd">
+
+    <bean id="config" class="com.amd.kgs.sp.client.SPClientConfig" >
+
+        <property name="serverUrls">
+            <list>
+                <value>https://cybkdsweb02/pspsp</value>
+                <value>https://atlkdsappv02/pspsp</value>
+            </list>
+        </property>
+        
+         <property name="maxTrialTimes" value="3"/>
+         <property name="authType" value="LDAP"/> 
+        
+<!--        <property name="username" value=""/>-->
+<!--        <property name="initiator" value=""/>-->
+       
+        <property name="function" value="Sign ML BIOS"/>
+
+        <!-- environment variables and command line parameters names -->
+        
+        <property name="envCmdPrmUsername" value="sp_username"/>
+        
+        <property name="envCmdPrmPassword" value="sp_password"/>
+
+        <property name="envCmdPrmFunction" value="sp_function"/>
+        
+        <property name="envCmdPrmInitiator" value="sp_initiator"/>
+        
+        <property name="ldapUri" value="api"/>
+        
+        <property name="aclUri" value="apiacl"/>
+        
+        <property name="trustStore" value="config/tcTrust.jks"/>
+
+        <property name="trustStorePW" value="123456"/>
+
+        <property name="allowAllHostname" value="false"/> <!-- set to false for production -->
+        
+    </bean>
+
+    <bean id="handler" class="com.amd.kgs.sp.client.RequestHandler">
+
+        <property name="clientConfig" ref="config"/>
+
+    </bean>
+
+
+</beans>

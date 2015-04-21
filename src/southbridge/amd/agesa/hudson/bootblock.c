@@ -56,7 +56,7 @@ static void hudson_enable_rom(void)
 	 * 0xffe0(0000): 2MB
 	 * 0xffc0(0000): 4MB
 	 */
-	pci_write_config16(dev, 0x6c, 0x10000 - (CONFIG_COREBOOT_ROMSIZE_KB >> 6));
+	pci_write_config16(dev, 0x6c, 0x10000 - (8192 >> 6));
 	/* Enable LPC ROM range end at 0xffff(ffff). */
 	pci_write_config16(dev, 0x6e, 0xffff);
 }

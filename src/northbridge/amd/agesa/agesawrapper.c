@@ -50,7 +50,7 @@ AGESA_STATUS agesawrapper_amdinitreset(void)
 	AmdParamStruct.StdHeader.ImageBasePtr = 0;
 
 	AmdCreateStruct(&AmdParamStruct);
-	AmdResetParams.HtConfig.Depth = 0;
+//	AmdResetParams.HtConfig.Depth = 0;
 
 	status = AmdInitReset((AMD_RESET_PARAMS *) AmdParamStruct.NewStructPtr);
 	AGESA_EVENTLOG(status, &AmdParamStruct.StdHeader);
@@ -247,7 +247,11 @@ AGESA_STATUS agesawrapper_amdinitmid(void)
 AGESA_STATUS agesawrapper_amdS3Save(void)
 {
 	AGESA_STATUS status;
+#if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15_CZ)
+	AMD_RTB_PARAMS *AmdS3SaveParamsPtr;
+#else
 	AMD_S3SAVE_PARAMS *AmdS3SaveParamsPtr;
+#endif
 	AMD_INTERFACE_PARAMS AmdInterfaceParams;
 	S3_DATA_TYPE S3DataType;
 
@@ -257,33 +261,45 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 	AmdInterfaceParams.StdHeader.HeapStatus = HEAP_SYSTEM_MEM;
 	AmdInterfaceParams.StdHeader.CalloutPtr = (CALLOUT_ENTRY) & GetBiosCallout;
 	AmdInterfaceParams.AllocationMethod = PostMemDram;
+#if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15_CZ)
+	AmdInterfaceParams.AgesaFunctionName = AMD_INIT_RTB;
+#else
 	AmdInterfaceParams.AgesaFunctionName = AMD_S3_SAVE;
+#endif
 	AmdInterfaceParams.StdHeader.AltImageBasePtr = 0;
 	AmdInterfaceParams.StdHeader.Func = 0;
 	AmdCreateStruct(&AmdInterfaceParams);
 
+#if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15_CZ)
+	AmdS3SaveParamsPtr = (AMD_RTB_PARAMS *) AmdInterfaceParams.NewStructPtr;
+#else
 	AmdS3SaveParamsPtr = (AMD_S3SAVE_PARAMS *) AmdInterfaceParams.NewStructPtr;
+#endif
 	AmdS3SaveParamsPtr->StdHeader = AmdInterfaceParams.StdHeader;
 
+#if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15_CZ)
+	status = AmdInitRtb(AmdS3SaveParamsPtr);
+#else
 	status = AmdS3Save(AmdS3SaveParamsPtr);
+#endif
 	AGESA_EVENTLOG(status, &AmdInterfaceParams.StdHeader);
 	ASSERT(status == AGESA_SUCCESS);
 
 	S3DataType = S3DataTypeNonVolatile;
 
-	status = OemAgesaSaveS3Info(S3DataType,
-				    AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
-				    AmdS3SaveParamsPtr->S3DataBlock.NvStorage);
+//	status = OemAgesaSaveS3Info(S3DataType,
+//				    AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
+//				    AmdS3SaveParamsPtr->S3DataBlock.NvStorage);
 
 	if (AmdS3SaveParamsPtr->S3DataBlock.VolatileStorageSize != 0) {
 		S3DataType = S3DataTypeVolatile;
 
-		status = OemAgesaSaveS3Info(S3DataType,
-					    AmdS3SaveParamsPtr->S3DataBlock.VolatileStorageSize,
-					    AmdS3SaveParamsPtr->S3DataBlock.VolatileStorage);
+//		status = OemAgesaSaveS3Info(S3DataType,
+//					    AmdS3SaveParamsPtr->S3DataBlock.VolatileStorageSize,
+//					    AmdS3SaveParamsPtr->S3DataBlock.VolatileStorage);
 	}
 
-	OemAgesaSaveMtrr();
+//	OemAgesaSaveMtrr();
 	AmdReleaseStruct(&AmdInterfaceParams);
 
 	return status;
@@ -307,7 +323,7 @@ AGESA_STATUS agesawrapper_amdinitlate(void)
 	AmdParamStruct.StdHeader.ImageBasePtr = 0;
 
 #if IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15TN) || IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15RL) || \
-	IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY16KB)
+	IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY16KB) || IS_ENABLED(CONFIG_CPU_AMD_AGESA_FAMILY15CZ)
 	AmdParamStruct.StdHeader.HeapStatus = HEAP_SYSTEM_MEM;
 #endif
 
@@ -330,10 +346,10 @@ void *agesawrapper_getlateinitptr(int pick)
 		return AmdLateParams->DmiTable;
 	case PICK_PSTATE:
 		return AmdLateParams->AcpiPState;
-	case PICK_SRAT:
-		return AmdLateParams->AcpiSrat;
-	case PICK_SLIT:
-		return AmdLateParams->AcpiSlit;
+//	case PICK_SRAT:
+//		return AmdLateParams->AcpiSrat;
+//	case PICK_SLIT:
+//		return AmdLateParams->AcpiSlit;
 	case PICK_WHEA_MCE:
 		return AmdLateParams->AcpiWheaMce;
 	case PICK_WHEA_CMC:

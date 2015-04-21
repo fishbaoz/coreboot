@@ -22,6 +22,8 @@ void do_putchar(unsigned char byte)
 
 static void wrap_putchar(unsigned char byte, void *data)
 {
+	if (byte == '\n')
+		do_putchar('\r');
 	do_putchar(byte);
 }
 

@@ -341,3 +341,8 @@ static const struct pci_driver lpc_driver __pci_driver = {
 	.vendor = PCI_VENDOR_ID_AMD,
 	.device = PCI_DEVICE_ID_ATI_SB900_LPC,
 };
+static const struct pci_driver lpc_driver_cz __pci_driver = {
+	.ops = &lpc_ops,
+	.vendor = PCI_VENDOR_ID_AMD,
+	.device = 0x790E,
+};

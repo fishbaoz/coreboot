@@ -37,9 +37,9 @@
 
 #define ACPI_PM_EVT_BLK		(HUDSON_ACPI_IO_BASE + 0x00) /* 4 bytes */
 #define ACPI_PM1_CNT_BLK	(HUDSON_ACPI_IO_BASE + 0x04) /* 2 bytes */
-#define ACPI_PM_TMR_BLK		(HUDSON_ACPI_IO_BASE + 0x18) /* 4 bytes */
-#define ACPI_GPE0_BLK		(HUDSON_ACPI_IO_BASE + 0x10) /* 8 bytes */
-#define ACPI_CPU_CONTROL	(HUDSON_ACPI_IO_BASE + 0x08) /* 6 bytes */
+#define ACPI_PM_TMR_BLK		(HUDSON_ACPI_IO_BASE + 0x08) /* 4 bytes */
+#define ACPI_GPE0_BLK		(HUDSON_ACPI_IO_BASE + 0x20) /* 8 bytes */
+#define ACPI_CPU_CONTROL	(HUDSON_ACPI_IO_BASE + 0x10) /* 6 bytes */
 
 #define ACPI_SMI_CTL_PORT		0xb2
 #define ACPI_SMI_CMD_CST_CONTROL	0xde

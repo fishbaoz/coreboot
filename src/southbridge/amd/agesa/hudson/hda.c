@@ -49,3 +49,8 @@ static const struct pci_driver hdaaudio_driver __pci_driver = {
 	.vendor = PCI_VENDOR_ID_AMD,
 	.device = PCI_DEVICE_ID_ATI_SB900_HDA,
 };
+static const struct pci_driver hdaaudio_driver_cz __pci_driver = {
+	.ops = &hda_audio_ops,
+	.vendor = PCI_VENDOR_ID_AMD,
+	.device = 0x157A,
+};

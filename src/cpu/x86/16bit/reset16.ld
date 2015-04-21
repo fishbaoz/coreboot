@@ -11,6 +11,6 @@ SECTIONS {
 	.reset . : {
 		*(.reset)
 		. = 15 ;
-		BYTE(0x00);
+		BYTE(0xFF);
 	}
 }

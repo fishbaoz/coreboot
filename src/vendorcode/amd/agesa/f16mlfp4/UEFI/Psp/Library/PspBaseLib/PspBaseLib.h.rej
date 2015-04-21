@@ -1,0 +1,11 @@
+--- src/vendorcode/amd/agesa/f16mlfp4/UEFI/Psp/Library/PspBaseLib/PspBaseLib.h
++++ src/vendorcode/amd/agesa/f16mlfp4/UEFI/Psp/Library/PspBaseLib/PspBaseLib.h
+@@ -71,7 +71,7 @@
+ 
+ #ifndef _PSP_BASE_LIB_H_
+ #define _PSP_BASE_LIB_H_
+-#include "Tiano.h"
++//#include "Tiano.h"
+ #include "PspDirectory.h"
+ #include "PspDebug.h"
+ 

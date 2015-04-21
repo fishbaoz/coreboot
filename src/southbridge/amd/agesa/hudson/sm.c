@@ -172,3 +172,8 @@ static const struct pci_driver smbus_driver __pci_driver = {
 	.vendor = PCI_VENDOR_ID_AMD,
 	.device = PCI_DEVICE_ID_ATI_SB900_SM,
 };
+//static const struct pci_driver smbus_driver_cz __pci_driver = {
+//	.ops = &smbus_ops,
+//	.vendor = PCI_VENDOR_ID_AMD,
+//	.device = 0x790B,
+//};
