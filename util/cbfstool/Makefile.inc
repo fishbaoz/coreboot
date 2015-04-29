@@ -27,7 +27,7 @@ rmodobj += xdr.o
 TOOLCFLAGS ?= -std=c99 -Werror -Wall -Wextra
 TOOLCFLAGS += -Wcast-qual -Wmissing-prototypes -Wredundant-decls -Wshadow
 TOOLCFLAGS += -Wstrict-prototypes -Wwrite-strings
-TOOLCPPFLAGS ?= -D_POSIX_C_SOURCE=200809L # strdup() from string.h
+TOOLCPPFLAGS ?= -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE # strdup() from string.h
 TOOLLINKFLAGS ?=
 
 ifeq ($(shell uname -s | cut -c-7 2>/dev/null), MINGW32)
