@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -153,10 +153,10 @@ MemMLvDdr3 (
     PutEventLog (AGESA_WARNING, MEM_WARNING_NO_COMMONLY_SUPPORTED_VDDIO, 0, 0, 0, 0, &(NBPtr[BSP_DIE].MemPtr->StdHeader));
     SetMemError (AGESA_WARNING, NBPtr[BSP_DIE].MCTPtr);
     // When there is no commonly supported VDDIO, use 1.35V as the temporal VDDIO
-    ParameterPtr->DDRVoltage = VOLT1_35;
+    ParameterPtr->DDR3Voltage = VOLT1_35;
   } else {
     IDS_HDT_CONSOLE (MEM_FLOW, "\nCommonly supported VDDIO is: %s%s%s.\n", ((mmSharedPtr->VoltageMap & 1) != 0) ? "1.5V, " : "", ((mmSharedPtr->VoltageMap & 2) != 0) ? "1.35V, " : "", ((mmSharedPtr->VoltageMap & 4) != 0) ? "1.25V" : "");
-    ParameterPtr->DDRVoltage = CONVERT_ENCODED_TO_VDDIO (LibAmdBitScanReverse (mmSharedPtr->VoltageMap), DDR3_TECHNOLOGY);
+    ParameterPtr->DDR3Voltage = CONVERT_ENCODED_TO_VDDIO (LibAmdBitScanReverse (mmSharedPtr->VoltageMap));
   }
 
   for (Node = 0; Node < MemMainPtr->DieCount; Node ++) {
@@ -201,7 +201,7 @@ MemMLvDdr3PerformanceEnhPre (
   IDS_OPTION_HOOK (IDS_MEMORY_POWER_POLICY, &PowerPolicy, &NBPtr->MemPtr->StdHeader);
   IDS_HDT_CONSOLE (MEM_FLOW, (PowerPolicy == Performance) ? "\nMaximize Performance\n" : "\nMaximize Battery Life\n");
 
-  if (ParameterPtr->DDRVoltage != VOLT_INITIAL) {
+  if (ParameterPtr->DDR3Voltage != VOLT_INITIAL) {
     mmSharedPtr->VoltageMap = VDDIO_DETERMINED;
     PutEventLog (AGESA_WARNING, MEM_WARNING_INITIAL_DDR3VOLT_NONZERO, 0, 0, 0, 0, &(NBPtr[BSP_DIE].MemPtr->StdHeader));
     SetMemError (AGESA_WARNING, NBPtr[BSP_DIE].MCTPtr);
@@ -210,18 +210,18 @@ MemMLvDdr3PerformanceEnhPre (
   } else {
     RetVal = MemMLvDdr3 (MemMainPtr);
 
-    VDDIO = ParameterPtr->DDRVoltage;
+    VDDIO = ParameterPtr->DDR3Voltage;
     if (NBPtr->IsSupported[PerformanceOnly] || ((PowerPolicy == Performance) && (mmSharedPtr->VoltageMap != 0))) {
       // When there is no commonly supported voltage, do not optimize performance
       // For cases where we can maximize performance, do the following
-      // When VDDIO is enforced, DDRVoltage will be overriden by specific VDDIO
-      // So cases with DDRVoltage left to be VOLT_UNSUPPORTED will be open to maximizing performance.
-      ParameterPtr->DDRVoltage = VOLT_UNSUPPORTED;
+      // When VDDIO is enforced, DDR3Voltage will be overriden by specific VDDIO
+      // So cases with DDR3Voltage left to be VOLT_UNSUPPORTED will be open to maximizing performance.
+      ParameterPtr->DDR3Voltage = VOLT_UNSUPPORTED;
     }
 
-    IDS_OPTION_HOOK (IDS_ENFORCE_VDDIO, &(ParameterPtr->DDRVoltage), &NBPtr->MemPtr->StdHeader);
+    IDS_OPTION_HOOK (IDS_ENFORCE_VDDIO, &(ParameterPtr->DDR3Voltage), &NBPtr->MemPtr->StdHeader);
 
-    if (ParameterPtr->DDRVoltage != VOLT_UNSUPPORTED) {
+    if (ParameterPtr->DDR3Voltage != VOLT_UNSUPPORTED) {
       // When Voltage is already determined, do not have further process to choose maximum frequency to optimize performance
       mmSharedPtr->VoltageMap = VDDIO_DETERMINED;
       IDS_HDT_CONSOLE (MEM_FLOW, "VDDIO is determined. No further optimization will be done.\n");
@@ -232,11 +232,11 @@ MemMLvDdr3PerformanceEnhPre (
         NBPtr[Node].MaxFreqVDDIO[VOLT1_25_ENCODED_VAL] = UNSUPPORTED_DDR_FREQUENCY;
       }
       // Reprogram the leveling result as temporal candidate
-      ParameterPtr->DDRVoltage = VDDIO;
+      ParameterPtr->DDR3Voltage = VDDIO;
     }
   }
 
-  ASSERT (ParameterPtr->DDRVoltage != VOLT_UNSUPPORTED);
+  ASSERT (ParameterPtr->DDR3Voltage != VOLT_UNSUPPORTED);
   return RetVal;
 }
 
@@ -272,7 +272,7 @@ MemMLvDdr3PerformanceEnhFinalize (
 
   LibAmdMemFill (NodeCnt, 0, VOLT1_25_ENCODED_VAL + 1, &NBPtr->MemPtr->StdHeader);
   if (mmSharedPtr->VoltageMap != VDDIO_DETERMINED) {
-    Voltage = ParameterPtr->DDRVoltage;
+    Voltage = ParameterPtr->DDR3Voltage;
     IDS_HDT_CONSOLE (MEM_FLOW, "\nSearching for VDDIO that can maximize frequency: \n");
     for (Node = 0; Node < MemMainPtr->DieCount; Node++) {
       HighestFreq = 0;
@@ -296,14 +296,14 @@ MemMLvDdr3PerformanceEnhFinalize (
     for (CurrentVoltage = VOLT1_5_ENCODED_VAL; CurrentVoltage <= VOLT1_25_ENCODED_VAL; CurrentVoltage ++) {
       if (MaxCnt <= NodeCnt[CurrentVoltage]) {
         MaxCnt = NodeCnt[CurrentVoltage];
-        ParameterPtr->DDRVoltage = CONVERT_ENCODED_TO_VDDIO (CurrentVoltage, DDR3_TECHNOLOGY);
+        ParameterPtr->DDR3Voltage = CONVERT_ENCODED_TO_VDDIO (CurrentVoltage);
       }
     }
 
-    ASSERT (ParameterPtr->DDRVoltage != VOLT_UNSUPPORTED);
+    ASSERT (ParameterPtr->DDR3Voltage != VOLT_UNSUPPORTED);
 
     mmSharedPtr->VoltageMap = VDDIO_DETERMINED;
-    if (Voltage != ParameterPtr->DDRVoltage) {
+    if (Voltage != ParameterPtr->DDR3Voltage) {
       // Finalize frequency with updated finalized VDDIO
       for (Node = 0; Node < MemMainPtr->DieCount; Node++) {
         // Need to re-sync target speed and different VDDIO may cause different settings

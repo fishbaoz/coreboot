@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -76,6 +76,8 @@
  *----------------------------------------------------------------------------
  */
 
+
+
 #include "AGESA.h"
 #include "amdlib.h"
 #include "Ids.h"
@@ -129,7 +131,15 @@ MemNWritePmuSramMsgBlockCZ (
 {
   UINT16 i;
   UINT16 *ImagePtr;
-  ImagePtr = (UINT16 *) NBPtr->PsPtr->PmuSramMsgBlockPtr;
+  LOCATE_HEAP_PTR LocHeap;
+
+  LocHeap.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
+
+  if (HeapLocateBuffer (&LocHeap, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
+    return FALSE; // Could not locate heap for PMU SRAM Message BLock.
+  }
+
+  ImagePtr = (UINT16 *) LocHeap.BufferPtr;
 
   // Only load to current DCT
   MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
@@ -139,62 +149,15 @@ MemNWritePmuSramMsgBlockCZ (
   // Write the word to D18F2x[B,0]9C_x0005_[27FF:0800]_dct[3:0] (using the broadcast port for all phys at
   // D18F2xB98_dct[MaxDctMstr:0], and using the autoincrement feature).
   IDS_HDT_CONSOLE (MEM_FLOW, "\t\tStart writing PMU SRAM Message Block...\n");
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\t Offset   Value\n");
 
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, PMU_FIRMWARE_SRAM_START | DCT_ACCESS_WRITE | DCT_OFFSET_AUTO_INC_EN);
 
   for (i = 0; i < sizeof (PMU_SRAM_MSG_BLOCK_CZ) / sizeof (ImagePtr[0]); i++) {
     MemNSetBitFieldNb (NBPtr, RegDctAddlData, ImagePtr[i]);
-    IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\t   %02x     %04x\n", 2 * i, ImagePtr[i]);
+    IDS_HDT_CONSOLE (MEM_SETREG, "~F2_9C_%x = %04x\n", PMU_FIRMWARE_SRAM_START + 2 * i, ImagePtr[i]);
   }
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tEnd writing PMU SRAM Message Block\n");
-  MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
-  MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
 
-  return TRUE;
-}
-
-/* -----------------------------------------------------------------------------*/
-/**
- *
- *    Read the PMU SRAM Message Block from DMEM.
- *
- *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
- *
- *     @return  TRUE - Read the PMU SRAM Message Block successfully.
- *     @return  FALSE - Failed to read the PMU SRAM Message Block.
- */
-
-BOOLEAN
-MemNReadPmuSramMsgBlockCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  )
-{
-  UINT16 i;
-  UINT16 *ImagePtr;
-  UINT32 Address;
-
-  ImagePtr = (UINT16 *) NBPtr->PsPtr->PmuSramMsgBlockPtr;
-
-  // Only read current DCT
-  MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
-
-  MemNSetBitFieldNb (NBPtr, BFPmuReset, 0);
-
-  // Write the word to D18F2x[B,0]9C_x0005_[27FF:0800]_dct[3:0] (using the broadcast port for all phys at
-  // D18F2xB98_dct[MaxDctMstr:0], and using the autoincrement feature).
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tStart reading PMU SRAM Message Block...\n");
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\t Offset   Value\n");
-
-  Address = PMU_FIRMWARE_SRAM_START;
-
-  for (i = 0; i < sizeof (PMU_SRAM_MSG_BLOCK_CZ) / sizeof (ImagePtr[0]); i++) {
-    MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, Address);
-    ImagePtr[i] = (UINT16) (0xFFFF & MemNGetBitFieldNb (NBPtr, RegDctAddlData));
-    Address++;
-    IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\t   %02x     %04x\n", 2 * i, ImagePtr[i]);
-  }
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tEnd reading PMU SRAM Message Block\n");
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tEnd writing PMU SRAM Message Block!\n");
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
   MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
 
@@ -220,32 +183,24 @@ MemNInitPmuSramMsgBlockCZ (
   LOCATE_HEAP_PTR LocHeap;
   ALLOCATE_HEAP_PARAMS AllocHeapParams;
   PMU_SRAM_MSG_BLOCK_CZ *PmuSramMsgBlockPtr;
-  UINT8 Dct;
 
   LocHeap.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
-  //
-  // Allocate buffer for PMU SRAM Message Blocks on each channel
-  //
-  AllocHeapParams.RequestedBufferSize = sizeof (PMU_SRAM_MSG_BLOCK_CZ) * NBPtr->DctCount;
-  AllocHeapParams.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
-  AllocHeapParams.Persist = HEAP_LOCAL_CACHE;
+  if (HeapLocateBuffer (&LocHeap, &(NBPtr->MemPtr->StdHeader)) == AGESA_SUCCESS) {
+    PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) LocHeap.BufferPtr;
+  } else {
+    // Allocate temporary buffer for PMU SRAM Message Block
+    AllocHeapParams.RequestedBufferSize = sizeof (PMU_SRAM_MSG_BLOCK_CZ);
+    AllocHeapParams.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
+    AllocHeapParams.Persist = HEAP_LOCAL_CACHE;
 
-  if (HeapAllocateBuffer (&AllocHeapParams, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
-    // Could not allocate heap for PMU SRAM Message Block.
-    return FALSE;
-  }
-  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) AllocHeapParams.BufferPtr;
+    if (HeapAllocateBuffer (&AllocHeapParams, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
+      return FALSE; // Could not allocate heap for PMU SRAM Message BLock.
+    }
 
-  LibAmdMemFill ((VOID *)PmuSramMsgBlockPtr, 0, (UINTN) (sizeof (PMU_SRAM_MSG_BLOCK_CZ) * NBPtr->DctCount) , &(NBPtr->MemPtr->StdHeader));
-  //
-  // Store Pointers in PS Blocks
-  //
-  for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
-    MemNSwitchDCTNb  (NBPtr, Dct);
-    IDS_HDT_CONSOLE(MEM_FLOW, "\t\tDct %d Msg Block Buffer: %x\n", Dct, PmuSramMsgBlockPtr);
-    NBPtr->PsPtr->PmuSramMsgBlockPtr = PmuSramMsgBlockPtr;
-    PmuSramMsgBlockPtr += 1;
+    PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) AllocHeapParams.BufferPtr;
   }
+
+  LibAmdMemFill ((VOID *)PmuSramMsgBlockPtr, 0, (UINTN)sizeof (PMU_SRAM_MSG_BLOCK_CZ), &(NBPtr->MemPtr->StdHeader));
 
   return TRUE;
 }

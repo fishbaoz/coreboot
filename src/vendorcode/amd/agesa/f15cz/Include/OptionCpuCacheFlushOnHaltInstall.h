@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -79,7 +79,6 @@
  */
 #define OPTION_CPU_CACHE_FLUSH_ON_HALT_FEAT
 #define F15_CZ_CPU_CFOH_SUPPORT
-#define F15_ST_CPU_CFOH_SUPPORT
 
 #if OPTION_CPU_CFOH == TRUE
   #if (AGESA_ENTRY_INIT_POST == TRUE) || (AGESA_ENTRY_INIT_RESUME == TRUE)
@@ -94,13 +93,6 @@
           #undef F15_CZ_CPU_CFOH_SUPPORT
           #define F15_CZ_CPU_CFOH_SUPPORT {AMD_FAMILY_15_CZ, &F15CzCacheFlushOnHalt},
         #endif
-
-        #if OPTION_FAMILY15H_ST == TRUE
-          extern CONST CPU_CFOH_FAMILY_SERVICES ROMDATA F15StCacheFlushOnHalt;
-          #undef F15_ST_CPU_CFOH_SUPPORT
-          #define F15_ST_CPU_CFOH_SUPPORT {AMD_FAMILY_15_ST, &F15StCacheFlushOnHalt},
-        #endif
-
       #endif
     #endif
   #endif
@@ -108,7 +100,6 @@
 
 CONST CPU_SPECIFIC_SERVICES_XLAT ROMDATA CacheFlushOnHaltFamilyServiceArray[] =
 {
-  F15_ST_CPU_CFOH_SUPPORT
   F15_CZ_CPU_CFOH_SUPPORT
   {0, NULL}
 };

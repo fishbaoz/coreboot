@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps/CZ)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -114,7 +114,7 @@ RDATA_GROUP (G2_PEI)
 // Format :
 // DimmPerCh, DDRrate,   VDDIO,      Dimm0,   Dimm1,  Slow, AddrCmdTmg, CKE, CS/ODT, AddrCmd, CLK driver strength
 //
-STATIC CONST PSCFG_CADBUS_ENTRY ROMDATA CadBusCZUDIMM3[] = {
+STATIC CONST PSCFG_CADBUS_ENTRY ROMDATA CadBusCZUDIMM[] = {
   {1, DDR667 , V1_25 + V1_35 + V1_5, DIMM_SR, NP     , 0, 0x00000000, 0x1F, 0x1F, 0x1F, 0x1F},
   {1, DDR667 , V1_25 + V1_35 + V1_5, DIMM_DR, NP     , 0, 0x003B0000, 0x1F, 0x1F, 0x1F, 0x1F},
   {1, DDR800 , V1_25 + V1_35 + V1_5, DIMM_SR, NP     , 0, 0x00000000, 0x1F, 0x1F, 0x1F, 0x1F},
@@ -182,17 +182,17 @@ STATIC CONST PSCFG_CADBUS_ENTRY ROMDATA CadBusCZUDIMM3[] = {
   {2, DDR2133, V1_5                , DIMM_SR, NP     , 0, 0x003B3B3B, 0x1F, 0x1F, 0x1F, 0x1F},
   {2, DDR2133, V1_5                , DIMM_DR, NP     , 1, 0x00003B3B, 0x1F, 0x1F, 0x1F, 0x1F},
 };
-CONST PSC_TBL_ENTRY CZCadBusTblEnU3 = {
+CONST PSC_TBL_ENTRY CZCadBusTblEnU = {
    {PSCFG_CADBUS, UDIMM_TYPE, NOD_DONT_CARE, {AMD_FAMILY_15_CZ, AMD_F15_ALL}, PT_DONT_CARE, DDR3_TECHNOLOGY, MBL_DONT_CARE, MBP_DONT_CARE},
-   sizeof (CadBusCZUDIMM3) / sizeof (PSCFG_CADBUS_ENTRY),
-   (VOID *)&CadBusCZUDIMM3
+   sizeof (CadBusCZUDIMM) / sizeof (PSCFG_CADBUS_ENTRY),
+   (VOID *)&CadBusCZUDIMM
 };
 
 // Data Bus configuration for SO-DIMM
 // Format :
 // DimmPerCh, DDRrate,   VDDIO,      Dimm0,   Dimm1,   RttNom,  RttWr,   DQ,   DQS,  ODT strength
 //
-STATIC CONST PSCFG_DATABUS_ENTRY_D3 ROMDATA DataBusCZUDIMM3[] = {
+STATIC CONST PSCFG_DATABUS_ENTRY ROMDATA DataBusCZUDIMM[] = {
   {1, DDR667 , V1_25 + V1_35 + V1_5, DIMM_SR, NP     , ODT_120, ODT_OFF, 0x70, 0x70, 0x01},
   {1, DDR667 , V1_25 + V1_35 + V1_5, DIMM_DR, NP     , ODT_120, ODT_OFF, 0x70, 0x70, 0x01},
   {1, DDR800 , V1_25 + V1_35 + V1_5, DIMM_SR, NP     , ODT_120, ODT_OFF, 0x70, 0x70, 0x01},
@@ -260,8 +260,8 @@ STATIC CONST PSCFG_DATABUS_ENTRY_D3 ROMDATA DataBusCZUDIMM3[] = {
   {2, DDR2133, V1_5                , DIMM_SR, NP     , ODT_40 , ODT_OFF, 0x70, 0x70, 0x0C},
   {2, DDR2133, V1_5                , DIMM_DR, NP     , ODT_40 , ODT_OFF, 0x70, 0x70, 0x0C},
 };
-CONST PSC_TBL_ENTRY CZDataBusTblEnU3 = {
+CONST PSC_TBL_ENTRY CZDataBusTblEnU = {
    {PSCFG_DATABUS, UDIMM_TYPE, NOD_DONT_CARE, {AMD_FAMILY_15_CZ, AMD_F15_ALL}, PT_DONT_CARE, DDR3_TECHNOLOGY, MBL_DONT_CARE, MBP_DONT_CARE},
-   sizeof (DataBusCZUDIMM3) / sizeof (PSCFG_DATABUS_ENTRY_D3),
-   (VOID *)&DataBusCZUDIMM3
+   sizeof (DataBusCZUDIMM) / sizeof (PSCFG_DATABUS_ENTRY),
+   (VOID *)&DataBusCZUDIMM
 };

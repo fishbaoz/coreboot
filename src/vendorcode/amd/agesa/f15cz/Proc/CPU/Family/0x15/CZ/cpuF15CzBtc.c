@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 314991 $   @e \$Date: 2015-03-18 13:05:34 +0800 (Wed, 18 Mar 2015) $
+ * @e \$Revision: 314610 $   @e \$Date: 2015-03-11 23:48:42 -0500 (Wed, 11 Mar 2015) $
  *
  */
 /*
@@ -296,7 +296,7 @@ cpuF15CzBTCLaunchAps (
 //      F15TransitionPstate (NULL, (UINT8) 0, (BOOLEAN) TRUE, &ApExeParams->StdHeader);
 //      return;
 //    }
-    F15TransitionPstate (NULL, (UINT8) 0, (BOOLEAN) FALSE, &ApExeParams->StdHeader);
+    F15TransitionPstate (NULL, (UINT8) 0, (BOOLEAN) TRUE, &ApExeParams->StdHeader);
     return;
   }
 }
@@ -413,7 +413,7 @@ cpuF15CzBtcBefore (
   F15TransitionPstate (NULL, TargetPstate, (BOOLEAN) FALSE, StdHeader);
 
   ApParams.StdHeader = *StdHeader;
-  ApParams.FunctionNumber = ((UINT32) RUN_BTC_ON_ALL_APS + (UINT32) AMD_FAMILY_15_CZ);
+  ApParams.FunctionNumber = ((UINT32) RUN_BTC_ON_ALL_APS);
   ApParams.RelatedDataBlock = NULL;
   ApParams.RelatedBlockLength = 0;
   ApParams.AllAPs = TRUE;
@@ -440,7 +440,7 @@ cpuF15CzBtcAfter (
   InterlockedIncrement ((UINT32 *)&OkToStartTest);
 #endif
 
-  F15TransitionPstate (NULL, (UINT8) 0, (BOOLEAN) FALSE, StdHeader);
+  F15TransitionPstate (NULL, (UINT8) 0, (BOOLEAN) TRUE, StdHeader);
 
   IdleAllAps (StdHeader);
 }

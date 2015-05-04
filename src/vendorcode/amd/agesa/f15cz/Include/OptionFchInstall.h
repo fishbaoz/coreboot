@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Core
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*********************************************************************************
 ;
@@ -263,10 +263,33 @@
   #define DFLT_RTC_WORKAROUND       FALSE
   #define DFLT_USB_PORT_WORKAROUND  FALSE
   // Following are determined by silicon characteristics
-  #if (OPTION_FAMILY15H_CZ == TRUE)
+  #if (OPTION_FAMILY14H_FCH == TRUE)
+    //#define FCH_NO_GEC_SUPPORT        TRUE
+  #elif (OPTION_FAMILY15H_KV == TRUE)
     #define FCH_NO_GEC_SUPPORT        TRUE
-  #elif (OPTION_FAMILY15H_ST == TRUE)
+  #elif (OPTION_FAMILY15H_CZ == TRUE)
     #define FCH_NO_GEC_SUPPORT        TRUE
+  #elif (OPTION_FAMILY15H_TN == TRUE)
+    //#define FCH_NO_GEC_SUPPORT        TRUE
+  #elif (OPTION_FAMILY14H_ON == TRUE)
+    #define FCH_NO_XHCI_SUPPORT        TRUE
+  #elif (OPTION_FAMILY16H_MODEL_0x == TRUE)
+    #define FCH_NO_GPP_SUPPORT        TRUE
+    #define FCH_NO_PCIB_SUPPORT       TRUE
+    #define FCH_NO_PCIE_SUPPORT       TRUE
+    #undef DFLT_RTC_WORKAROUND
+    #define DFLT_RTC_WORKAROUND       TRUE
+    #undef DFLT_USB_PORT_WORKAROUND
+    #define DFLT_USB_PORT_WORKAROUND  TRUE
+  #elif (OPTION_FAMILY16H_MODEL_3x == TRUE)
+    #define FCH_NO_GPP_SUPPORT        TRUE
+    #define FCH_NO_PCIB_SUPPORT       TRUE
+    #define FCH_NO_PCIE_SUPPORT       TRUE
+    #define FCH_NO_IDE_SUPPORT        TRUE
+//    #define FCH_NO_IR_SUPPORT         TRUE
+    #define FCH_NO_OHCI_SUPPORT       TRUE
+    #undef  FP_FCH_INIT_LATE
+    #define FP_FCH_INIT_LATE          &CommonFchInitStub
   #else
     #error FCH_SUPPORT: No chip type selected.
   #endif
@@ -276,7 +299,7 @@
   #endif
 
   #if (OPTION_FP4_SOCKET_SUPPORT == TRUE)
-    #if ((OPTION_FAMILY15H_CZ == TRUE) || (OPTION_FAMILY15H_ST == TRUE))
+    #if (OPTION_FAMILY15H_CZ == TRUE)
       #define FCH_NO_GEC_SUPPORT        TRUE
       #define FCH_NO_OHCI_SUPPORT       TRUE
       #define FCH_NO_GPP_SUPPORT        TRUE

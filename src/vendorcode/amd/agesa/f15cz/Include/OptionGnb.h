@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  OPTION
- * @e \$Revision: 312286 $   @e \$Date: 2015-02-04 14:11:11 +0800 (Wed, 04 Feb 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*****************************************************************************
@@ -223,74 +223,6 @@ typedef struct {
   BOOLEAN                                      CfgBTCEnable;                       ///< Boot Time Calibration Eanble
   BOOLEAN                                      CfgPSIEnable;                       ///< PSI Eanble
 } GNB_BUILD_OPTIONS_CZ;
-
-/// SMU Features Bit Map
-typedef union {
-  struct {                                                              ///<
-    UINT32                                                     BAPM:1 ; ///<
-    UINT32                                          POWER_ESTIMATOR:1 ; ///<
-    UINT32                                       THERMAL_CONTROLLER:1 ; ///<
-    UINT32                                             TDC_LIMITING:1 ; ///<
-    UINT32                                         PKG_PWR_LIMITING:1 ; ///<
-    UINT32                                                 LCLK_DPM:1 ; ///<
-    UINT32                                       VOLTAGE_CONTROLLER:1 ; ///<
-    UINT32                                                    GEAPM:1 ; ///<
-    UINT32                                                      BBB:1 ; ///<
-    UINT32                                                      IBS:1 ; ///<
-    UINT32                                           PSTATE_ARBITER:1 ; ///<
-    UINT32                                                   NB_DPM:1 ; ///<
-    UINT32                                          LCLK_DEEP_SLEEP:1 ; ///<
-    UINT32                                                      ULV:1 ; ///<
-    UINT32                                                GFX_CU_PG:1 ; ///<
-    UINT32                                                     AVFS:1 ; ///<
-    UINT32                                                  UVD_DPM:1 ; ///<
-    UINT32                                                     CHTC:1 ; ///<
-    UINT32                                                  ACP_DPM:1 ; ///<
-    UINT32                                                 SCLK_DPM:1 ; ///<
-    UINT32                                           PRE_FETCH_DATA:1 ; ///<
-    UINT32                                               DFS_BYPASS:1 ; ///<
-    UINT32                                                  VCE_DPM:1 ; ///<
-    UINT32                                                   VDDGFX:1 ; ///<
-    UINT32                                                    LEAPM:1 ; ///<
-    UINT32                                               CONN_STDBY:1 ; ///<
-    UINT32                                           PORT80_MONITOR:1 ; ///<
-    UINT32                                               PSPCLK_DPM:1 ; ///<
-    UINT32                                                    STAPM:1 ; ///<
-    UINT32                                              DETERMINISM:1 ; ///<
-    UINT32                                            CPU_STRETCHER:1 ; ///<
-    UINT32                                           SCLK_STRETCHER:1 ; ///<
-  } Field;                                                              ///<
-  UINT32 Value;                                                         ///<
-} SMU_SERVICE_ENABLEMENT_BITMAP_ST;
-
-/// The Build time options configuration for ST-specific options
-typedef struct {
-  GNB_BUILD_OPTIONS_COMMON                     GnbCommonOptions;               ///< GNB Options for multi-family libraries
-//  BOOLEAN                                    CfgNbdpmEnable;                     ///< NBDPM refers to dynamically reprogramming High and Low NB Pstates under different system usage scenarios
-  BOOLEAN                                      CfgChubClockGating;                 ///< CHUB Clock Gating
-  BOOLEAN                                      CfgAcpClockGating;                  ///< ACP Clock Gating
-  SMU_SERVICE_ENABLEMENT_BITMAP_ST             CfgSMUServiceEnablementBitMap;      ///< Bit map for SMU service enablement (1 means the service is enabled)
-  BOOLEAN                                      CfgAxgDisable;                      ///< Config the AXG enable/disable(include SPG and ACGAZ)
-  UINT8                                        CfgPcieHwInitPwerGating;            ///< PCIE HW initiated power gating
-  BOOLEAN                                      CfgAriSupport;                      ///< PCIe ARI support enable
-  BOOLEAN                                      CfgSpgClockGatingEnable;            ///< Control SPG clock gating
-  BOOLEAN                                      CfgAcgAzClockGatingEnable;          ///< Control ACG AZ clock gating
-  BOOLEAN                                      CfgIommuL1MemPowerGating;           ///< Control IOMMU L1 memory power gating
-  BOOLEAN                                      CfgIommuL2MemPowerGating;           ///< Control IOMMU L2A L2B memory power gating
-  UINT8                                        CfgOrbTxMemPowerGating;             ///< Control ORB TX memory power gating
-  UINT8                                        CfgOrbRxMemPowerGating;             ///< Control ORB RX memory power gating
-  BOOLEAN                                      CfgSstunlClkGating;                 ///< Control IOMMU L1 SSTUNL clock gating
-  BOOLEAN                                      CfgParityErrorConfiguration;        ///< Internal Parity Error Configuration
-  UINT8                                        CfgSpgMemPowerGatingEnable;         ///< Control SPG memory power gating
-  UINT8                                        CfgAcgAzMemPowerGatingEnable;       ///< Control ACG memory power gating
-  UINT8                                        CfgBifMemPowerGatingEnable;         ///< Control BIF memory power gating
-  BOOLEAN                                      CfgSDMAMemPowerGatingEnable;        ///< SDMA Memory Power Gating
-  UINT8                                        CfgPcieTxpwrInOff;                  ///< TxPwr mapping for TxPhyCmd
-  UINT8                                        CfgPcieRxpwrInOff;                  ///< RxPwr mapping for RxPhyCmd
-  UINT32                                       CfgSmuDeterminismAmbient;           ///< SMU Determisnism Ambient Param
-  BOOLEAN                                      CfgBTCEnable;                       ///< Boot Time Calibration Eanble
-  BOOLEAN                                      CfgPSIEnable;                       ///< PSI Eanble
-} GNB_BUILD_OPTIONS_ST;
 
 /*----------------------------------------------------------------------------------------
  *                        F U N C T I O N    P R O T O T Y P E

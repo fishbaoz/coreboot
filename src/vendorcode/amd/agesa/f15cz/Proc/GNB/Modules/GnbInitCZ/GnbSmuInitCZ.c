@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 313265 $   @e \$Date: 2015-02-19 07:38:39 +0800 (Thu, 19 Feb 2015) $
+ * @e \$Revision: 313269 $   @e \$Date: 2015-02-18 18:19:37 -0600 (Wed, 18 Feb 2015) $
  *
  */
 /*
@@ -153,7 +153,7 @@ GnbSmuMidInterfaceCZ (
  * @retval     UINT32
  */
 UINT32
-GnbGetTdpCZ (
+GnbGetTdp (
   IN      UINT32  Value
   )
 {
@@ -226,7 +226,7 @@ GnbSmuLoadSystemConfigParamsCZ (
     );
 
   IDS_HDT_CONSOLE (GNB_TRACE, "SMU with return value floating TDP formatt %x\n", SmuArg[0]);
-  ReturnValue = GnbGetTdpCZ (SmuArg[0]);
+  ReturnValue = GnbGetTdp (SmuArg[0]);
   IDS_HDT_CONSOLE (GNB_TRACE, "GnbSmuLoadSystemConfigParamsCZ Exit with TDP in milli-watt %d\n", ReturnValue);
 
   return ReturnValue;
@@ -506,7 +506,7 @@ GnbSmuPrepareMemoryParamsCZ (
   // Get VDDIO
   // Take the voltage in volt
   VddIo = 1.5;
-  switch (MemDataPtr->ParameterListPtr->DDRVoltage) {
+  switch (MemDataPtr->ParameterListPtr->DDR3Voltage) {
   case VOLT1_5:
     VddIo = 1.5;
     break;
@@ -515,9 +515,6 @@ GnbSmuPrepareMemoryParamsCZ (
     break;
   case VOLT1_25:
     VddIo = 1.25;
-    break;
-  case VOLT1_2:
-    VddIo = 1.2;
     break;
   default:
     ASSERT (FALSE);

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -664,9 +664,9 @@ MemPSODoActionGetFreqLimit (
       //
       // Select speed based on current voltage
       //
-      if (NBPtr->RefPtr->DDRVoltage == VOLT1_5) {
+      if (NBPtr->RefPtr->DDR3Voltage == VOLT1_5) {
         SpeedLimit = *(UINT16*) &(Buffer[3]);
-      } else if (NBPtr->RefPtr->DDRVoltage == VOLT1_25) {
+      } else if (NBPtr->RefPtr->DDR3Voltage == VOLT1_25) {
         SpeedLimit = *(UINT16*) &(Buffer[7]);
       } else {
         SpeedLimit = *(UINT16*) &(Buffer[5]);

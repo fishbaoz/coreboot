@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 314764 $   @e \$Date: 2015-03-16 14:59:11 +0800 (Mon, 16 Mar 2015) $
+ * @e \$Revision: 314894 $   @e \$Date: 2015-03-17 00:57:51 -0500 (Tue, 17 Mar 2015) $
  *
  */
 /*
@@ -71,7 +71,6 @@
 #include "FchPlatform.h"
 #include "GeneralServices.h"
 #include "KernFch.h"
-#include "Ids.h"
 #include "Filecode.h"
 #define FILECODE PROC_FCH_KERN_KERNSATA_KERNSATARESETSERVICE_FILECODE
 
@@ -148,9 +147,7 @@ FchInitResetSataProgram (
   RwPci (((SATA_BUS_DEV_FUN << 16) + FCH_SATA_REG84), AccessWidth32, 0xFFFFFFFF, 0x04, StdHeader);
   if ( LocalCfgPtr->FchReset.SataEnable ) {
     RwPci (((SATA_BUS_DEV_FUN << 16) + FCH_SATA_REG4C), AccessWidth32, ~ (UINT32) (BIT2), (UINT32) BIT2, StdHeader);
-    IEM_SKIP_CODE (IEM_WAIT) {
-      FchStall (100, StdHeader);
-    }
+    FchStall (100, StdHeader);
     RwPci (((SATA_BUS_DEV_FUN << 16) + FCH_SATA_REG4C), AccessWidth32, ~ (UINT32) (BIT2), 0, StdHeader);
 
     RwPci (((SATA_BUS_DEV_FUN << 16) + FCH_SATA_REG4C), AccessWidth32, 0xFDFFFCFE, 0x02001003, StdHeader); //ENH456821

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -755,7 +755,7 @@ MemNSaveHobDataUnb (
             *(UINT32 *) Value = ((UMA_INFO *) LocateBufferPtr.BufferPtr)->UmaAttributes;
           }
         } else if (Address.Address.Function == S3_VDDIO) {
-          *(UINT8 *) Value = (UINT8) NBPtr->RefPtr->DDRVoltage;
+          *(UINT8 *) Value = (UINT8) NBPtr->RefPtr->DDR3Voltage;
         } else {
           ASSERT (FALSE);
         }
@@ -827,7 +827,7 @@ MemNRestoreHobDataUnb (
             ((UMA_INFO *) AllocHeapParams.BufferPtr)->MemClock = MemNS3GetMemClkFreqUnb (NBPtr, (UINT8) NBPtr->GetBitField (NBPtr, BFMemClkFreq));
           }
         } else if (Address.Address.Function == S3_VDDIO) {
-          NBPtr->RefPtr->DDRVoltage = (DIMM_VOLTAGE) *(UINT8 *) Value;
+          NBPtr->RefPtr->DDR3Voltage = (DIMM_VOLTAGE) *(UINT8 *) Value;
         } else {
           ASSERT (FALSE);
         }

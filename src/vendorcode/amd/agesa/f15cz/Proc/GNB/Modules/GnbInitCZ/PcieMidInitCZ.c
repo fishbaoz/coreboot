@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 312286 $   @e \$Date: 2015-02-04 14:11:11 +0800 (Wed, 04 Feb 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -171,7 +171,7 @@ PcieMidAspmInitCallbackCZ (
   IN       PCIe_PLATFORM_CONFIG  *Pcie
   );
 
-GNB_PARITY_TABLE GnbParityTableCZ[] = {
+GNB_PARITY_TABLE GnbParityTable[] = {
     { PARITY_ECC_GROUP,0,0, Enable_ECC_Error_Detection_and_Correction },
     { PARITY_ECC_GROUP,0,1, Enable_ECC_Error_Detection_and_Correction },
     { PARITY_ECC_GROUP,0,2, Enable_ECC_Error_Detection_and_Correction },
@@ -786,7 +786,7 @@ GnbParityErrorConfig (
     return;
   }
 
-  for ( i = 0; i < sizeof (GnbParityTableCZ) / sizeof (GNB_PARITY_TABLE); i++) {
+  for ( i = 0; i < sizeof (GnbParityTable) / sizeof (GNB_PARITY_TABLE); i++) {
     D0F0xC4_x1.Value = 0x0;
     GnbRegisterWriteCZ (GnbHandle, D0F0xC4_x1_TYPE, D0F0xC4_x1_ADDRESS, &D0F0xC4_x1.Value, AccessWidth32, StdHeader);
 
@@ -794,12 +794,12 @@ GnbParityErrorConfig (
       GnbRegisterReadCZ (GnbHandle, D0F0xC4_x1_TYPE, D0F0xC4_x1_ADDRESS, &D0F0xC4_x1.Value, 0, StdHeader);
     } while (D0F0xC4_x1.Field.ParityErrGenInjectAllow != 0x1);
 
-    D0F0xC4_x1.Field.ParityErrGenGroupSel = GnbParityTableCZ[i].GroupID;
-    if (GnbParityTableCZ[i].GroupType != PARITY_ECC_GROUP) {
-      D0F0xC4_x1.Field.ParityErrGenGroupTypeSel = GnbParityTableCZ[i].GroupType;
+    D0F0xC4_x1.Field.ParityErrGenGroupSel = GnbParityTable[i].GroupID;
+    if (GnbParityTable[i].GroupType != PARITY_ECC_GROUP) {
+      D0F0xC4_x1.Field.ParityErrGenGroupTypeSel = GnbParityTable[i].GroupType;
     }
-    D0F0xC4_x1.Field.ParityErrGenIdSel = GnbParityTableCZ[i].StructureID;
-    D0F0xC4_x1.Field.ParityErrGenCmd = GnbParityTableCZ[i].ErrGenCmd;
+    D0F0xC4_x1.Field.ParityErrGenIdSel = GnbParityTable[i].StructureID;
+    D0F0xC4_x1.Field.ParityErrGenCmd = GnbParityTable[i].ErrGenCmd;
 
     GnbRegisterWriteCZ (GnbHandle, D0F0xC4_x1_TYPE, D0F0xC4_x1_ADDRESS, &D0F0xC4_x1.Value, AccessWidth32, StdHeader);
   }

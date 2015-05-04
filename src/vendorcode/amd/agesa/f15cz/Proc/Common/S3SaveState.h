@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: Common
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -85,7 +85,6 @@ typedef enum {
   GnbSmuServiceRequestV4S3Script_ID,           ///< SMU service request
   GnbLibStallS3Script_ID,                      ///< Stall request
   PcieLateRestoreCZS3Script_ID,                ///< GNB PCIe late restore CZ
-  PcieLateRestoreSTS3Script_ID,                ///< GNB PCIe late restore ST
   GnbSmuServiceRequestV8S3Script_ID,           ///< SMU service request
   GnbSmuWaitForCacLockS3Script_ID              ///< SMU wait for Cac Lock
 } S3_DISPATCH_FUNCTION_ID;

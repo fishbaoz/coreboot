@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Interface
- * @e \$Revision: 315527 $   @e \$Date: 2015-03-30 08:46:01 +0800 (Mon, 30 Mar 2015) $
+ * @e \$Revision: 313738 $   @e \$Date: 2015-02-26 01:57:11 -0600 (Thu, 26 Feb 2015) $
  *
  */
 /*****************************************************************************
@@ -924,7 +924,7 @@ RestorePciDevice (
       // Pointer to the saved data buffer still needs to be adjusted as data will be saved regardless of boot mode
       if (RegisterHdr->RegisterList[i].Type.SpecialCaseFlag == 0) {
         ASSERT ((AndMask != 0) && (RegSizeInBytes != 0) && (AccessWidth != 0));
-        if (AndMask != 0xFF && AndMask != 0xFFFF && AndMask != 0xFFFFFFFF) {
+        if (AndMask != (UINT32) ((1 << (RegSizeInBytes * 8)) - 1)) {
           // Spare the read if all bits need to be restored
           LibAmdPciRead (AccessWidth, PciAddress, &RegValueRead, StdHeader);
           RegValueWrite |= RegValueRead & (~AndMask);
@@ -933,7 +933,7 @@ RestorePciDevice (
       } else {
         SpecialCaseIndex = RegisterHdr->RegisterList[i].Type.SpecialCaseIndex;
         if (AndMask != 0) {
-          if (AndMask != 0xFF && AndMask != 0xFFFF && AndMask != 0xFFFFFFFF) {
+          if (AndMask != (UINT32) ((1 << (RegSizeInBytes * 8)) - 1)) {
             // Spare the read if all bits need to be restored
             RegisterHdr->SpecialCases[SpecialCaseIndex].Save (AccessWidth,
                                                  PciAddress,
@@ -1048,7 +1048,7 @@ RestoreConditionalPciDevice (
         // Do not restore the register if not in the right boot mode
         // Pointer to the saved data buffer still needs to be adjusted as data will be saved regardless of boot mode
         if (RegisterHdr->RegisterList[i].Type.SpecialCaseFlag == 0) {
-          if (AndMask != 0xFF && AndMask != 0xFFFF && AndMask != 0xFFFFFFFF) {
+          if (AndMask != (UINT32) ((1 << (RegSizeInBytes * 8)) - 1)) {
             // Spare the read if all bits need to be restored
             LibAmdPciRead (AccessWidth, PciAddress, &RegValueRead, StdHeader);
             RegValueWrite |= RegValueRead & (~AndMask);
@@ -1057,7 +1057,7 @@ RestoreConditionalPciDevice (
         } else {
           SpecialCaseIndex = RegisterHdr->RegisterList[i].Type.SpecialCaseIndex;
           if (AndMask != 0) {
-            if (AndMask != 0xFF && AndMask != 0xFFFF && AndMask != 0xFFFFFFFF) {
+            if (AndMask != (UINT32) ((1 << (RegSizeInBytes * 8)) - 1)) {
               // Spare the read if all bits need to be restored
               RegisterHdr->SpecialCases[SpecialCaseIndex].Save (AccessWidth,
                                                  PciAddress,

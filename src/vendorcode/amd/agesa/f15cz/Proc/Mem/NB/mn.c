@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/)
- * @e \$Revision: 314626 $ @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+ * @e \$Revision: 314282 $ @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
  *
  **/
 /*****************************************************************************
@@ -199,10 +199,6 @@ MemNCmnInitDefaultsNb (
   //
   RefPtr->EnablePowerDown = UserOptions.CfgMemoryPowerDown;
   //
-  // Dram Mac Default
-  //
-  RefPtr->DramMacDefault = UserOptions.CfgMemoryMacDefault;
-  //
   // Dram Extended Temperature Range
   //
   RefPtr->EnableExtendedTemperatureRange = UserOptions.CfgMemoryExtendedTemperatureRange;
@@ -232,23 +228,12 @@ MemNCmnInitDefaultsNb (
   // Preferred technology type that AGESA will enable when it is mixed with other technology types.
   //
   RefPtr->DimmTypeUsedInMixedConfig = UserOptions.CfgDimmTypeUsedInMixedConfig;
-  RefPtr->DimmTypeDddr3Capable = UserOptions.CfgDimmTypeDdr3Capable;
-  RefPtr->DimmTypeDddr4Capable = UserOptions.CfgDimmTypeDdr4Capable;
 
   // 2x DRAM refresh rate.
   RefPtr->DramDoubleRefreshRate = UserOptions.CfgDramDoubleRefreshRateEn;
 
-  //
-  // Check if there is a Vddio Override through BLDCFG
-  //
-  if (UserOptions.CfgCustomVddioVoltage <= VOLT1_2) {
-    RefPtr->CustomVddioSupport = UserOptions.CfgCustomVddioVoltage;
-    IDS_HDT_CONSOLE (MEM_FLOW, "\nCustom VDDIO Change is initiated through BLDCFG\n");
-    IDS_HDT_CONSOLE (MEM_FLOW, "\tWARNING!!! If CustomVddio voltage request is more than supported DDR Voltage, it could potentially damage the DIMMs\n");
-  } else {
-    ASSERT (UserOptions.CfgCustomVddioVoltage <= VOLT1_2);
-    RefPtr->CustomVddioSupport = VOLT_INITIAL;
-  }
+  // CustomVddioSupport
+  RefPtr->CustomVddioSupport = UserOptions.CfgCustomVddioVoltage;
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -270,7 +255,6 @@ MemNInitNBDataNb (
 
   NBPtr->DctCachePtr = NBPtr->DctCache;
   NBPtr->PsPtr = NBPtr->PSBlock;
-  NBPtr->PlatSpecFlowPtr = NULL;
 
   BytePtr = (UINT8 *) (NBPtr->DctCache);
   for (i = 0; i < sizeof (NBPtr->DctCache); i++) {

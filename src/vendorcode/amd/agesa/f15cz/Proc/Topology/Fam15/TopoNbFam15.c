@@ -7,7 +7,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Topology
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -124,7 +124,7 @@ CONST NORTHBRIDGE ROMDATA TopoFam15Nb =
   (PF_GET_QUADCORE_COMPUTE_UNITS)CommonReturnZero8,
   TRUE,
   TRUE,
-  (AMD_FAMILY_CZ | AMD_FAMILY_ST),
+  AMD_FAMILY_CZ,
   (PF_MAKE_KEY)CommonReturnZero64,
   NULL
 };

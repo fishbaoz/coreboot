@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -179,21 +179,6 @@ memDefRetSuccess ( VOID )
 {
   return AGESA_SUCCESS;
 }
-
-/* -----------------------------------------------------------------------------*/
-/**
- *
- *      This function is used to initialize functions which must be overriden
- *        With platform - specific code. It will always assert.
- *
- */
-VOID
-memDefaultUndefined ( VOID )
-{
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nRequired NB Function Undefined.\n");
-  ASSERT (FALSE)
-}
-
 
 /* -----------------------------------------------------------------------------*/
 /**

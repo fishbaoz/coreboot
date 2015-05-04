@@ -482,22 +482,20 @@ Method (SU2P, 0, Serialized)  //Shutdow Usb2 PLL
 
 Method(U2D3,0, Serialized)
 {
-  if (LEqual(E_PS, 3)) {  //fix Linux wakeup
-    store (zero, RQTY)
-    store (one, RQ18)
+  store (zero, RQTY)
+  store (one, RQ18)
 
-    store (U2SR, Local0)
-    while (Local0) {store (U2SR, Local0)}
+  store (U2SR, Local0)
+  while (Local0) {store (U2SR, Local0)}
 
-    store (zero, U2PD)
+  store (zero, U2PD)
 
-    store (U2DS, Local0)
-    while (LNotEqual(Local0,zero)) {store (U2DS, Local0)}
+  store (U2DS, Local0)
+  while (LNotEqual(Local0,zero)) {store (U2DS, Local0)}
 
-    store (0x03,U2TD)
+  store (0x03,U2TD)
 
-    if (LEqual(U3TD, 0x03)) {SU2P ()}
-  }
+  if (LEqual(U3TD, 0x03)) {SU2P ()}
 }
 
 Method(U2D0,0, Serialized)
@@ -517,10 +515,6 @@ Method(U2D0,0, Serialized)
   store (U2SR, Local0)
   while (LNot(Local0)) {store (U2SR, Local0)}
   store (EHID, \EH2C)
-
-  store (EH10, EHBA)
-  store (one, \EHME)
-  store (SSIM, \ESIM)
 }
 
 Method(LXFW,3, Serialized)  //Load Xhci FirmWare
@@ -671,16 +665,9 @@ Field(FRTP, AnyAcc, NoLock, Preserve)
   FW03, 32, 
   SDS0, 8, //SataDevSlpPort0S5Pin
   SDS1, 8, //SataDevSlpPort1S5Pin
-  Offset (0x20),
-  SD10, 32,
-  EH10, 32,
-  XH10, 32,
-  STBA, 32,
 }
 
 Method(FINI) { 
-  if (LNotEqual(SDBA, 0xFFFFFFFF)) {store(SDBA, SD10)}
-  if (LNotEqual(EHBA, 0xFFFFFFFF)) {store(EHBA, EH10)}
 //  breakpoint
 //  SRAD (5, 200)
   store (\SD2C, SDID)
@@ -690,18 +677,9 @@ Method(FINI) {
 
   store (LDQ0, SNHG)
   store (FC18, SF18)
-  store (ESIM, SSIM)
 
   If (LGreaterEqual(TPOS, 0x60)) {
   } Else {
-    store (zero, S03D)
-    store (zero, XHCD)
-    store (zero, EHCD)
-    store (zero, ST_D)
-    store (zero, SD_D)
-  }
-
-  If (LEqual(TPOS, 0x80)) {  //ENH463628: Linux
     store (zero, S03D)
     store (zero, XHCD)
     store (zero, EHCD)
@@ -735,8 +713,6 @@ OperationRegion(FCFG, SystemMemory, PEBA, 0x01000000)
 Field(FCFG, DwordAcc, NoLock, Preserve)
 {
   //XHCI
-  Offset(0x00080010),
-    XHBA, 32,
   Offset(0x0008002C),
     XH2C, 32,
 
@@ -781,11 +757,6 @@ Field(FCFG, DwordAcc, NoLock, Preserve)
     ST8C, 8,
 
 //EHCI
-  Offset(0x00090004),
-    , 1,
-    EHME, 1,
-  Offset(0x00090010),
-    EHBA, 32,
   Offset(0x0009002C),
     EH2C, 32,
 
@@ -825,15 +796,7 @@ Field(FCFG, DwordAcc, NoLock, Preserve)
     FC18, 1,   //Force1.8v
 }
 
-OperationRegion(EHMC, SystemMemory, EHBA, 0x100)
-Field(EHMC, DwordAcc, NoLock, Preserve)
-{
-  Offset(0xB0),       //0xB0
-    , 5,
-    ESIM, 1,   //DataBabbleCoversionDisable
-}
-
-OperationRegion(SDMC, SystemMemory, SD10, 0x100)
+OperationRegion(SDMC, SystemMemory, SDBA, 0x100)
 Field(SDMC, AnyAcc, NoLock, Preserve)
 {
   Offset(0x24),       //0x28
@@ -937,7 +900,6 @@ CreateDWordField(SVBF, 0x704, SDID) // SD SSID
 CreateDWordField(SVBF, 0x730, EHID) // EHCI SSID
 CreateDWordField(SVBF, 0x734, XHID) // XHCI SSID
 CreateDWordField(SVBF, 0x738, STID) // SATA SSID
-CreateDWordField(SVBF, 0x7B0, SSIM) // EHCI SIM BIT
 
 //SATA
 CreateDWordField(SVBF, 0x810, S810)
@@ -1157,11 +1119,6 @@ Scope(\_SB.PCI0.XHC0)
       else { Return(0)}
     }
 
-    Method(_S3W,0)
-    {
-      Return(4)
-    }
-
     Method(_S4W,0)
     {
       Return(4)
@@ -1200,11 +1157,6 @@ Scope(\_SB.PCI0.EHC1)
     {
       if (LEqual(\EHCD, one)) {Return(4) }
       else { Return(0)}
-    }
-
-    Method(_S3W,0)
-    {
-      Return(4)
     }
 
     Method(_S4W,0)
@@ -1265,7 +1217,7 @@ Scope(\_SB.PCI0.SDIO)
         Store(0xF5D0, P80H)
         if (LNotEqual(SDTD, 0x00)) {
           FDDC (24, 0) 
-          sleep (500)
+          sleep (100)
           if (LEqual(S03D, 0)) {  //Do for Non S0I3.
             \_SB.SDRT () // platform should provide reset devices behind SD controllers
           }

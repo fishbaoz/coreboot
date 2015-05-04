@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -79,9 +79,6 @@
  */
 #define OPTION_CPU_BTC_FEAT
 #define F15_CZ_BTC_SUPPORT
-#define F15_ST_BTC_SUPPORT
-#define CPU_RUN_BOOT_TIME_CALIBRATION_CZ
-#define CPU_RUN_BOOT_TIME_CALIBRATION_ST
 #define CPU_RUN_BOOT_TIME_CALIBRATION
 
 #if OPTION_BTC == TRUE
@@ -89,36 +86,19 @@
     #ifdef OPTION_FAMILY15H
       #if OPTION_FAMILY15H_CZ == TRUE
         extern VOID cpuF15CzBTCLaunchAps ();
-        #undef CPU_RUN_BOOT_TIME_CALIBRATION_CZ
-        #define CPU_RUN_BOOT_TIME_CALIBRATION_CZ {((UINT32) RUN_BTC_ON_ALL_APS + (UINT32) AMD_FAMILY_15_CZ), (IMAGE_ENTRY) cpuF15CzBTCLaunchAps},
+        #undef CPU_RUN_BOOT_TIME_CALIBRATION
+        #define CPU_RUN_BOOT_TIME_CALIBRATION {(UINT32) RUN_BTC_ON_ALL_APS, (IMAGE_ENTRY) cpuF15CzBTCLaunchAps},
 
         extern CONST BTC_FAMILY_SERVICES ROMDATA F15CzBtcSupport;
         #undef F15_CZ_BTC_SUPPORT
         #define F15_CZ_BTC_SUPPORT {AMD_FAMILY_15_CZ, &F15CzBtcSupport},
       #endif
-
-      #if OPTION_FAMILY15H_ST == TRUE
-        extern VOID cpuF15StBTCLaunchAps ();
-        #undef CPU_RUN_BOOT_TIME_CALIBRATION_ST
-        #define CPU_RUN_BOOT_TIME_CALIBRATION_ST {((UINT32) RUN_BTC_ON_ALL_APS + (UINT32) AMD_FAMILY_15_ST), (IMAGE_ENTRY) cpuF15StBTCLaunchAps},
-
-        extern CONST BTC_FAMILY_SERVICES ROMDATA F15StBtcSupport;
-        #undef F15_ST_BTC_SUPPORT
-        #define F15_ST_BTC_SUPPORT {AMD_FAMILY_15_ST, &F15StBtcSupport},
-      #endif
-
     #endif
-
-    #undef CPU_RUN_BOOT_TIME_CALIBRATION
-    #define CPU_RUN_BOOT_TIME_CALIBRATION CPU_RUN_BOOT_TIME_CALIBRATION_CZ \
-                                          CPU_RUN_BOOT_TIME_CALIBRATION_ST
   #endif
 #endif
 
-
 CONST CPU_SPECIFIC_SERVICES_XLAT ROMDATA BtcFamilyServiceArray[] =
 {
-  F15_ST_BTC_SUPPORT
   F15_CZ_BTC_SUPPORT
   {0, NULL}
 };

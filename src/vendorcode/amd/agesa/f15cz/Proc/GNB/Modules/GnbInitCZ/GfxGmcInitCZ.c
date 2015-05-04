@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 313706 $   @e \$Date: 2015-02-26 11:00:43 +0800 (Thu, 26 Feb 2015) $
+ * @e \$Revision: 314031 $   @e \$Date: 2015-03-03 06:06:56 -0600 (Tue, 03 Mar 2015) $
  *
  */
 /*
@@ -192,7 +192,7 @@ GfxGmcSecureGarlicAccessCZ (
  *
  */
 VOID
-GfxGmcPerformanceProgrammingDDR4CZ (
+GfxGmcPerformanceProgrammingDDR4 (
   IN      GNB_HANDLE            *GnbHandle,
   IN      GFX_PLATFORM_CONFIG   *Gfx
   )
@@ -343,7 +343,7 @@ GfxGmcInitCZ (
     );
 
   //2.5.1 Additional Performance Programming for DDR4
-  GfxGmcPerformanceProgrammingDDR4CZ (GnbHandle, Gfx);
+  GfxGmcPerformanceProgrammingDDR4 (GnbHandle, Gfx);
 
   //4. Power management
   //4.1 Enabling clock-gating

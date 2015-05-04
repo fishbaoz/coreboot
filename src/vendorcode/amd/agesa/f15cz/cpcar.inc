@@ -62,22 +62,13 @@
     .LIST
     .mmx
 
-STACK_SIZE_256K         EQU 40000h      ; 256KB
-STACK_SIZE_192K         EQU 30000h      ; 192KB
-STACK_SIZE_128K         EQU 20000h      ; 128KB
-STACK_SIZE_64K          EQU 10000h      ; 64KB
-STACK_SIZE_32K          EQU 8000h       ; 32KB
-STACK_SIZE_16K          EQU 4000h       ; 16KB
-STACK_SIZE_4K           EQU 1000h       ; 4KB
-
-CORE0_STACK_SIZE        EQU STACK_SIZE_16K   ; 16KB for primary cores
-CORE1_STACK_SIZE        EQU STACK_SIZE_4K    ; 4KB for each AP cores
-
-BSP_STACK_BASE_ADDR     EQU 30000h      ; Base address for core 0 stack
+BSP_STACK_BASE_ADDR     EQU 30000h      ; Base address for primary cores stack
+BSP_STACK_SIZE_64K      EQU 10000h      ; 64KB for BSP core
+BSP_STACK_SIZE_32K      EQU 8000h       ; 32KB for BSP core
 CORE0_STACK_BASE_ADDR   EQU 80000h      ; Base address for primary cores stack
-;CORE1_STACK_BASE_ADDR = BSP_STACK_BASE_ADDR + BSP_STACK_SIZE
-
-BSP_CACHE_TYPE_POSITION EQU 3
+CORE0_STACK_SIZE        EQU 4000h       ; 16KB for primary cores
+CORE1_STACK_BASE_ADDR   EQU 40000h      ; Base address for AP cores
+CORE1_STACK_SIZE        EQU 1000h       ; 4KB for each AP cores
 
 ;============================================================================
 ;

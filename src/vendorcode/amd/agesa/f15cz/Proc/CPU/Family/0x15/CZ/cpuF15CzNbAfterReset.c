@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -179,23 +179,23 @@ F15CzPmNbAfterReset (
       // 7. Write 0 to D18F5x170[SwNbPstateLoDis, NbPstateDisOnP0, NbPstateThreshold].
       // 8. Wait for D18F5x174[CurNbPstate] = D18F5x170[NbPstateLo] and D18F5x174[CurNbFid,
       //    CurNbDid] = [NbFid, NbDid] from D18F5x1[6C:60] indexed by D18F5x170[NbPstateLo].
-      F15CzTransitionToNbLow (StdHeader);
+      TransitionToNbLow (StdHeader);
 
       // 9. Set D18F5x170[SwNbPstateLoDis] = 1.
       // 10. Wait for D18F5x174[CurNbPstate] = D18F5x170[NbPstateHi] and D18F5x174[CurNbFid,
       //     CurNbDid] = [NbFid, NbDid] from D18F5x1[6C:60] indexed by D18F5x170[NbPstateHi].
       //     Go to step 15.
-      F15CzTransitionToNbHigh (StdHeader);
+      TransitionToNbHigh (StdHeader);
     } else {
       // 11. Set D18F5x170[SwNbPstateLoDis] = 1.
       // 12. Wait for D18F5x174[CurNbPstate] = D18F5x170[NbPstateHi] and D18F5x174[CurNbFid,
       //     CurNbDid] = [NbFid, NbDid] from D18F5x1[6C:60] indexed by D18F5x170[NbPstateHi].
-      F15CzTransitionToNbHigh (StdHeader);
+      TransitionToNbHigh (StdHeader);
 
       // 13. Write 0 to D18F5x170[SwNbPstateLoDis, NbPstateDisOnP0, NbPstateThreshold].
       // 14. Wait for D18F5x174[CurNbPstate] = D18F5x170[NbPstateLo] and D18F5x174[CurNbFid,
       //     CurNbDid] = [NbFid, NbDid] from D18F5x1[6C:60] indexed by D18F5x170[NbPstateLo].
-      F15CzTransitionToNbLow (StdHeader);
+      TransitionToNbLow (StdHeader);
     }
 
     // 15. Set D18F5x170[SwNbPstateLoDis]=Temp1, D18F5x170[NbPstateDisOnP0]=Temp2, D18F5x170[NbP-

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Include
- * @e \$Revision: 314626 $   @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+ * @e \$Revision: 314282 $   @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
  */
 /*****************************************************************************
  *
@@ -830,18 +830,6 @@ typedef enum {
   GnbAcpPinNotConfigured                                   ///< Not valid value, used to verify input
 } GNB_ACP_AZ_I2SBUS_PIN;
 
-/// Alternative DRAM MAC
-typedef enum {
-  MAC_UNTESTEDMAC,                               ///< Assign 0 to Untested MAC
-  MAC_700k,                                      ///< Assign 1 to 700k
-  MAC_600k,                                      ///< Assign 2 to 600k
-  MAC_500k,                                      ///< Assign 3 to 500k
-  MAC_400k,                                      ///< Assign 4 to 400k
-  MAC_300k,                                      ///< Assign 5 to 300k
-  MAC_200k,                                      ///< Assign 6 to 200k
-  MAC_UNRESTRICTEDMAC = 8,                       ///< Assign 8 to Unrestricted MAC
-} DRAM_MAXIMUM_ACTIVATE_COUNT;
-
 // Macro for statically initializing various structures
 #define  PCIE_ENGINE_DATA_INITIALIZER(mType, mStartLane, mEndLane) {mType, mStartLane, mEndLane}
 #define  PCIE_PORT_DATA_INITIALIZER(mPortPresent, mChannelType, mDevAddress, mHotplug, mMaxLinkSpeed, mMaxLinkCap, mAspm, mResetId) \
@@ -1216,21 +1204,17 @@ typedef enum {
   DDR2_TECHNOLOGY,        ///< DDR2 technology
   DDR3_TECHNOLOGY,        ///< DDR3 technology
   GDDR5_TECHNOLOGY,       ///< GDDR5 technology
-  DDR4_TECHNOLOGY,        ///< DDR4 technology
   UNSUPPORTED_TECHNOLOGY, ///< Unsupported technology
 } TECHNOLOGY_TYPE;
 
 /// Low voltage support
 typedef enum {
-  VOLT_INITIAL,                     ///< Initial value for VDDIO
-  VOLT1_5,                          ///< 1.5 Volt
-  VOLT1_35,                         ///< 1.35 Volt
-  VOLT1_25,                         ///< 1.25 Volt
-  VOLT_DDR4_RANGE_START,            ///< Start of DDR4 Voltage Range
-  VOLT1_2 = VOLT_DDR4_RANGE_START,  ///< 1.2 Volt
-  VOLT_TBD1,                        ///< TBD1 Voltage
-  VOLT_TBD2,                        ///< TBD2 Voltage
-  VOLT_UNSUPPORTED = 0xFF           ///< No common voltage found
+  VOLT_INITIAL,              ///< Initial value for VDDIO
+  VOLT1_5,                   ///< 1.5 Volt
+  VOLT1_35,                  ///< 1.35 Volt
+  VOLT1_25,                  ///< 1.25 Volt
+  AGESA_DEFAULTS,            ///< AGESA determines the voltage setting
+  VOLT_UNSUPPORTED = 0xFF    ///< No common voltage found
 } DIMM_VOLTAGE;
 
 /// AMP voltage support
@@ -1401,11 +1385,19 @@ typedef enum {
 ///
 /// SPD Data for each DIMM.
 ///
+typedef struct _SPD_DEF_STRUCT_DX {
+  IN BOOLEAN SpdValid; ///< Indicates that the SPD is valid
+  IN BOOLEAN DimmPresent; ///< Indicates that the DIMM is present and Data is valid
+  IN UINT32 Adderess;  ///< SMBus Address
+  IN UINT8 Data[512]; ///< Buffer for 256 Bytes of SPD data from DIMM
+} SPD_DEF_STRUCT_DX;
+
+//-----------------------------------------------------------------------------
+///
+/// SPD Data for each DIMM.
+///
 typedef struct _SPD_DEF_STRUCT {
   IN BOOLEAN DimmPresent;  ///< Indicates that the DIMM is present and Data is valid
-  IN UINT8   PageAddress;  ///< Indicates the 256 Byte EE Page the data belongs to
-                           ///<      0 = Lower Page
-                           ///<      1 = Upper Page (DDR4 Only)
   IN UINT8 Data[256];      ///< Buffer for 256 Bytes of SPD data from DIMM
 } SPD_DEF_STRUCT;
 
@@ -1590,8 +1582,11 @@ typedef struct _CH_DEF_STRUCT {
 
   OUT UINT8   DimmSRTPresent;     ///< For each bit n 0..3, 1 = DIMM n supports Extended Temperature Range where 4..7 are reserved
   OUT UINT8   DimmASRPresent;     ///< For each bit n 0..3, 1 = DIMM n supports Auto Self Refresh where 4..7 are reserved
-  OUT UINT8   DimmThermSensorPresent;  ///< For each bit n 0..3, 1 = DIMM n has an On Dimm Thermal Sensor where 4..7 are reserved
+
+  OUT BOOLEAN   ExtendTmp;        ///<  If extended temperature is supported on all dimms on a channel.
+
   OUT UINT8   MaxVref;            ///<  Maximum Vref Value for channel
+
   OUT UINT8   Reserved[100];      ///< Reserved
 } CH_DEF_STRUCT;
 
@@ -1625,9 +1620,6 @@ typedef struct _CH_TIMING_STRUCT {
   OUT UINT16  DIMMTrrd;           ///< Minimax Trrd*40 (ns) of DIMMs
   OUT UINT16  DIMMTwtr;           ///< Minimax Twtr*40 (ns) of DIMMs
   OUT UINT16  DIMMTfaw;           ///< Minimax Tfaw*40 (ns) of DIMMs
-  OUT UINT16  DIMMTrrdL;          ///< Minimax TrrdL*40 (ns) of DIMMs
-  OUT UINT16  DIMMTwtrL;          ///< Minimax TtwrL*40 (ns) of DIMMs
-  OUT UINT16  DIMMTccdL;          ///< Minimax TccdL*40 (ns) of DIMMs
   OUT UINT16  TargetSpeed;        ///< Target DRAM bus speed in MHz
   OUT UINT16  Speed;              ///< DRAM bus speed in MHz
                                   ///<  400 (MHz)
@@ -1646,9 +1638,6 @@ typedef struct _CH_TIMING_STRUCT {
   OUT UINT8   Trrd;               ///< DCT Trrd (busclocks)
   OUT UINT8   Twtr;               ///< DCT Twtr (busclocks)
   OUT UINT8   Tfaw;               ///< DCT Tfaw (busclocks)
-  OUT UINT8   TrrdL;              ///< DCT TrrdL (busclocks)
-  OUT UINT8   TwtrL;              ///< DCT TwtrL (busclocks)
-  OUT UINT8   TccdL;              ///< DCT TccdL (busclocks)
   OUT UINT16  Trfc0;              ///< DCT Logical DIMM0 Trfc (in ns)
   OUT UINT16  Trfc1;              ///< DCT Logical DIMM1 Trfc (in ns)
   OUT UINT16  Trfc2;              ///< DCT Logical DIMM2 Trfc (in ns)
@@ -1815,7 +1804,7 @@ typedef struct _MEM_PARAMETER_STRUCT {
                        ///<
   OUT UINT32 SysLimit; ///< Limit[47:16] (system address).
                        ///<
-  OUT DIMM_VOLTAGE DDRVoltage;   ///< Find support voltage and send back to platform BIOS for DDR3 or DDR4.
+  OUT DIMM_VOLTAGE DDR3Voltage; ///< Find support voltage and send back to platform BIOS.
                         ///<
   OUT VDDP_VDDR_VOLTAGE VddpVddrVoltage; ///< For a given configuration, request is made to change the VDDP/VDDR
                                         ///< voltage in platform BIOS via AgesaHookBeforeDramInit callout and
@@ -1905,12 +1894,7 @@ typedef struct _MEM_PARAMETER_STRUCT {
                               ///<   - TRUE =enable
                              ///<
                              ///< @BldCfgItem{BLDCFG_MEMORY_POWER_DOWN}
-
-  // Dram Mac Default
-
-  IN  UINT8 DramMacDefault;  ///< Default Maximum Activate Count
-                             ///<
-                             ///< @BldCfgItem{BLDCFG_MEMORY_ALTERNATIVE_MAX_ACTIVATE_COUNT}
+                             // Online Spare
 
   // Dram Extended Temperature Range
 
@@ -1920,8 +1904,6 @@ typedef struct _MEM_PARAMETER_STRUCT {
                              ///<
                              ///< @BldCfgItem{BLDCFG_MEMORY_EXTENDED_TEMPERATURE_RANGE}
                              // Extended temperature range
-
-  // Online Spare
 
   IN  BOOLEAN EnableOnLineSpareCtl; ///< Chip Select Spare Control bit 0.
                               ///<  - FALSE = disable Spare (default)
@@ -2099,12 +2081,13 @@ typedef struct _MEM_PARAMETER_STRUCT {
                                              ///<   TRUE = Enable, platfrom BIOS requests support for DDR4
                                              ///<   FALSE = Disable, platform BIOS requests no DDR4 support
                                              ///< @BldCfgItem{BLDCFG_DIMM_TYPE_DDR4_CAPABLE}
-  IN     BOOLEAN DimmTypeDddr3Capable;       ///< Indicates that the system is DDR3 Capable
+  IN     BOOLEAN DimmTypeDddr3Capable;        ///< Indicates that the system is DDR3 Capable
                                              ///<   TRUE = Enable, platfrom BIOS requests support for DDR3
                                              ///<   FALSE = Disable, platform BIOS requests no DDR3 support
                                              ///< @BldCfgItem{BLDCFG_DIMM_TYPE_DDR3_CAPABLE}
   IN     UINT16 CustomVddioSupport;          ///< CustomVddioSupport
                                              ///< @BldCfgItem{BLDCFG_CUSTOM_VDDIO_VOLTAGE}
+
 } MEM_PARAMETER_STRUCT;
 
 
@@ -2275,8 +2258,6 @@ typedef union {
 #define MEM_ERROR_ODT_TRI_MAP_NOT_FOUND  0x040B3500ul          ///< No ODT tristate map is found
 #define MEM_ERROR_CS_TRI_MAP_NOT_FOUND  0x040C3500ul           ///< No CS tristate map is found
 #define MEM_ERROR_TRAINING_SEED_NOT_FOUND  0x040D3500ul        ///< No training seed is found
-#define MEM_ERROR_CAD_BUS_TMG_NOT_FOUND  0x040E3500ul          ///< No CAD Bus Timing Entries found
-#define MEM_ERROR_DATA_BUS_CFG_NOT_FOUND  0x040F3500ul         ///< No Data Bus Config Entries found
 #define MEM_ERROR_NO_2D_WRDAT_WINDOW 0x040D0400ul              ///< No 2D WrDat Window
 #define MEM_ERROR_NO_2D_WRDAT_HEIGHT 0x040E0400ul              ///< No 2D WrDat Height
 #define MEM_ERROR_2D_WRDAT_ERROR  0x040F0400ul                 ///< 2d WrDat Error
@@ -2334,7 +2315,7 @@ typedef union {
 
 // AGESA_CRITICAL Memory Errors
 #define MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR3    0x04091F00ul    ///< Heap allocation error for DMI table for DDR3
-#define MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR4    0x040A1F00ul    ///< Heap allocation error for DMI table for DDR4
+#define MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR2    0x040A1F00ul    ///< Heap allocation error for DMI table for DDR2
 #define MEM_ERROR_UNSUPPORTED_DIMM_CONFIG             0x04011400ul    ///< Dimm population is not supported
 #define MEM_ERROR_HEAP_ALLOCATE_FOR_CRAT_MEM_AFFINITY 0x040D1F00ul    ///< Heap allocation error for CRAT memory affinity info
 
@@ -2912,7 +2893,6 @@ typedef struct {
   IN BOOLEAN CfgMemoryEnableNodeInterleaving;     ///< Memory Enable Node Interleaving.
   IN BOOLEAN CfgMemoryChannelInterleaving;        ///< Memory Channel Interleaving.
   IN BOOLEAN CfgMemoryPowerDown;                  ///< Memory Power Down.
-  IN UINT8   CfgMemoryMacDefault;                 ///< Memory DRAM MAC Default
   IN BOOLEAN CfgMemoryExtendedTemperatureRange;   ///< Memory Extended Temperature Range
   IN UINT32  CfgPowerDownMode;                    ///< Power Down Mode.
   IN BOOLEAN CfgOnlineSpare;                      ///< Online Spare.
@@ -3013,10 +2993,6 @@ typedef struct {
                                                       ///< @BldCfgItem{BLDCFG_DP_FIXED_VOLT_SWING}
   IN TECHNOLOGY_TYPE CfgDimmTypeUsedInMixedConfig; ///< Select the preferred technology type that AGESA will enable
                                                    ///< when it is mixed with other technology types.
-  IN BOOLEAN CfgDimmTypeDdr4Capable;              ///< Select DDR4 as technology type that AGESA will enable
-                                                  ///< @BldCfgItem{BLDCFG_DIMM_TYPE_DDR4_CAPABLE}
-  IN BOOLEAN CfgDimmTypeDdr3Capable;              ///< Select DDR3 as technology type that AGESA will enable
-                                                  ///< @BldCfgItem{BLDCFG_DIMM_TYPE_DDR3_CAPABLE}
   IN BOOLEAN CfgHybridBoostEnable;                ///< HyBrid Boost support
                                                   ///< @BldCfgItem{BLDCFG_HYBRID_BOOST_ENABLE}
   IN UINT64  CfgGnbIoapicAddress;                 ///< GNB IOAPIC Base Address(NULL if platform configured)
@@ -3280,12 +3256,7 @@ typedef enum {
   Ddr2MemType,                                          ///< Assign 19 to DDR2
   Ddr2FbdimmMemType,                                    ///< Assign 20 to DDR2 FB-DIMM
   Ddr3MemType = 0x18,                                   ///< Assign 24 to DDR3
-  Fbd2MemType,                                          ///< Assign 25 to FBD2
-  Ddr4MemType,                                          ///< Assign 26 to DDR4
-  LpDdrMemType,                                         ///< Assign 27 to LPDDR
-  LpDdr2MemType,                                        ///< Assign 28 to LPDDR2
-  LpDdr3MemType,                                        ///< Assign 29 to LPDDR3
-  LpDdr4MemType,                                        ///< Assign 30 to LPDDR4
+  Fbd2MemType                                           ///< Assign 25 to FBD2
 } DMI_T17_MEMORY_TYPE;
 
 /// DMI Type 17 offset 13h - Type Detail
@@ -3305,7 +3276,7 @@ typedef struct {
   OUT UINT16                    NonVolatile:1;          ///< Non-volatile
   OUT UINT16                    Registered:1;           ///< Registered (Buffered)
   OUT UINT16                    Unbuffered:1;           ///< Unbuffered (Unregistered)
-  OUT UINT16                    LRDIMM:1;               ///< LRDIMM
+  OUT UINT16                    Reserved2:1;            ///< Reserved
 } DMI_T17_TYPE_DETAIL;
 
 /// DMI Type 17 - Memory Device

@@ -7,7 +7,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 315149 $   @e \$Date: 2015-03-20 15:05:00 +0800 (Fri, 20 Mar 2015) $
+ * @e \$Revision: 313726 $   @e \$Date: 2015-02-26 01:13:27 -0600 (Thu, 26 Feb 2015) $
  *
  */
 /*
@@ -125,10 +125,9 @@ STATIC CONST UINT8 ROMDATA F15CzPrimaryCoresRegistersBeforeApLaunch[] =
   MAKE_PCI_ENTRY (MAKE_SBDFO (0, 0, 24, FUNC_0, 0x68), 0x004E8810, 0x006E8C1F),
 
 // MSR_NB_CFG (0xC001001F)
-// bit [57]      DisFastTprWr = 1
 // bits[54]      InitApicIdCpuIdLo = 1
 // bits[18]      DisCstateBoostBlockPstateUp = 1
-  MAKE_MSR_ENTRY (MSR_NB_CFG, 0x0240000000040000, 0x0240000000040000),
+  MAKE_MSR_ENTRY (MSR_NB_CFG, 0x0040000000040000, 0x0040000000040000),
 
 // D18F0x84 - Link Control
 // bits[12]       IsocEn             = 0x1

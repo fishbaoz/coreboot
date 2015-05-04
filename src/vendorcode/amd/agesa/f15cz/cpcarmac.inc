@@ -1,7 +1,7 @@
 ;*****************************************************************************
 ; AMD Generic Encapsulated Software Architecture
 ;
-;  Workfile: cpcarmac.inc    $Revision:: 316114  $    $Date:: 2015-04-03 13:32:30 +0800 (Fri, 03 Apr 2015) $
+;  Workfile: cpcarmac.inc    $Revision:: 309090  $    $Date:: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
 ;
 ; Description: Code to setup and break down cache-as-stack
 ;
@@ -97,14 +97,10 @@
 ;       eax, ecx, edx, edi, esi, ds, es, ss, esp
 ;       mmx0, mmx1, mmx5
 ;   Input Parameter:
-;       STACK_AT_TOP
+;       STACK_AT_TOP (default)
 ;              Indicate stack is on the top of cache as RAM.
-;       STACK_AT_BOTTOM (default)
+;       STACK_AT_BOTTOM
 ;              Indicate stack is at the bottom of cache as RAM.
-;
-;       BspStackSize (default: STACK_SIZE_64K)
-;              could be STACK_SIZE_64K, STACK_SIZE_128K, STACK_SIZE_192K, STACK_SIZE_256K
-;              N O T E: BspStackSize must be the same as the one in PspPlatformDriver.c (RESUME_BSP_STACK_SIZE)
 ;
 ;   Description:
 ; Fixed MTRR address allocation to cores:
@@ -153,12 +149,8 @@
 ;     | >|MA|IN| B|IO|S |RA|NG|E |  |  |  |  |  |  |< | >|EX|TE|ND|ED| B|IO|S |ZO|NE|  |  |  |  |  |< |
 ;     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ;======================================================================
-AMD_ENABLE_STACK MACRO StackPosition, BspStackSize
+AMD_ENABLE_STACK MACRO StackPosition
   local AmdEnableStackExit
-
-  IF ((BspStackSize NE STACK_SIZE_64K) AND (BspStackSize NE STACK_SIZE_128K) AND (BspStackSize NE STACK_SIZE_192K) AND (BspStackSize NE STACK_SIZE_256K))
-      jmp $ ; We only support 64K, 128K, 192K, 256K, please check input parameter
-  ENDIF
 
 ;   Note that SS:ESP will be default stack.  Note that this stack
 ;   routine will not be used after memory has been initialized.  Because
@@ -291,8 +283,12 @@ AMD_ENABLE_STACK MACRO StackPosition, BspStackSize
     mov     eax, esi                    ; Load Flags, node, core
     .if (al == 0)                       ; Is a core 0?
         .if (ah == 0)                   ; Is Node 0? (BSP)
-            ; Is BSP, assign a 64K stack
-            mov     ebx, ((AMD_MTRR_FIX64k_00000 SHL 16) + (BSP_CACHE_TYPE_POSITION SHL 8) + (BspStackSize  / 1000h))
+            ; Is BSP, assign a 64K stack; for F10/F12, force to a 32K stack
+            mov     ebx, ((AMD_MTRR_FIX64k_00000 SHL 16) + (3 SHL 8) + (BSP_STACK_SIZE_64K  / 1000h))
+            bt      eax, FLAG_FORCE_32K_STACK
+            .if (carry?)
+                mov     ebx, ((AMD_MTRR_FIX64k_00000 SHL 16) + (3 SHL 8) + (BSP_STACK_SIZE_32K  / 1000h))
+            .endif
             mov     ebp, BSP_STACK_BASE_ADDR
         .else   ; node 1 to 7, core0
             ; Is a Core0 of secondary node, assign 16K stacks
@@ -320,72 +316,31 @@ AMD_ENABLE_STACK MACRO StackPosition, BspStackSize
         shl     ebx, 16                 ;
         mov     bh, al                  ; Slot# = (CoreIndex / 16) + 4;
         shr     bh, 4                   ;
-        add     bh, (BspStackSize / 10000h + BSP_CACHE_TYPE_POSITION)
+        add     bh, 4                   ;
         mov     bl, (CORE1_STACK_SIZE / 1000h)
 
         mul     bl                      ; Base = ( (CoreIndex * Size) ...
         movzx   eax, ax                 ;
         shl     eax, 12                 ; Expand back to full byte count (* 4K)
-        add     eax, (BSP_STACK_BASE_ADDR + BspStackSize) ;     ...   + Base_Addr);
+        add     eax, CORE1_STACK_BASE_ADDR ;     ...   + Base_Addr);
         mov     ebp, eax
     .endif
 
     ; Now set the MTRR. Add this to already existing settings (don't clear any MTRR)
-    ; Set lower 32 bits of MTRR
     mov     edi, WB_DRAM_TYPE           ; Load Cache type in 1st slot
-    mov     cl, bl                      ; block size in #64K blocks
-    shr     cl, 4
-    .if (cl > 4)
-        jmp $                           ; We do NOT support size larger than 256K
-    .endif
-    .while (cl > 1)
-        shl edi, 8
-        or  edi, WB_DRAM_TYPE
-        dec cl
-    .endw
     mov     cl, bh                      ; ShiftCount =  ((slot#   ...
-    .if (cl > 3)
-        mov edi, 0
-    .else
-        shl cl,  3                      ;   ...  * 8);
-        shl edi, cl                     ; Cache type is now in correct position
-    .endif
+    and     cl, 03h                     ;   ...  % 4)             ...
+    shl     cl, 3                       ;   ...  * 8);
+    shl     edi, cl                     ; Cache type is now in correct position
     ror     ebx, 16                     ; Get the MTRR address
     movzx   ecx, bx                     ;
     rol     ebx, 16                     ; Put slot# & size back in BX
     _RDMSR                              ; Read-modify-write the MSR
-    or      eax, edi                    ;
-
-    ; Set upper 32 bits of MTRR
-    mov     cl, bl
-    add     cl, 0Fh
-    shr     cl, 4
-    dec     cl
-    add     cl, bh
-    mov     ch, cl
-    .if (cl >= 4)
-        .if (bh >= 4)
-            mov cl, bh
-        .else
-            mov cl, 4
-        .endif
-        sub ch, cl
-        sub cl,  4
-        mov edi, WB_DRAM_TYPE
-        .while (ch >= 1)
-           shl edi, 8
-           or  edi, WB_DRAM_TYPE
-           dec ch
-        .endw
-        shl cl, 3
-        shl edi, cl
-    .else
-        mov edi, 0
-    .endif
-    ror     ebx, 16                     ; Get the MTRR address
-    movzx   ecx, bx                     ;
-    rol     ebx, 16                     ; Put slot# & size back in BX
-    or      edx, edi                    ;
+    .if (bh < 4)                        ; Is value in lower or upper half of MSR?
+        or      eax, edi                ;
+    .else                               ;
+        or      edx, edi                ;
+    .endif                              ;
     _WRMSR                              ;
 
     ; Enable MTRR defaults as UC type

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -70,7 +70,6 @@
 */
 #include "FchPlatform.h"
 #include "GeneralServices.h"
-#include "Ids.h"
 #include "KernFch.h"
 #define FILECODE PROC_FCH_KERN_KERNAZALIA_KERNAZALIAMID_FILECODE
 
@@ -126,9 +125,6 @@ FchInitMidAzalia (
   BAR0 = 0;
 
   if ( LocalCfgPtr->Azalia.AzaliaEnable == AzDisable ) {
-    PutEventLog (AGESA_WARNING,
-                 KERN_EVENT_HD_AUDIO_DISABLE,
-                 0, 0, 0, 0, StdHeader);
     return;
   } else {
     RwPci ((AZALIA_BUS_DEV_FUN << 16) + FCH_AZ_REG04, AccessWidth8, ~(UINT32) BIT1, BIT1, StdHeader);
@@ -152,35 +148,35 @@ FchInitMidAzalia (
     // Get SDIN Configuration
     //
     if ( LocalCfgPtr->Azalia.AzaliaConfig.AzaliaSdin0 == 2 ) {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_068_AZ_SDIN0_GPIO26 + 2, AccessWidth8, 0x0F, 0x20);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1A_AZ_SDIN0_EGPIO26, AccessWidth8, 0, 0x00);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG167, AccessWidth8, 0, 0x3E);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG167, AccessWidth8, 0, 0x00);
     } else {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_068_AZ_SDIN0_GPIO26 + 2, AccessWidth8, 0x0F, 0x90);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1A_AZ_SDIN0_EGPIO26, AccessWidth8, 0, 0x01);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG167, AccessWidth8, 0, 0x0);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG167, AccessWidth8, 0, 0x01);
     }
 
     if ( LocalCfgPtr->Azalia.AzaliaConfig.AzaliaSdin1 == 2 ) {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_06C_AZ_SDIN1_GPIO27 + 2, AccessWidth8, 0x0F, 0x20);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1B_AZ_SDIN1_EGPIO27, AccessWidth8, 0, 0x00);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG168, AccessWidth8, 0, 0x3E);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG168, AccessWidth8, 0, 0x00);
     } else {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_06C_AZ_SDIN1_GPIO27 + 2, AccessWidth8, 0x0F, 0x90);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1B_AZ_SDIN1_EGPIO27, AccessWidth8, 0, 0x01);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG168, AccessWidth8, 0, 0x0);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG168, AccessWidth8, 0, 0x01);
     }
 
     if ( LocalCfgPtr->Azalia.AzaliaConfig.AzaliaSdin2 == 2 ) {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_070_AZ_SDIN2_GPIO28 + 2, AccessWidth8, 0x0F, 0x20);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1C_AZ_SDIN2_EGPIO28, AccessWidth8, 0, 0x00);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG169, AccessWidth8, 0, 0x3E);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG169, AccessWidth8, 0, 0x00);
     } else {
-      RwMem (ACPI_MMIO_BASE + GPIO_BANK0_BASE + FCH_GPIO_070_AZ_SDIN2_GPIO28 + 2, AccessWidth8, 0x0F, 0x90);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1C_AZ_SDIN2_EGPIO28, AccessWidth8, 0, 0x01);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG169, AccessWidth8, 0, 0x0);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG169, AccessWidth8, 0, 0x01);
     }
 
     if ( LocalCfgPtr->Azalia.AzaliaConfig.AzaliaSdin3 == 2 ) {
-      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_074_AZ_SDIN3_GPIO29, AccessWidth8 + 2, 0x0F, 0x20);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1D_AZ_SDIN3_EGPIO29, AccessWidth8, 0, 0x00);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG170, AccessWidth8, 0, 0x3E);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG170, AccessWidth8, 0, 0x00);
     } else {
-      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_074_AZ_SDIN3_GPIO29, AccessWidth8 + 2, 0x0F, 0x90);
-      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_IOMUX_1D_AZ_SDIN3_EGPIO29, AccessWidth8, 0, 0x01);
+      RwMem (ACPI_MMIO_BASE + GPIO_BASE + FCH_GPIO_REG170, AccessWidth8, 0, 0x0);
+      RwMem (ACPI_MMIO_BASE + IOMUX_BASE + FCH_GPIO_REG170, AccessWidth8, 0, 0x01);
     }
 
     Index = 11;
@@ -188,23 +184,16 @@ FchInitMidAzalia (
       ReadMem ( BAR0 + FCH_AZ_BAR_REG08, AccessWidth8, &AzaliaTempVariableByte);
       AzaliaTempVariableByte |= BIT0;
       WriteMem (BAR0 + FCH_AZ_BAR_REG08, AccessWidth8, &AzaliaTempVariableByte);
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (1000, StdHeader);
-      }
+      FchStall (1000, StdHeader);
       ReadMem (BAR0 + FCH_AZ_BAR_REG08, AccessWidth8, &AzaliaTempVariableByte);
       Index--;
     }  while ((! (AzaliaTempVariableByte & BIT0)) && (Index > 0) );
 
     if ( Index == 0 ) {
-      PutEventLog (AGESA_ERROR,
-                   KERN_ERROR_HD_AUDIO_RESET,
-                   0, 0, 0, 0, StdHeader);
       return;
     }
 
-    IEM_SKIP_CODE (IEM_WAIT) {
-      FchStall (1000, StdHeader);
-    }
+    FchStall (1000, StdHeader);
     ReadMem ( BAR0 + FCH_AZ_BAR_REG0E, AccessWidth16, &AzaliaTempVariableWord);
     if ( AzaliaTempVariableWord & 0x0F ) {
 
@@ -235,9 +224,6 @@ FchInitMidAzalia (
       //
       //No Azalia codec found
       //
-      PutEventLog (AGESA_ERROR,
-                   KERN_ERROR_HD_AUDIO_CODEC,
-                   0, 0, 0, 0, StdHeader);
       if ( LocalCfgPtr->Azalia.AzaliaEnable != AzEnable ) {
         EnableAzalia = FALSE;                      ///set flag to disable Azalia
       }
@@ -441,25 +427,6 @@ CODEC_TBL_LIST AzaliaCodecTableList[] =
  * @param[in] ChannelNum         Channel Number.
  *
  */
-UINT32 verb[] = {0x00172051, 0x001721C7, 0x00172222, 0x00172310,	\
-                                    0x0017FF00, 0x0017FF00, 0x0017FF00, 0x0017FF00, \
-                                    0x01271C50, 0x01271D01, 0x01271EA6, 0x01271FB7, \
-                                    0x01371C00, 0x01371D00, 0x01371E00, 0x01371F40, \
-                                    0x01471C10, 0x01471D01, 0x01471E17, 0x01471F90, \
-                                    0x01771CF0, 0x01771D11, 0x01771E11, 0x01771F41, \
-                                    0x01871C40, 0x01871D10, 0x01871EA1, 0x01871F04, \
-                                    0x01971CF0, 0x01971D11, 0x01971E11, 0x01971F41, \
-                                    0x01A71CF0, 0x01A71D11, 0x01A71E11, 0x01A71F41, \
-                                    0x01D71C2D, 0x01D71DA5, 0x01D71E67, 0x01D71F40, \
-                                    0x01E71C30, 0x01E71D11, 0x01E71E45, 0x01E71F04, \
-                                    0x02171C20, 0x02171D10, 0x02171E21, 0x02171F04, \
-                                    0x02050071, 0x02040014, 0x02050010, 0x02040C22, \
-                                    0x0205004F, 0x0204B029, 0x0205002B, 0x02040C50, \
-                                    0x0205002D, 0x02041020, 0x02050020, 0x02040000, \
-                                    0x02050019, 0x02040817, 0x02050035, 0x02041AA5, \
-		 0x02050063, 0x02042906, 0x02050063, 0x02042906,
-		 0xFFFFFFFF
-};
 VOID
 ConfigureAzaliaPinCmd (
   IN  FCH_DATA_BLOCK     *FchDataPtr,
@@ -481,11 +448,8 @@ ConfigureAzaliaPinCmd (
   AzaliaTempVariable |= ChannelNumDword;
 
   WriteMem (BAR0 + FCH_AZ_BAR_REG60, AccessWidth32, &AzaliaTempVariable);
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (600, FchDataPtr->StdHeader);
-  }
+  FchStall (600, FchDataPtr->StdHeader);
   ReadMem (BAR0 + FCH_AZ_BAR_REG64, AccessWidth32, &AzaliaTempVariable);
-  AzaliaTempVariable = 0x10ec0272;
 
   if ( ((FchDataPtr->Azalia.AzaliaOemCodecTablePtr) == NULL) || ((FchDataPtr->Azalia.AzaliaOemCodecTablePtr) == ((CODEC_TBL_LIST*) (UINTN)0xFFFFFFFF))) {
     TempAzaliaOemCodecTablePtr = (CODEC_TBL_LIST*) (&AzaliaCodecTableList[0]);
@@ -506,11 +470,7 @@ ConfigureAzaliaPinCmd (
     if ( ((FchDataPtr->Azalia.AzaliaOemCodecTablePtr) == NULL) || ((FchDataPtr->Azalia.AzaliaOemCodecTablePtr) == ((CODEC_TBL_LIST*) (UINTN)0xFFFFFFFF)) ) {
       TempAzaliaCodecEntryPtr = (CODEC_ENTRY*) (TempAzaliaCodecEntryPtr);
     }
-
-    if ((AzaliaTempVariable == 0x10ec0288) || (AzaliaTempVariable == 0x10ec0286))
-	    ConfigureAzaliaSetConfigD4Dword_raw (&verb[0], ChannelNumDword, BAR0, FchDataPtr->StdHeader);
-    else
-	    ConfigureAzaliaSetConfigD4Dword (TempAzaliaCodecEntryPtr, ChannelNumDword, BAR0, FchDataPtr->StdHeader);
+    ConfigureAzaliaSetConfigD4Dword (TempAzaliaCodecEntryPtr, ChannelNumDword, BAR0, FchDataPtr->StdHeader);
 
     if ( FchDataPtr->Azalia.AzaliaFrontPanel != 1 ) {
       if ( (FchDataPtr->Azalia.AzaliaFrontPanel == 2) || (FchDataPtr->Azalia.FrontPanelDetected == 1) ) {
@@ -520,41 +480,12 @@ ConfigureAzaliaPinCmd (
           TempAzaliaCodecEntryPtr = (CODEC_ENTRY*) FchDataPtr->Azalia.AzaliaOemFpCodecTablePtr;
         }
 
-	if ((AzaliaTempVariable == 0x10ec0288) || (AzaliaTempVariable == 0x10ec0286))
-		ConfigureAzaliaSetConfigD4Dword_raw (&verb[0], ChannelNumDword, BAR0, FchDataPtr->StdHeader);
-	else
-		ConfigureAzaliaSetConfigD4Dword (TempAzaliaCodecEntryPtr, ChannelNumDword, BAR0, FchDataPtr->StdHeader);
-
+        ConfigureAzaliaSetConfigD4Dword (TempAzaliaCodecEntryPtr, ChannelNumDword, BAR0, FchDataPtr->StdHeader);
       }
     }
   }
 }
 
-VOID ConfigureAzaliaSetConfigD4Dword_raw(
-  IN  UINT32          *RawDataPtr,
-  IN  UINT32          ChannelNumDword,
-  IN  UINT32          BAR0,
-  IN  AMD_CONFIG_PARAMS *StdHeader
-  )
-{
-  UINT32   TempDword1, TempDword2;
-
-  TempDword1 = 0;
-
-  while (*RawDataPtr != 0xFFFFFFFF) {
-    do {
-      ReadMem (BAR0 + FCH_AZ_BAR_REG68, AccessWidth32, &TempDword2);
-    } while ( (TempDword2 & BIT0) != 0 );
-
-    TempDword1 = *RawDataPtr | ChannelNumDword;
-    printk(BIOS_DEBUG, "RawData=%x\n", *RawDataPtr);
-
-    WriteMem (BAR0 + FCH_AZ_BAR_REG60, AccessWidth32, &TempDword1);
-    printk(BIOS_DEBUG, "TempDword1=%x\n", TempDword1);
-    FchStall (60, StdHeader);
-    RawDataPtr ++;
-  }
-}
 /**
  * ConfigureAzaliaSetConfigD4Dword - Configuration HD Audio Codec table
  *
@@ -595,20 +526,14 @@ ConfigureAzaliaSetConfigD4Dword (
     TempDword1 |= (0x700 << 8);
 
     for ( Index = 4; Index > 0; Index-- ) {
-//      do {
-//        ReadMem (BAR0 + FCH_AZ_BAR_REG68, AccessWidth32, &TempDword2);
-//      } while ( (TempDword2 & BIT0) != 0 );
+      do {
+        ReadMem (BAR0 + FCH_AZ_BAR_REG68, AccessWidth32, &TempDword2);
+      } while ( (TempDword2 & BIT0) != 0 );
 
       TempByte2 = (UINT8) (( (TempAzaliaCodecEntryPtr->Byte40) >> ((4 - Index) * 8 ) ) & 0xff);
       TempDword1 =  (TempDword1 & 0xFFFF0000) + ((TempByte1 - Index) << 8) + TempByte2;
-//      WriteMem (BAR0 + FCH_AZ_BAR_REG60, AccessWidth32, &TempDword1);
-      printk(BIOS_DEBUG, "TempDword1=%x\n", TempDword1);
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (60, StdHeader);
-      }
-      PutEventLog (AGESA_WARNING,
-                   KERN_EVENT_HD_AUDIO_CONFIG_CODEC_BUSY,
-                   Index, 0, 0, 0, StdHeader);
+      WriteMem (BAR0 + FCH_AZ_BAR_REG60, AccessWidth32, &TempDword1);
+      FchStall (60, StdHeader);
     }
 
     ++TempAzaliaCodecEntryPtr;

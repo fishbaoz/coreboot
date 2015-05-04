@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 313246 $   @e \$Date: 2015-02-19 02:11:27 +0800 (Thu, 19 Feb 2015) $
+ * @e \$Revision: 313735 $   @e \$Date: 2015-02-26 01:48:55 -0600 (Thu, 26 Feb 2015) $
  *
  */
 
@@ -78,7 +78,6 @@
 #include  "FchPlatform.h"
 #include "GeneralServices.h"
 #include "KernFch.h"
-#include "Ids.h"
 #include  "Filecode.h"
 #define FILECODE PROC_FCH_KERN_KERNSATA_KERNSATASERVICE_FILECODE
 
@@ -492,9 +491,7 @@ FchSataDriveDetection (
         if ( (SataPortType & 0x88) == 0 ) {
           break;
         }
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (100, StdHeader);
-        }
+        FchStall (100, StdHeader);
       }
     }
   }
@@ -644,9 +641,7 @@ FchSataSetPortGenMode (
     PortNumByte ++;
   }
 
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (1000, StdHeader);
-  }
+  FchStall (1000, StdHeader);
   SataPortMode = (UINT16)LocalCfgPtr->Sata.SataPortMd.SataPortMode;
   PortNumByte = 0;
 

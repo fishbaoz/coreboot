@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -306,10 +306,10 @@ MemPGetPorFreqLimit (
       }
     }
     if (DimmTpMatch == FreqLimitPtr->Dimms) {
-      if (NBPtr->RefPtr->DDRVoltage == VOLT1_5) {
+      if (NBPtr->RefPtr->DDR3Voltage == VOLT1_5) {
         SpeedLimit = FreqLimitPtr->SpeedLimit_1_5V;
         break;
-      } else if (NBPtr->RefPtr->DDRVoltage == VOLT1_25) {
+      } else if (NBPtr->RefPtr->DDR3Voltage == VOLT1_25) {
         SpeedLimit = FreqLimitPtr->SpeedLimit_1_25V;
         break;
       } else {
@@ -1166,7 +1166,7 @@ MemPCheckTblDrvOverrideConfig (
 {
   UINT8 MaxDimmPerCh;
   UINT32 CurDDRrate;
-  UINT8 DDRVoltage;
+  UINT8 DDR3Voltage;
   UINT16 RankTypeOfPopulatedDimm;
   CH_DEF_STRUCT *CurrentChannel;
 
@@ -1175,10 +1175,10 @@ MemPCheckTblDrvOverrideConfig (
   // Get platform configuration.
   MaxDimmPerCh = GetMaxDimmsPerChannel (NBPtr->RefPtr->PlatformMemoryConfiguration, NBPtr->MCTPtr->SocketId, CurrentChannel->ChannelID);
   CurDDRrate = (UINT32) (1 << (CurrentChannel->DCTPtr->Timings.Speed / 66));
-  DDRVoltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, NBPtr->ChannelPtr->TechType));
+  DDR3Voltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage));
   RankTypeOfPopulatedDimm = MemAGetPsRankType (CurrentChannel);
 
-  if ((MaxDimmPerCh == Buffer[0]) && ((DDRVoltage & Buffer[1]) != 0) &&
+  if ((MaxDimmPerCh == Buffer[0]) && ((DDR3Voltage & Buffer[1]) != 0) &&
     ((CurDDRrate & *(UINT32 *)&Buffer[2]) != 0) && ((RankTypeOfPopulatedDimm & *(UINT16 *)&Buffer[6]) != 0)) {
     return TRUE;
   }
@@ -1335,16 +1335,14 @@ MemPGetTableEntry (
   while (ListOfTables[i] != NULL) {
     if (((ListOfTables[i])->Header.DimmType & NBPtr->PsPtr->DimmType) != 0) {
       if (((ListOfTables[i])->Header.NumOfDimm & NBPtr->PsPtr->NumOfDimmSlots) != 0) {
-        if ((ListOfTables[i])->Header.TechType == NBPtr->ChannelPtr->TechType) {
-          //
-          // Determine if this is the expected NB Type
-          //
-          LogicalCpuid = (ListOfTables[i])->Header.LogicalCpuid;
-          PackageType = (ListOfTables[i])->Header.PackageType;
-          if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
-            *TableSize = (ListOfTables[i])->TableSize;
-            break;
-          }
+        //
+        // Determine if this is the expected NB Type
+        //
+        LogicalCpuid = (ListOfTables[i])->Header.LogicalCpuid;
+        PackageType = (ListOfTables[i])->Header.PackageType;
+        if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
+          *TableSize = (ListOfTables[i])->TableSize;
+          break;
         }
       }
     }

@@ -257,7 +257,7 @@
     //
     // check if link alive
     //
-    if (LAnd (LGreaterEqual (bfLcCurrentState, 0x10), LEqual (bfLinkDis, 0))) {
+    if (LGreaterEqual (bfLcCurrentState, 0x10)) {
       //
       // Special handling for registered ports
       //
@@ -283,7 +283,7 @@
       Store (0, bfPmControl)
       //
       // Retrain link to apply new link speed
-      //
+      //    
       Store (TRUE, Local0)
       while (Local0) {
         Store (0x1, bfRetrainLink)
@@ -301,7 +301,7 @@
       }
       //
       // Reenabel ASPM on RC
-      //
+      //      
       Store (varPmControl, bfPmControl)
       //
       // Reenabel ASPM on EP
@@ -418,14 +418,14 @@
     ALIB_DEBUG (Concatenate (" PciePortDcSpeed        : ", ToHexString (PciePortDcSpeed), ADBG))
     ALIB_DEBUG (Concatenate (" PciePortCurSpeed       : ", ToHexString (PciePortCurSpeed), ADBG))
     ALIB_DEBUG (Concatenate (" PcieSbPort             : ", ToHexString (PcieSbPort), ADBG))
-    ALIB_DEBUG (Concatenate (" PcieLinkSafeMode       : ", ToHexString (PcieLinkSafeMode), ADBG))
-    ALIB_DEBUG (Concatenate (" PcieLocalOverrideSpeed : ", ToHexString (PcieLocalOverrideSpeed), ADBG))
-    ALIB_DEBUG (Concatenate (" StartPhyLane           : ", ToHexString (StartPhyLane), ADBG))
-    ALIB_DEBUG (Concatenate (" EndPhyLane             : ", ToHexString (EndPhyLane), ADBG))
-    ALIB_DEBUG (Concatenate (" StartCoreLane          : ", ToHexString (StartCoreLane), ADBG))
-    ALIB_DEBUG (Concatenate (" EndCoreLane            : ", ToHexString (EndCoreLane), ADBG))
-    ALIB_DEBUG (Concatenate (" PortId                 : ", ToHexString (PortId), ADBG))
-    ALIB_DEBUG (Concatenate (" LinkHotplug            : ", ToHexString (LinkHotplug), ADBG))
+    ALIB_DEBUG (Concatenate (" PcieLinkSafeMode       : ", ToHexString (PcieLinkSafeMode), ADBG)) 
+    ALIB_DEBUG (Concatenate (" PcieLocalOverrideSpeed : ", ToHexString (PcieLocalOverrideSpeed), ADBG)) 
+    ALIB_DEBUG (Concatenate (" StartPhyLane           : ", ToHexString (StartPhyLane), ADBG)) 
+    ALIB_DEBUG (Concatenate (" EndPhyLane             : ", ToHexString (EndPhyLane), ADBG)) 
+    ALIB_DEBUG (Concatenate (" StartCoreLane          : ", ToHexString (StartCoreLane), ADBG)) 
+    ALIB_DEBUG (Concatenate (" EndCoreLane            : ", ToHexString (EndCoreLane), ADBG)) 
+    ALIB_DEBUG (Concatenate (" PortId                 : ", ToHexString (PortId), ADBG)) 
+    ALIB_DEBUG (Concatenate (" LinkHotplug            : ", ToHexString (LinkHotplug), ADBG)) 
     ALIB_DEBUG ("--------------------------------------------------------")
   }
 

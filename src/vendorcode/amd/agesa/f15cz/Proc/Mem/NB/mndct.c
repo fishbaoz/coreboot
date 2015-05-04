@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -1100,6 +1100,78 @@ MemNChangeFrequencyUnb (
   MemFInitTableDrive (NBPtr, MTAfterFreqChg);
 }
 
+/**
+ *
+ *
+ *   This function overrides the ASR and SRT value in MRS command
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+VOID
+MemNSetASRSRTNb (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  UINT32 MrsAddress;
+  UINT8 Dimm;
+  UINT8 *SpdBufferPtr;
+  BOOLEAN ASREn;
+  BOOLEAN SRTEn;
+
+  // Look for MR2
+  if (NBPtr->GetBitField (NBPtr, BFMrsBank) == 2) {
+    MrsAddress = NBPtr->GetBitField (NBPtr, BFMrsAddress);
+    // Clear A6(ASR) and A7(SRT)
+    MrsAddress &= (UINT32) ~0xC0;
+    if ((NBPtr->ChannelPtr->RegDimmPresent) || (NBPtr->ChannelPtr->LrDimmPresent)) {
+      // For registered dimm and LR dimm, MRS command is sent to all chipselects.
+      // So different ASR/SRT setting can be sent to each chip select.
+      Dimm = (UINT8) (NBPtr->GetBitField (NBPtr, BFMrsChipSel) >> 1);
+      // Make sure we access SPD of the second logical dimm of QR dimm correctly
+      if ((Dimm >= 2) && ((NBPtr->ChannelPtr->DimmQrPresent & (UINT8) (1 << Dimm)) != 0)) {
+        Dimm -= 2;
+      }
+      if (NBPtr->TechPtr->GetDimmSpdBuffer (NBPtr->TechPtr, &SpdBufferPtr, Dimm)) {
+        // Bit 2 is ASR
+        if (SpdBufferPtr[THERMAL_OPT] & 0x4) {
+          // when ASR is 1, set SRT to 0
+          MrsAddress |= 0x40;
+        } else {
+          // Set SRT based on bit on of thermal byte
+          MrsAddress |= ((SpdBufferPtr[THERMAL_OPT] & 1) << 7);
+        }
+      }
+    } else {
+      // Udimm and unbuffered dimm, MSR command will be broadcasted during Dram Init.
+      // ASR/SRT value needs to be leveled across the DCT. Only if all dimms on the DCT
+      // support ASR or SRT can ASR or SRT be enabled.
+      ASREn = TRUE;
+      SRTEn = TRUE;
+      for (Dimm = 0; Dimm < MAX_DIMMS_PER_CHANNEL; Dimm ++) {
+        if (NBPtr->TechPtr->GetDimmSpdBuffer (NBPtr->TechPtr, &SpdBufferPtr, Dimm)) {
+          // Bit 2 is ASR
+          if ((SpdBufferPtr[THERMAL_OPT] & 0x4) == 0) {
+            // when any dimm in the DCT does not support ASR, disable ASR for the DCT
+            ASREn = FALSE;
+            // When any dimm does not have SRT with a value of 1, set SRT to 0 for the DCT
+            if ((SpdBufferPtr[THERMAL_OPT] & 1) == 0) {
+              SRTEn = FALSE;
+            }
+          }
+        }
+      }
+      if (ASREn) {
+        MrsAddress |= 0x40;
+      } else {
+        MrsAddress |= (UINT8) SRTEn << 7;
+      }
+    }
+
+    NBPtr->SetBitField (NBPtr, BFMrsAddress, MrsAddress);
+  }
+}
+
 /* -----------------------------------------------------------------------------*/
 /**
  *
@@ -1282,7 +1354,7 @@ MemNSetTxpNb (
 
   if ((NBPtr->MCTPtr->Status[SbLrdimms] || NBPtr->MCTPtr->Status[SbRegistered]) &&
       ((NBPtr->DCTPtr->Timings.Speed == DDR667_FREQUENCY) || (NBPtr->DCTPtr->Timings.Speed == DDR800_FREQUENCY)) &&
-      (NBPtr->RefPtr->DDRVoltage == VOLT1_25)) {
+      (NBPtr->RefPtr->DDR3Voltage == VOLT1_25)) {
     TxpVal = 4;
   } else {
     TxpVal = Txp[i];
@@ -1356,7 +1428,7 @@ MemNChangeNbFrequencyWrapUnb (
   CPU_SPECIFIC_SERVICES *FamilySpecificServices;
 
   SkipTransToLo = FALSE;
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nLast NBPState-->NBP%d  NBCLK: %dMHz", MemNGetBitFieldNb (NBPtr, BFCurNbPstate), NBPtr->NBClkFreq);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\nLast NBPState-->NBP%d ", MemNGetBitFieldNb (NBPtr, BFCurNbPstate));
   NBPtr->GetMemClkFreqInCurrentContext (NBPtr);
   if (NBPtr->NbFreqChgState == 0) {
     // While in state 0, keep NB Pstate at the highest supported
@@ -1510,6 +1582,7 @@ MemNSendMrsCmdUnb (
   UINT16 MrsBuffer;
   UINT8 MrsChipSel;
 
+  MemNSetASRSRTNb (NBPtr);
   MemNSwapBitsUnb (NBPtr);
 
   IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tCS%d MR%d %05x\n",

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Core
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -125,15 +125,17 @@
     #if (IDSOPT_CONTROL_NV_TO_CMOS == TRUE)
       #define OPTION_IDS_NV_TO_CMOS_COMMON
 
-      //Family 15h CZ and ST
-      #if ((OPTION_FAMILY15H_CZ == TRUE) || (OPTION_FAMILY15H_ST == TRUE))
-        #define OPTION_IDS_NV_TO_CMOS_F15\
-          {IDS_NV_TO_CMOS_LEN_BYTE, AGESA_IDS_NV_UCODE}, \
-          {IDS_NV_TO_CMOS_LEN_BYTE, AGESA_IDS_NV_MSR_DE_CFG_BIT16},
+      //Family 15h CZ
+      #ifdef OPTION_FAMILY15H_CZ
+        #if OPTION_FAMILY15H_CZ == TRUE
+          #define OPTION_IDS_NV_TO_CMOS_F15_CZ\
+            {IDS_NV_TO_CMOS_LEN_BYTE, AGESA_IDS_NV_UCODE}, \
+            {IDS_NV_TO_CMOS_LEN_BYTE, AGESA_IDS_NV_MSR_DE_CFG_BIT16},
+        #endif
       #endif
 
-      #ifndef OPTION_IDS_NV_TO_CMOS_F15
-        #define OPTION_IDS_NV_TO_CMOS_F15
+      #ifndef OPTION_IDS_NV_TO_CMOS_F15_CZ
+        #define OPTION_IDS_NV_TO_CMOS_F15_CZ
       #endif
 
       #ifndef OPTION_IDS_NV_TO_CMOS_EXTEND
@@ -142,7 +144,7 @@
 
       IDS_NV_TO_CMOS gIdsNVToCmos[] = {
         OPTION_IDS_NV_TO_CMOS_COMMON
-        OPTION_IDS_NV_TO_CMOS_F15
+        OPTION_IDS_NV_TO_CMOS_F15_CZ
         OPTION_IDS_NV_TO_CMOS_EXTEND
         OPTION_IDS_NV_TO_CMOS_END
       };
@@ -175,18 +177,15 @@
     #define OPTION_IDS_FEAT_ECCCTRL
 
     #define OPTION_IDS_FEAT_GNB_PLATFORMCFG\
-                OPTION_IDS_FEAT_GNB_PLATFORMCFGF15CZ \
-                OPTION_IDS_FEAT_GNB_PLATFORMCFGF15ST
+                OPTION_IDS_FEAT_GNB_PLATFORMCFGF15CZ
 
     #define  OPTION_IDS_FEAT_WORKAROUND\
-                OPTION_IDS_FEAT_WORKAROUND_F15_CZ \
-                OPTION_IDS_FEAT_WORKAROUND_F15_ST
+                OPTION_IDS_FEAT_WORKAROUND_F15_CZ
 
     #define OPTION_IDS_FEAT_CPB_CTRL
 
     #define OPTION_IDS_FEAT_MEMORY_MAPPING\
-                OPTION_IDS_FEAT_MEMORY_MAPPING_F15_CZ \
-                OPTION_IDS_FEAT_MEMORY_MAPPING_F15_ST
+                OPTION_IDS_FEAT_MEMORY_MAPPING_F15_CZ
 
 /*----------------------------------------------------------------------------
  *                        Family 15 CZ feat blocks
@@ -215,32 +214,6 @@
       #endif
     #endif
 
-/*----------------------------------------------------------------------------
- *                        Family 15 ST feat blocks
- *
- *----------------------------------------------------------------------------
- */
-    #define OPTION_IDS_FEAT_WORKAROUND_F15_ST
-    #define OPTION_IDS_FEAT_MEMORY_MAPPING_F15_ST
-    #define OPTION_IDS_FEAT_GNB_PLATFORMCFGF15ST
-    #ifdef OPTION_FAMILY15H_ST
-      #if OPTION_FAMILY15H_ST == TRUE
-        #undef OPTION_IDS_FEAT_WORKAROUND_F15_ST
-        extern CONST IDS_FAMILY_FEAT_STRUCT ROMDATA IdsFeatWorkAroundBlockF15St;
-        #define OPTION_IDS_FEAT_WORKAROUND_F15_ST &IdsFeatWorkAroundBlockF15St,
-
-        extern CONST IDS_FAMILY_FEAT_STRUCT ROMDATA IdsFeatMemoryMappingPostBeforeBlockF15St;
-        extern CONST IDS_FAMILY_FEAT_STRUCT ROMDATA IdsFeatMemoryMappingChIntlvBlockF15St;
-        #undef OPTION_IDS_FEAT_MEMORY_MAPPING_F15_ST
-        #define OPTION_IDS_FEAT_MEMORY_MAPPING_F15_ST\
-        &IdsFeatMemoryMappingPostBeforeBlockF15St,\
-        &IdsFeatMemoryMappingChIntlvBlockF15St,
-
-        extern CONST IDS_FAMILY_FEAT_STRUCT ROMDATA IdsFeatGnbPlatformCfgBlockF15St;
-        #undef OPTION_IDS_FEAT_GNB_PLATFORMCFGF15ST
-        #define OPTION_IDS_FEAT_GNB_PLATFORMCFGF15ST &IdsFeatGnbPlatformCfgBlockF15St,
-      #endif
-    #endif
 
     #define OPTION_IDS_FEAT_NV_TO_CMOS
     #if IDSOPT_CONTROL_NV_TO_CMOS == TRUE
@@ -401,19 +374,9 @@
     #endif
   #endif
 
-  #define OPTION_IDS_FAM_REGACC_F15ST
-  #ifdef OPTION_FAMILY15H_ST
-    #if OPTION_FAMILY15H_ST == TRUE
-      extern CONST IDS_FAMILY_FEAT_STRUCT ROMDATA IdsFeatRegGmmxF15St;
-      #undef OPTION_IDS_FAM_REGACC_F15ST
-      #define OPTION_IDS_FAM_REGACC_F15ST \
-                &IdsFeatRegGmmxF15St,
-    #endif
-  #endif
 
   CONST IDS_FAMILY_FEAT_STRUCT* ROMDATA IdsRegAccessTbl[] =
   {
-    OPTION_IDS_FAM_REGACC_F15ST
     OPTION_IDS_FAM_REGACC_F15CZ
     NULL
   };

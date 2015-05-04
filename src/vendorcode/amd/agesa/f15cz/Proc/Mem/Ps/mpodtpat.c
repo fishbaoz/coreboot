@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -178,17 +178,15 @@ MemPGetODTPattern (
   while (EntryOfTables->TblEntryOfODTPattern[i] != NULL) {
     if (((EntryOfTables->TblEntryOfODTPattern[i])->Header.DimmType & DimmType) != 0) {
       if (((EntryOfTables->TblEntryOfODTPattern[i])->Header.NumOfDimm & NOD) != 0) {
-        if ((EntryOfTables->TblEntryOfODTPattern[i])->Header.TechType == CurrentChannel->TechType) {
-          //
-          // Determine if this is the expected NB Type
-          //
-          LogicalCpuid = (EntryOfTables->TblEntryOfODTPattern[i])->Header.LogicalCpuid;
-          PackageType = (EntryOfTables->TblEntryOfODTPattern[i])->Header.PackageType;
-          if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
-            TblPtr = (PSCFG_3D_ODTPAT_ENTRY *) ((EntryOfTables->TblEntryOfODTPattern[i])->TBLPtr);
-            TableSize = (EntryOfTables->TblEntryOfODTPattern[i])->TableSize;
-            break;
-          }
+        //
+        // Determine if this is the expected NB Type
+        //
+        LogicalCpuid = (EntryOfTables->TblEntryOfODTPattern[i])->Header.LogicalCpuid;
+        PackageType = (EntryOfTables->TblEntryOfODTPattern[i])->Header.PackageType;
+        if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
+          TblPtr = (PSCFG_3D_ODTPAT_ENTRY *) ((EntryOfTables->TblEntryOfODTPattern[i])->TBLPtr);
+          TableSize = (EntryOfTables->TblEntryOfODTPattern[i])->TableSize;
+          break;
         }
       }
     }

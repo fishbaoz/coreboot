@@ -2,8 +2,8 @@
 // PSP FW Delivery Release Note
 // 
 // Copyright 2015, Advanced Micro Devices, Inc.
-// Image Version number: PSP BootLoader: 0.2.0.29, PSP SecureOS: 0.2.0.29
-// Date:   Apr 8, 2015
+// Image Version number: PSP BootLoader: 0.2.0.24, PSP SecureOS: 0.2.0.24
+// Date:   Feb 25, 2015
 //----------------------------------------------------------------------------
 
 Content:
@@ -18,8 +18,11 @@ Files:
 	PspTrustlets_prod_CZ.cbin      - PSP secure OS system trustlets, not signed but compressed
 	
 Features and fixes:
-1. OBS464197: Request from BIOS team to change eDP Power-Up logic.
-2. Fix tbase trace messages: pass correct buffer size and disable trace messages when buffer size is 0.
-3. Updated Ek Certificate date/time. Updated fTPM Trustlet.
-4. Updated PSP_FAMILY_ID check.
-5. Code base updated up to CL#28806.
+1. Add support for sub minor version for CZ A1 in t-base.
+2. Check global SMI control before trigger SMI to BIOS.
+3. DDR4: Fix mem code S3 mismatch. WARNING! Does not compatible with weekly BIOSs prior 03/04
+4. Code base updated up to CL#28273.
+
+WARNING! 
+New Agesa S3 Resume binary image (PspAgesaS3Resume_prod_CZ.csbin) does not compatible with old BIOSs
+prior Mar 04, 2015.

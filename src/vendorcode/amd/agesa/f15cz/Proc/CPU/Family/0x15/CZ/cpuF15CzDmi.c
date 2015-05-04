@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 316714 $   @e \$Date: 2015-04-13 10:41:01 +0800 (Mon, 13 Apr 2015) $
+ * @e \$Revision: 311006 $   @e \$Date: 2015-01-15 00:10:23 -0600 (Thu, 15 Jan 2015) $
  *
  */
 /*****************************************************************************
@@ -99,20 +99,16 @@ extern CPU_FAMILY_SUPPORT_TABLE            PstateFamilyServiceTable;
  *                  T Y P E D E F S     A N D     S T R U C T U R E S
  *----------------------------------------------------------------------------------------
  */
-CONST CHAR8 ROMDATA str_A12[] = "AMD A12-";
 CONST CHAR8 ROMDATA str_A10[] = "AMD A10-";
 CONST CHAR8 ROMDATA str_A8[]  = "AMD A8-";
 CONST CHAR8 ROMDATA str_A6[]  = "AMD A6-";
 CONST CHAR8 ROMDATA str_FX[]  = "AMD FX-";
-CONST CHAR8 ROMDATA str_R[]  = "AMD Embedded R-Series RX-";
-CONST CHAR8 ROMDATA str_PRO_A12[] = "AMD PRO A12-";
 CONST CHAR8 ROMDATA str_PRO_A10[] = "AMD PRO A10-";
 CONST CHAR8 ROMDATA str_PRO_A8[]  = "AMD PRO A8-";
 CONST CHAR8 ROMDATA str_PRO_A6[]  = "AMD PRO A6-";
 CONST CHAR8 ROMDATA str_PRO_FX[]  = "AMD PRO FX-";
 /*---------------------------------------------------------------------------------------
  * Processor Family Table
- *       04Bh = "R-Series"
  *       048h = "A-Series"
  *       03Fh = "FX (TM) Series"
  *-------------------------------------------------------------------------------------*/
@@ -120,13 +116,10 @@ CONST CHAR8 ROMDATA str_PRO_FX[]  = "AMD PRO FX-";
 CONST CPU_T4_PROC_FAMILY ROMDATA F15CzFP4T4ProcFamily[] =
 {
   {str_FX,  0x3F},
-  {str_A12, 0x48},
   {str_A10, 0x48},
   {str_A8,  0x48},
   {str_A6,  0x48},
-  {str_R,   0x4B},
   {str_PRO_FX, 0x3F},
-  {str_PRO_A12, 0x48},
   {str_PRO_A10, 0x48},
   {str_PRO_A8,  0x48},
   {str_PRO_A6,  0x48},

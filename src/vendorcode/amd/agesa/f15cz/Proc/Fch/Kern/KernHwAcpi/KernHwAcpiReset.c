@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 314243 $   @e \$Date: 2015-03-07 08:27:39 +0800 (Sat, 07 Mar 2015) $
+ * @e \$Revision: 314271 $   @e \$Date: 2015-03-08 03:37:30 -0500 (Sun, 08 Mar 2015) $
  *
  */
 /*
@@ -72,7 +72,6 @@
 #include "Filecode.h"
 #include "GeneralServices.h"
 #include "KernFch.h"
-#include "Ids.h"
 #define FILECODE PROC_FCH_KERN_KERNHWACPI_KERNHWACPIRESET_FILECODE
 
 extern ACPI_REG_WRITE FchInitResetAcpiMmioTable[];
@@ -113,26 +112,20 @@ FchInitResetPowerAllDev (
           }
           ACPIMMIO8 (FCH_AOACx40_D3_CONTROL + (DevCount[i] << 1)) |= AOAC_IS_SW_CONTROL;
           ACPIMMIO8 (FCH_AOACx40_D3_CONTROL + (DevCount[i] << 1)) &= ~ AOAC_SW_RST_B;
-          IEM_SKIP_CODE (IEM_WAIT) {
-            FchStall (200, StdHeader);
-          }
+          FchStall (200, StdHeader);
           ACPIMMIO8 (FCH_AOACx40_D3_CONTROL + (DevCount[i] << 1)) |= AOAC_SW_RST_B;
           ACPIMMIO8 (FCH_AOACx40_D3_CONTROL + (DevCount[i] << 1)) &= ~ AOAC_IS_SW_CONTROL;
 
         }
       } else {
         //Do Cf9 reset here to reset AOAC registers
-        IEM_SKIP_CODE (IEM_RESET) {
-          WriteIo8 (FCH_IOMAP_REGCF9, 0x06);
-          FCH_DEADLOOP ();
-        }
+        WriteIo8 (FCH_IOMAP_REGCF9, 0x06);
+        FCH_DEADLOOP ();
       }
     }
   } else {
   }
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (1000, StdHeader);
-  }
+  FchStall (1000, StdHeader);
 }
 
 /**
@@ -155,10 +148,8 @@ FchInitResetPowerG3Reset (
   if ((0 == (ACPIMMIO32 (FCH_PMxC0_ResetStatus) & FCH_PMxC0_ResetStatus_Mask)) && (0 == (ACPIMMIO32 (FCH_PMx00_DecodeEn) & BIT1))) {
     //Do Cf9 reset here to reset AOAC registers
     RwPmio (FCH_PMIOA_REG00, AccessWidth8, ~(UINT32) BIT1, BIT1, StdHeader);
-    IEM_SKIP_CODE (IEM_RESET) {
-      WriteIo8 (FCH_IOMAP_REGCF9, 0x06);
-      FCH_DEADLOOP ();
-    }
+    WriteIo8 (FCH_IOMAP_REGCF9, 0x06);
+    FCH_DEADLOOP ();
   }
 }
 
@@ -188,6 +179,7 @@ FchInitResetHwAcpiP (
   RwPmio (FCH_PMIOA_REG04, AccessWidth8, 0xFF, BIT1, StdHeader);
 
   ACPIMMIO32 (FCH_AOACx94S013_CONTROL) &= ~ (FCH_AOACx94S013_CONTROL_ARBITER_DIS + FCH_AOACx94S013_CONTROL_INTERRUPT_DIS);
+  ACPIMMIO32 (FCH_PMx08_PciControl) |= FCH_PMx08_PciControl_ShutDownOption; //BUG425824 / Improper handling of INIT and SHUTDOWN on Carrizo
 
   //
   // enable CF9
@@ -209,10 +201,8 @@ FchInitResetHwAcpiP (
     (ACPIMMIO32 (FCH_PMIOxC0_S5ResetStatus) & FCH_PMIOxC0_S5ResetStatus_S_Status)) {
     ACPIMMIO32 (FCH_MISCx50_JTAG_CONTROL_ECO) |= FCH_MISCx50_JTAG_Control_ECO_bits_BIT16;
     ACPIMMIO32 (FCH_PMIOxC0_S5ResetStatus) |= FCH_PMIOxC0_S5ResetStatus_S_Status;
-    IEM_SKIP_CODE (IEM_RESET) {
-      Value8 = 0x06;
-      LibAmdIoWrite (AccessWidth8, FCH_IOMAP_REGCF9, &Value8, StdHeader);
-    }
+    Value8 = 0x06;
+    LibAmdIoWrite (AccessWidth8, FCH_IOMAP_REGCF9, &Value8, StdHeader);
     //issue cf9 reset
   } else {
     //normal reboot clear all Reset Status
@@ -226,9 +216,7 @@ FchInitResetHwAcpiP (
   //ACPIMMIO32 (FCH_AL2AHBx30_HCLK_CONTROL) |= FCH_AL2AHBx30_HCLK_CONTROL_CLOCK_GATE_EN;
 
   RwMem (ACPI_MMIO_BASE + PMIO_BASE + FCH_PMIOA_REGC4, AccessWidth8, 0xEF, 0x10);
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (200, StdHeader);
-  }
+  FchStall (200, StdHeader);
   RwMem (ACPI_MMIO_BASE + PMIO_BASE + FCH_PMIOA_REGC4, AccessWidth8, 0xEF, 0x00);
 }
 

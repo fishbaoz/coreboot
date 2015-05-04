@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 316426 $ @e \$Date: 2015-04-08 14:51:16 +0800 (Wed, 08 Apr 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -78,13 +78,14 @@
  *----------------------------------------------------------------------------
  */
 #define DRAM_TYPE_DDR3_CZ             0
-#define DRAM_TYPE_DDR4_CZ             2
+#define DRAM_TYPE_DDR4_CZ             1
 
 #define MAX_DCTS_PER_NODE_CZ          2
 #define MAX_CHANNELS_PER_DCT_CZ       1
 #define MAX_NODES_SUPPORTED_CZ        1
 #define MAX_CS_PER_CHANNEL_CZ         4
 
+#define MAX_D3_DCTS_PER_NODE_CZ       2
 #define MAX_MEMORY_PSTATE_CZ          2
 
 #define DEFAULT_WR_ODT_CZ 6
@@ -109,7 +110,8 @@
  */
 #define MEMCLK_FREQ_TO_ID(Freq)  (((Freq) == DDR2400_FREQUENCY) ? 0x1F : (((Freq) / 33) - 6))
 
-#define MEMCLK_ID_TO_FREQ(Id)  ( ((Id) == 0x1F) ? DDR2400_FREQUENCY : ((((Id) + 6) * 33) + (((Id) + 6) / 3)) )
+#define MEMCLK_ID_TO_FREQ(Id)  ((((Id) + 6) * 33) + (((Id) + 6) / 3))
+
 
 /*----------------------------------------------------------------------------
  *                         TYPEDEFS, STRUCTURES, ENUMS
@@ -129,20 +131,6 @@ typedef struct _DRAM_CAD_BUS_CONFIG_CZ {
   UINT32  DctAddrTmg [MAX_MEMORY_PSTATE_CZ];    ///< AddrCmdSetup, CsOdtSetup, and CkeSetup
 } DRAM_CAD_BUS_CONFIG_CZ;
 
-/// The structure of one entry of a TxPrePN table
-typedef struct {
-  UINT16 MaxSpeed;      ///< Highest memory speed for this setting
-  UINT8  DrvStrenP;     ///< Driver strength
-  UINT8  TxPrePNVal[3]; ///< Tx predriver value per voltage
-} TXPREPN_ENTRY;
-
-/// The structure describes how to extract data and program TxPrePN
-typedef struct {
-  BIT_FIELD_NAME BfName;   ///< Bit field to set
-  TXPREPN_ENTRY  *TabPtr;  ///< Pointer to TxPrePN table
-  UINT16         PsOffset; ///< Offset to find DrvStrenP from PS struct
-} PROG_TXPREPN_STRUCT;
-
 /*----------------------------------------------------------------------------
  *                           FUNCTIONS PROTOTYPE
  *
@@ -159,6 +147,11 @@ MemConstructNBBlockCZ (
 
 VOID
 MemNInitNBDataCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNInitNBRegTableD3CZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
@@ -184,9 +177,24 @@ MemNReleaseNbPstateCZ (
   );
 
 VOID
+MemNSetDdrModeD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
 MemNSetPhyDdrModeCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr,
   IN       UINT8  Mode
+  );
+
+VOID
+MemNConfigureDctForTrainingD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNConfigureDctNormalD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
 VOID
@@ -198,6 +206,12 @@ MemNSwitchMemPstateCZ (
 VOID
 MemNSyncChannelInitCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNProgramMemPstateRegD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr,
+  IN       UINT8 MemPstate
   );
 
 BOOLEAN
@@ -256,8 +270,23 @@ MemNAllocateC6AndAcpEngineStorageCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
+VOID
+MemNProgramCycTimingsCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNDramPowerMngTimingCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
 BOOLEAN
 MemNAutoConfigCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNProgramTurnaroundTimingsD3CZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
@@ -270,15 +299,6 @@ VOID
 MemNPhyVoltageLevelCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr,
   IN       UINT8  Mode
-  );
-
-UINT32
-MemNcmnGetSetTrainDlyCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr,
-  IN       UINT8 IsSet,
-  IN       TRN_DLY_TYPE TrnDly,
-  IN       DRBN DrbnVar,
-  IN       UINT16 Field
   );
 
 VOID
@@ -294,6 +314,21 @@ MemNCSIntLvLowAddrAdjCZ (
   );
 
 VOID
+MemNPredriverInitCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNProgramCadDataBusD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNPhyFifoConfigD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
 MemNGetMaxLatParamsCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr,
   IN       UINT16 MaxRcvEnDly,
@@ -306,6 +341,26 @@ VOID
 MemNResetRcvFifoCZ (
   IN OUT   struct _MEM_TECH_BLOCK *TechPtr,
   IN       UINT8 Dummy
+  );
+
+AGESA_STATUS
+MemMD3FlowCZ (
+  IN OUT   MEM_MAIN_DATA_BLOCK *MemMainPtr
+  );
+
+VOID
+MemNSetPmuSequenceControlCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNPopulatePmuSramConfigD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNPopulatePmuSramTimingsD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
 BOOLEAN
@@ -337,8 +392,7 @@ MemNInitChannelIntlvAddressBitCZ (
 
 VOID
 MemNDramPhyPowerSavingsCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr,
-  IN       UINT8  Mode
+  IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
 VOID
@@ -358,6 +412,16 @@ MemNAddlDramPhyPowerSavingsCZ (
 
 VOID
 MemNLoadPmuFirmwareCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+UINT8
+MemNNumberOfPmuFirmwareImageCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+MemNModeRegisterInitializationCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
@@ -443,36 +507,19 @@ MemPspPlatformSecureBootEnCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
-VOID
-MemNPopulatePmuSramConfigCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
-VOID
-MemNPopulatePmuSramTimingsCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
-BOOLEAN
-MemNCheckPmuFirmwareImageCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
-VOID
-MemNLoadPmuFirmwareImageCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
-
-VOID
-MemNDramPowerMngTimingCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
 BOOLEAN
 MemNDramScrubErratum792CZ (
-  IN OUT   MEM_NB_BLOCK  *NBPtr,
-  IN OUT   VOID *OptParam
+  IN OUT  MEM_NB_BLOCK  *NBPtr,
+  IN OUT  VOID          *OptParam
+  );
+
+UINT32
+MemNcmnGetSetTrainDlyCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr,
+  IN       UINT8 IsSet,
+  IN       TRN_DLY_TYPE TrnDly,
+  IN       DRBN DrbnVar,
+  IN       UINT16 Field
   );
 
 BOOLEAN

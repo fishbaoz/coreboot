@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -93,7 +93,7 @@ OPTION_CRAT_FEATURE          GetAcpiCratStub;
      */
     #ifdef OPTION_FAMILY15H
       #if OPTION_FAMILY15H == TRUE
-        #if ((OPTION_FAMILY15H_CZ == TRUE) || (OPTION_FAMILY15H_ST == TRUE))
+        #if (OPTION_FAMILY15H_CZ == TRUE)
           extern CONST CRAT_FAMILY_SERVICES ROMDATA F15CratSupport;
           #undef F15_CRAT_SUPPORT
           #define F15_CRAT_SUPPORT {AMD_FAMILY_15, &F15CratSupport},

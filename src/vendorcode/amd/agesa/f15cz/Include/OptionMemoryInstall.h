@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 312538 $   @e \$Date: 2015-02-09 16:53:54 +0800 (Mon, 09 Feb 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -257,45 +257,13 @@ BOOLEAN MemFS3DefConstructorRet (
     #define MEM_TRANS_SYS_ADDR_TO_CS_CZ MemNTransSysAddrToCsRetDef
   #endif
 #endif // OPTION_MEMCTLR_CZ
-
-#if (OPTION_MEMCTLR_ST == TRUE)
-  #if ((AGESA_ENTRY_INIT_RESUME == TRUE) || (AGESA_ENTRY_INIT_RTB == TRUE) || (AGESA_ENTRY_INIT_LATE_RESTORE == TRUE) || ((AGESA_ENTRY_INIT_POST) && (OPTION_S3_MEM_SUPPORT == TRUE)))
-    #if (OPTION_S3_MEM_SUPPORT == TRUE)
-      extern MEM_RESUME_CONSTRUCTOR MemS3ResumeConstructNBBlockST;
-      #define MEM_FEATURE_S3_RESUME_CONSTRUCTOR_ST MemS3ResumeConstructNBBlockST
-      #if ((AGESA_ENTRY_INIT_RESUME == TRUE) || (AGESA_ENTRY_INIT_RTB == TRUE) || (AGESA_ENTRY_INIT_LATE_RESTORE == TRUE))
-        extern OPTION_MEM_FEATURE_MAIN MemMS3Save;
-        #define MEM_MAIN_FEATURE_MEM_S3_SAVE MemMS3Save
-      #else
-        #define MEM_MAIN_FEATURE_MEM_S3_SAVE MemMDefRet
-      #endif
-    #else
-      #define MEM_FEATURE_S3_RESUME_CONSTRUCTOR_ST MemFS3DefConstructorRet
-      #define MEM_MAIN_FEATURE_MEM_S3_SAVE MemMDefRet
-    #endif
-  #else
-    #define MEM_FEATURE_S3_RESUME_CONSTRUCTOR_ST MemFS3DefConstructorRet
-    #define MEM_MAIN_FEATURE_MEM_S3_SAVE MemMDefRet
-  #endif
-  #if (AGESA_ENTRY_INIT_GENERAL_SERVICES == TRUE)
-    extern MEM_IDENDIMM_CONSTRUCTOR MemNIdentifyDimmConstructorST;
-    #define MEM_IDENDIMM_ST MemNIdentifyDimmConstructorST
-    extern MEM_TRANS_SYS_ADDR_TO_CS MemFTransSysAddrToCsST;
-    #define MEM_TRANS_SYS_ADDR_TO_CS_ST MemFTransSysAddrToCsST
-  #else
-    #define MEM_IDENDIMM_ST MemNIdentifyDimmConstructorRetDef
-    #define MEM_TRANS_SYS_ADDR_TO_CS_ST MemNTransSysAddrToCsRetDef
-  #endif
-#endif // OPTION_MEMCTLR_ST
 /*----------------------------------------------------------------------------------
  * NORTHBRIDGE BLOCK CONSTRUCTOR AND INITIALIZER FUNCTION DEFAULT ASSIGNMENTS
  *
  *----------------------------------------------------------------------------------
 */
 #define MEM_NB_SUPPORT_CZ
-#define MEM_NB_SUPPORT_ST
 #define MEM_NB_SUPPORT_END { MEM_NB_SUPPORT_STRUCT_VERSION, 0, 0, 0, 0, 0, 0 }
-
 
 #if (AGESA_ENTRY_INIT_POST == TRUE)
   /*----------------------------------------------------------------------------------
@@ -307,60 +275,14 @@ BOOLEAN MemFS3DefConstructorRet (
   extern MEM_FLOW_CFG MemMFlowDef;
 
   #if (OPTION_MEMCTLR_CZ == TRUE)
-    //
-    // DDR3 Only
-    //
-    #if ((OPTION_DDR3 == TRUE) && (OPTION_DDR4 == FALSE))
-      extern MEM_FLOW_CFG MemMFlowD3CZ;
-      #define MEM_MAIN_FLOW_CONTROL_PTR_CZ MemMFlowD3CZ,
-    #else
-      //
-      // DDR4 Only
-      //
-      #if ((OPTION_DDR3 == FALSE) && (OPTION_DDR4 == TRUE))
-        extern MEM_FLOW_CFG MemMFlowD4CZ;
-        #define MEM_MAIN_FLOW_CONTROL_PTR_CZ MemMFlowD4CZ,
-      #else
-        //
-        // DDR3 and DDR4 Combo
-        //
-        extern MEM_FLOW_CFG MemMFlowD34CZ;
-        #define MEM_MAIN_FLOW_CONTROL_PTR_CZ MemMFlowD34CZ,
-      #endif
-    #endif
+    extern MEM_FLOW_CFG MemMFlowD3CZ;
+    #define MEM_MAIN_FLOW_CONTROL_PTR_CZ MemMFlowD3CZ,
   #else
     #define MEM_MAIN_FLOW_CONTROL_PTR_CZ MemMFlowDef,
   #endif
 
-  #if (OPTION_MEMCTLR_ST == TRUE)
-    //
-    // DDR3 Only
-    //
-    #if ((OPTION_DDR3 == TRUE) && (OPTION_DDR4 == FALSE))
-      extern MEM_FLOW_CFG MemMFlowD3ST;
-      #define MEM_MAIN_FLOW_CONTROL_PTR_ST MemMFlowD3ST,
-    #else
-      //
-      // DDR4 Only
-      //
-      #if ((OPTION_DDR3 == FALSE) && (OPTION_DDR4 == TRUE))
-        extern MEM_FLOW_CFG MemMFlowD4ST;
-        #define MEM_MAIN_FLOW_CONTROL_PTR_ST MemMFlowD4ST,
-      #else
-        //
-        // DDR3 and DDR4 Combo
-        //
-        extern MEM_FLOW_CFG MemMFlowD34ST;
-        #define MEM_MAIN_FLOW_CONTROL_PTR_ST MemMFlowD34ST,
-      #endif
-    #endif
-  #else
-    #define MEM_MAIN_FLOW_CONTROL_PTR_ST MemMFlowDef,
-  #endif
-
   MEM_FLOW_CFG* memFlowControlInstalled[] = {
     MEM_MAIN_FLOW_CONTROL_PTR_CZ
-    MEM_MAIN_FLOW_CONTROL_PTR_ST
     NULL
   };
 
@@ -454,18 +376,9 @@ BOOLEAN MemFS3DefConstructorRet (
   #endif
 
   #if (OPTION_DMI == TRUE)
-    #if ((OPTION_DDR3 == TRUE) && (OPTION_DDR4 == TRUE))
-      #undef MEM_MAIN_FEATURE_MEM_DMI
-      extern OPTION_MEM_FEATURE_MAIN MemFDMISupport34;
-      #define MEM_MAIN_FEATURE_MEM_DMI MemFDMISupport34
-    #elif (OPTION_DDR3 == TRUE)
-      #undef MEM_MAIN_FEATURE_MEM_DMI
+    #if (OPTION_DDR3 == TRUE)
       extern OPTION_MEM_FEATURE_MAIN MemFDMISupport3;
       #define MEM_MAIN_FEATURE_MEM_DMI MemFDMISupport3
-    #elif (OPTION_DDR4 == TRUE)
-      #undef MEM_MAIN_FEATURE_MEM_DMI
-      extern OPTION_MEM_FEATURE_MAIN MemFDMISupport4;
-      #define MEM_MAIN_FEATURE_MEM_DMI MemFDMISupport4
     #else
       #define MEM_MAIN_FEATURE_MEM_DMI MemMDefRet
     #endif
@@ -484,28 +397,19 @@ BOOLEAN MemFS3DefConstructorRet (
     #define MEM_MAIN_FEATURE_MEM_CRAT MemMDefRet
   #endif
 
-  #if (OPTION_ONDIMMTHERMAL == TRUE)
-    extern OPTION_MEM_FEATURE_NB MemFOnDimmThermal;
-    #define MEM_FEATURE_ONDIMMTHERMAL MemFOnDimmThermal
-  #else
-    #define MEM_FEATURE_ONDIMMTHERMAL MemFDefRet
-  #endif
-
   #if (OPTION_DDR3 == TRUE)
+    extern OPTION_MEM_FEATURE_NB MemFOnDimmThermal;
     extern OPTION_MEM_FEATURE_MAIN MemMLvDdr3;
     extern OPTION_MEM_FEATURE_NB MemFLvDdr3;
+    #define MEM_FEATURE_ONDIMMTHERMAL MemFOnDimmThermal
     #define MEM_MAIN_FEATURE_LVDDR3 MemMLvDdr3
     #define MEM_FEATURE_LVDDR3 MemFLvDdr3
   #else
+    #define MEM_FEATURE_ONDIMMTHERMAL MemFDefRet
     #define MEM_MAIN_FEATURE_LVDDR3 MemMDefRet
     #define MEM_FEATURE_LVDDR3 MemFDefRet
   #endif
-  #if (OPTION_DDR4 == TRUE)
-    extern OPTION_MEM_FEATURE_NB MemFLvDdr4;
-    #define MEM_FEATURE_LVDDR4 MemFLvDdr4
-  #else
-    #define MEM_FEATURE_LVDDR4 MemFDefRet
-  #endif
+
   extern OPTION_MEM_FEATURE_NB MemFInterleaveRegion;
   #define MEM_FEATURE_REGION_INTERLEAVE    MemFInterleaveRegion
   #if (OPTION_POST_MEM_INIT == TRUE)
@@ -589,20 +493,6 @@ BOOLEAN MemFS3DefConstructorRet (
     #endif
   #else
     #define MEM_TECH_CONSTRUCTOR_DDR3
-    #define MEM_TECH_FEATURE_SW_DRAMINIT  MemTFeatDef
-  #endif
-
-  #if OPTION_DDR4 == TRUE
-    extern MEM_TECH_CONSTRUCTOR MemConstructTechBlock4;
-    #define MEM_TECH_CONSTRUCTOR_DDR4 MemConstructTechBlock4,
-    #if (OPTION_HW_DRAM_INIT == TRUE)
-      #define  MEM_TECH_FEATURE_HW_DRAMINIT MemTFeatDef
-    #endif
-    #if (OPTION_SW_DRAM_INIT == TRUE)
-      #define MEM_TECH_FEATURE_SW_DRAMINIT  MemTFeatDef
-    #endif
-  #else
-    #define MEM_TECH_CONSTRUCTOR_DDR4
   #endif
 
   /*---------------------------------------------------------------------------------------------------
@@ -623,10 +513,6 @@ BOOLEAN MemFS3DefConstructorRet (
    *---------------------------------------------------------------------------------------------------
    */
   #if (OPTION_MEMCTLR_CZ == TRUE)
-    /*-------------
-     * DDR3 FEATURES
-     *--------------
-    */
     #if OPTION_DDR3
       #undef MEM_MAIN_FEATURE_LVDDR3
       extern OPTION_MEM_FEATURE_MAIN MemMLvDdr3PerformanceEnhPre;
@@ -635,28 +521,13 @@ BOOLEAN MemFS3DefConstructorRet (
       #undef MEM_TECH_CONSTRUCTOR_DDR3
       #define MEM_TECH_CONSTRUCTOR_DDR3  (MEM_TECH_CONSTRUCTOR *) MemTFeatDef,
     #endif
-    /*--------------
-     * DDR4 FEATURES
-     *--------------
-    */
-    #if OPTION_DDR4
-      #undef MEM_MAIN_FEATURE_LVDDR4
-      //extern OPTION_MEM_FEATURE_MAIN MemMLvDdr4PerformanceEnhPre;
-      //#define MEM_MAIN_FEATURE_LVDDR4 MemMLvDdr4PerformanceEnhPre
-      #define MEM_MAIN_FEATURE_LVDDR4 MemMDefRet
-    #else
-      #undef MEM_TECH_CONSTRUCTOR_DDR4
-      #define MEM_TECH_CONSTRUCTOR_DDR4  (MEM_TECH_CONSTRUCTOR *) MemTFeatDef,
-      #undef MEM_MAIN_FEATURE_LVDDR4
-      #define MEM_MAIN_FEATURE_LVDDR4 MemMDefRet
-    #endif
-
-    #undef MEM_LOAD_PMU_FIRMWARE
-    extern OPTION_MEM_FEATURE_NB MemNLoadPmuFirmwareCZ;
-    #define MEM_LOAD_PMU_FIRMWARE MemNLoadPmuFirmwareCZ
 
     #undef MEM_TECH_FEATURE_DRAMINIT
     #define MEM_TECH_FEATURE_DRAMINIT   MemTFeatDef
+
+    #undef MEM_LOAD_PMU_FIRMWARE
+    extern OPTION_MEM_FEATURE_NB MemNLoadPmuFirmwareCZ;
+    #define MEM_LOAD_PMU_FIRMWARE   MemNLoadPmuFirmwareCZ
 
     #if (OPTION_EARLY_SAMPLES == TRUE)
       extern OPTION_MEM_FEATURE_NB MemNInitEarlySampleSupportCZ;
@@ -706,8 +577,7 @@ BOOLEAN MemFS3DefConstructorRet (
       MemFDefRet,
       MemFDefRet,
       MemFDefRet,
-      MEM_LOAD_PMU_FIRMWARE,
-      MemFDefRet // MEM_FEATURE_LVDDR4
+      MEM_LOAD_PMU_FIRMWARE
     };
 
     #undef MEM_NB_SUPPORT_CZ
@@ -715,100 +585,6 @@ BOOLEAN MemFS3DefConstructorRet (
     extern MEM_INITIALIZER MemNInitDefaultsCZ;
     #define MEM_NB_SUPPORT_CZ { MEM_NB_SUPPORT_STRUCT_VERSION, MemConstructNBBlockCZ, MemNInitDefaultsCZ, &MemFeatBlockCZ, MEM_FEATURE_S3_RESUME_CONSTRUCTOR_CZ, MEM_IDENDIMM_CZ, MEM_TRANS_SYS_ADDR_TO_CS_CZ },
   #endif // OPTION_MEMCTRL_CZ
-
-  #if (OPTION_MEMCTLR_ST == TRUE)
-    /*-------------
-     * DDR3 FEATURES
-     *--------------
-    */
-    #if OPTION_DDR3
-      #undef MEM_MAIN_FEATURE_LVDDR3
-      extern OPTION_MEM_FEATURE_MAIN MemMLvDdr3PerformanceEnhPre;
-      #define MEM_MAIN_FEATURE_LVDDR3 MemMLvDdr3PerformanceEnhPre
-    #else
-      #undef MEM_TECH_CONSTRUCTOR_DDR3
-      #define MEM_TECH_CONSTRUCTOR_DDR3  (MEM_TECH_CONSTRUCTOR *) MemTFeatDef,
-    #endif
-    /*--------------
-     * DDR4 FEATURES
-     *--------------
-    */
-    #if OPTION_DDR4
-      #undef MEM_MAIN_FEATURE_LVDDR4
-      //extern OPTION_MEM_FEATURE_MAIN MemMLvDdr4PerformanceEnhPre;
-      //#define MEM_MAIN_FEATURE_LVDDR4 MemMLvDdr4PerformanceEnhPre
-      #define MEM_MAIN_FEATURE_LVDDR4 MemMDefRet
-    #else
-      #undef MEM_TECH_CONSTRUCTOR_DDR4
-      #define MEM_TECH_CONSTRUCTOR_DDR4  (MEM_TECH_CONSTRUCTOR *) MemTFeatDef,
-      #undef MEM_MAIN_FEATURE_LVDDR4
-      #define MEM_MAIN_FEATURE_LVDDR4 MemMDefRet
-    #endif
-
-    #undef MEM_LOAD_PMU_FIRMWARE
-    extern OPTION_MEM_FEATURE_NB MemNLoadPmuFirmwareST;
-    #define MEM_LOAD_PMU_FIRMWARE MemNLoadPmuFirmwareST
-
-    #undef MEM_TECH_FEATURE_DRAMINIT
-    #define MEM_TECH_FEATURE_DRAMINIT   MemTFeatDef
-
-    #if (OPTION_EARLY_SAMPLES == TRUE)
-      extern OPTION_MEM_FEATURE_NB MemNInitEarlySampleSupportST;
-      #undef MEM_EARLY_SAMPLE_SUPPORT
-      #define MEM_EARLY_SAMPLE_SUPPORT    MemNInitEarlySampleSupportST
-    #else
-      #define MEM_EARLY_SAMPLE_SUPPORT    MemFDefRet
-    #endif
-
-    #if (OPTION_DCT_INTERLEAVE == TRUE)
-      extern OPTION_MEM_FEATURE_NB MemFInterleaveMultiChannels;
-      #undef  MEM_FEATURE_CHANNEL_INTERLEAVE
-      #define MEM_FEATURE_CHANNEL_INTERLEAVE MemFInterleaveMultiChannels
-    #endif
-
-    #undef  MEM_FEATURE_REGION_INTERLEAVE
-    #define MEM_FEATURE_REGION_INTERLEAVE MemFDefRet
-
-    #undef MEM_FEATURE_TRAINING
-    #define MEM_FEATURE_TRAINING    MemFDefRet
-    #undef MEM_TECH_FEATURE_CPG
-    #define MEM_TECH_FEATURE_CPG    MemFDefRet
-    #undef MEM_TECH_FEATURE_HWRXEN
-    #define MEM_TECH_FEATURE_HWRXEN    MemFDefRet
-
-    MEM_FEAT_BLOCK_NB  MemFeatBlockST = {
-      MEM_FEAT_BLOCK_NB_STRUCT_VERSION,
-      MEM_FEATURE_ONLINE_SPARE,
-      MEM_FEATURE_BANK_INTERLEAVE,
-      MEM_FEATURE_UNDO_BANK_INTERLEAVE,
-      MEM_FEATURE_NODE_INTERLEAVE_CHECK,
-      MEM_FEATURE_NODE_INTERLEAVE,
-      MEM_FEATURE_CHANNEL_INTERLEAVE,
-      MEM_FEATURE_REGION_INTERLEAVE,
-      MEM_FEATURE_CK_ECC,
-      MEM_FEATURE_ECC,
-      MEM_FEATURE_TRAINING,
-      MEM_FEATURE_LVDDR3,
-      MEM_FEATURE_ONDIMMTHERMAL,
-      MEM_TECH_FEATURE_DRAMINIT,
-      MEM_FEATURE_DIMM_EXCLUDE,
-      MEM_EARLY_SAMPLE_SUPPORT,
-      MEM_TECH_FEATURE_CPG,
-      MEM_TECH_FEATURE_HWRXEN,
-      MEM_FEATURE_AMP,
-      MemFDefRet,
-      MemFDefRet,
-      MemFDefRet,
-      MemFDefRet,
-      MEM_LOAD_PMU_FIRMWARE,
-      MemFDefRet // MEM_FEATURE_LVDDR4
-    };
-
-    #undef MEM_NB_SUPPORT_ST
-    extern MEM_NB_CONSTRUCTOR MemConstructNBBlockST;
-    extern MEM_INITIALIZER MemNInitDefaultsST;
-    #define MEM_NB_SUPPORT_ST { MEM_NB_SUPPORT_STRUCT_VERSION, MemConstructNBBlockST, MemNInitDefaultsST, &MemFeatBlockST, MEM_FEATURE_S3_RESUME_CONSTRUCTOR_ST, MEM_IDENDIMM_ST, MEM_TRANS_SYS_ADDR_TO_CS_ST },
-  #endif // OPTION_MEMCTRL_ST
 
   /*---------------------------------------------------------------------------------------------------
    * MAIN FEATURE BLOCK
@@ -829,8 +605,7 @@ BOOLEAN MemFS3DefConstructorRet (
     MEM_MAIN_FEATURE_MEM_SAVE,
     MEM_MAIN_FEATURE_MEM_RESTORE,
     MEM_MAIN_FEATURE_MEM_S3_SAVE,
-    MEM_MAIN_FEATURE_AGGRESSOR,
-    MEM_MAIN_FEATURE_LVDDR4
+    MEM_MAIN_FEATURE_AGGRESSOR
   };
 
 
@@ -850,16 +625,6 @@ BOOLEAN MemFS3DefConstructorRet (
   #define MEM_TECH_TRAINING_FEAT_NULL_TERNMIATOR 0
 
   #if OPTION_MEMCTLR_CZ
-    #define NB_TRAIN_FLOW_DDR2    (BOOLEAN (*) (MEM_NB_BLOCK*)) memDefTrue
-    #ifndef NB_TRAIN_FLOW_DDR3
-      #undef NB_TRAIN_FLOW_DDR3
-      #define NB_TRAIN_FLOW_DDR3    (BOOLEAN (*) (MEM_NB_BLOCK*)) memDefTrue
-    #endif
-    #undef MEM_TECH_CONSTRUCTOR_DDR2
-    #define MEM_TECH_CONSTRUCTOR_DDR2
-  #endif
-
-  #if OPTION_MEMCTLR_ST
     #define NB_TRAIN_FLOW_DDR2    (BOOLEAN (*) (MEM_NB_BLOCK*)) memDefTrue
     #ifndef NB_TRAIN_FLOW_DDR3
       #undef NB_TRAIN_FLOW_DDR3
@@ -896,7 +661,6 @@ BOOLEAN MemFS3DefConstructorRet (
   MEM_TECH_CONSTRUCTOR* memTechInstalled[] = {    // Types of technology installed
     MEM_TECH_CONSTRUCTOR_DDR2
     MEM_TECH_CONSTRUCTOR_DDR3
-    MEM_TECH_CONSTRUCTOR_DDR4
     NULL
   };
    /*---------------------------------------------------------------------------------------------------
@@ -937,469 +701,106 @@ BOOLEAN MemFS3DefConstructorRet (
   #define PSC_TBL_END NULL
   #define MEM_PSC_FLOW_DEFTRUE (BOOLEAN (*) (MEM_NB_BLOCK*, MEM_PSC_TABLE_BLOCK *)) memDefTrue
 
-  #define MEM_PSC_FLOW_BLOCK_D3_CZ
-  #define MEM_PSC_FLOW_BLOCK_D4_CZ
   #if OPTION_MEMCTLR_CZ
-    #if OPTION_DDR3
-      #if OPTION_UDIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY CZMaxFreqTblEntUFP4D3;
-          #define PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4  &CZMaxFreqTblEntUFP4D3,
-        #else
-          #define PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY CZCadBusTblEnU3;
-        #define PSC_TBL_CZ_UDIMM3_CAD_BUS  &CZCadBusTblEnU3,
-        extern PSC_TBL_ENTRY CZDataBusTblEnU3;
-        #define PSC_TBL_CZ_UDIMM3_DATA_BUS  &CZDataBusTblEnU3,
+    #if OPTION_UDIMMS
+      #if OPTION_FP4_SOCKET_SUPPORT
+        extern PSC_TBL_ENTRY CZMaxFreqTblEntUFP4;
+        #define PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4  &CZMaxFreqTblEntUFP4,
       #else
-        #define PSC_TBL_CZ_UDIMM3_CAD_BUS
-        #define PSC_TBL_CZ_UDIMM3_DATA_BUS
         #define PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4
       #endif
-      #if OPTION_SODIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY CZMaxFreqTblEntSOFP4D3;
-          #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4  &CZMaxFreqTblEntSOFP4D3,
-        #else
-          #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY CZCadBusTblEnSO3;
-        #define PSC_TBL_CZ_SODIMM3_CAD_BUS  &CZCadBusTblEnSO3,
-        extern PSC_TBL_ENTRY CZDataBusTblEnSO3;
-        #define PSC_TBL_CZ_SODIMM3_DATA_BUS  &CZDataBusTblEnSO3,
-      #else
-        #define PSC_TBL_CZ_SODIMM3_CAD_BUS
-        #define PSC_TBL_CZ_SODIMM3_DATA_BUS
-        #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
-      #endif
+      extern PSC_TBL_ENTRY CZCadBusTblEnU;
+      #define PSC_TBL_CZ_UDIMM3_CAD_BUS  &CZCadBusTblEnU,
+      extern PSC_TBL_ENTRY CZDataBusTblEnU;
+      #define PSC_TBL_CZ_UDIMM3_DATA_BUS  &CZDataBusTblEnU,
     #else
       #define PSC_TBL_CZ_UDIMM3_CAD_BUS
       #define PSC_TBL_CZ_UDIMM3_DATA_BUS
       #define PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4
+    #endif
+    #if OPTION_SODIMMS
+      #if OPTION_FP4_SOCKET_SUPPORT
+        extern PSC_TBL_ENTRY CZMaxFreqTblEntSOFP4;
+        #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4  &CZMaxFreqTblEntSOFP4,
+      #else
+        #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
+      #endif
+      extern PSC_TBL_ENTRY CZCadBusTblEnSO;
+      #define PSC_TBL_CZ_SODIMM3_CAD_BUS  &CZCadBusTblEnSO,
+      extern PSC_TBL_ENTRY CZDataBusTblEnSO;
+      #define PSC_TBL_CZ_SODIMM3_DATA_BUS  &CZDataBusTblEnSO,
+    #else
       #define PSC_TBL_CZ_SODIMM3_CAD_BUS
       #define PSC_TBL_CZ_SODIMM3_DATA_BUS
       #define PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
     #endif
-    #if OPTION_DDR4
-      #if OPTION_UDIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY CZMaxFreqTblEntUFP4D4;
-          #define PSC_TBL_CZ_UDIMM4_MAX_FREQ_FP4  &CZMaxFreqTblEntUFP4D4,
-        #else
-          #define PSC_TBL_CZ_UDIMM4_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY CZCadBusTblEnU4;
-        #define PSC_TBL_CZ_UDIMM4_CAD_BUS  &CZCadBusTblEnU4,
-        extern PSC_TBL_ENTRY CZDataBusTblEnU4_A0;
-        #define PSC_TBL_CZ_UDIMM4_DATA_BUS_A0  &CZDataBusTblEnU4_A0,
-        extern PSC_TBL_ENTRY CZDataBusTblEnU4;
-        #define PSC_TBL_CZ_UDIMM4_DATA_BUS  &CZDataBusTblEnU4,
-      #else
-        #define PSC_TBL_CZ_UDIMM4_CAD_BUS
-        #define PSC_TBL_CZ_UDIMM4_DATA_BUS_A0
-        #define PSC_TBL_CZ_UDIMM4_DATA_BUS
-        #define PSC_TBL_CZ_UDIMM4_MAX_FREQ_FP4
-      #endif
-      #if OPTION_SODIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY CZMaxFreqTblEntSOFP4D4;
-          #define PSC_TBL_CZ_SODIMM4_MAX_FREQ_FP4  &CZMaxFreqTblEntSOFP4D4,
-        #else
-          #define PSC_TBL_CZ_SODIMM4_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY CZCadBusTblEnSO4;
-        #define PSC_TBL_CZ_SODIMM4_CAD_BUS  &CZCadBusTblEnSO4,
-        extern PSC_TBL_ENTRY CZDataBusTblEnSO4_A0;
-        #define PSC_TBL_CZ_SODIMM4_DATA_BUS_A0  &CZDataBusTblEnSO4_A0,
-        extern PSC_TBL_ENTRY CZDataBusTblEnSO4;
-        #define PSC_TBL_CZ_SODIMM4_DATA_BUS  &CZDataBusTblEnSO4,
-      #else
-        #define PSC_TBL_CZ_SODIMM4_CAD_BUS
-        #define PSC_TBL_CZ_SODIMM4_DATA_BUS_A0
-        #define PSC_TBL_CZ_SODIMM4_DATA_BUS
-        #define PSC_TBL_CZ_SODIMM4_MAX_FREQ_FP4
-      #endif
-    #else
-      #define PSC_TBL_CZ_UDIMM4_CAD_BUS
-      #define PSC_TBL_CZ_UDIMM4_DATA_BUS_A0
-      #define PSC_TBL_CZ_UDIMM4_DATA_BUS
-      #define PSC_TBL_CZ_UDIMM4_MAX_FREQ_FP4
-      #define PSC_TBL_CZ_SODIMM4_CAD_BUS
-      #define PSC_TBL_CZ_SODIMM4_DATA_BUS_A0
-      #define PSC_TBL_CZ_SODIMM4_DATA_BUS
-      #define PSC_TBL_CZ_SODIMM4_MAX_FREQ_FP4
-    #endif
+
+    extern PSC_TBL_ENTRY CZOdtPatTblEnt;
+    PSC_TBL_ENTRY* memPSCTblODTPatArrayCZ[] = {
+      &CZOdtPatTblEnt,
+      PSC_TBL_END
+    };
+
+    PSC_TBL_ENTRY* memPSCTblMaxFreqArrayCZ[] = {
+      PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
+      PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4
+      PSC_TBL_END
+    };
+
+    PSC_TBL_ENTRY* memPSCTblCadBusArrayCZ[] = {
+      PSC_TBL_CZ_SODIMM3_CAD_BUS
+      PSC_TBL_CZ_UDIMM3_CAD_BUS
+      PSC_TBL_END
+    };
+
+    PSC_TBL_ENTRY* memPSCTblDataBusArrayCZ[] = {
+      PSC_TBL_CZ_SODIMM3_DATA_BUS
+      PSC_TBL_CZ_UDIMM3_DATA_BUS
+      PSC_TBL_END
+    };
+
+    MEM_PSC_TABLE_BLOCK memPSCTblBlockCZ = {
+      (PSC_TBL_ENTRY **)&memPSCTblMaxFreqArrayCZ,
+      (PSC_TBL_ENTRY **)&memPSCTblDataBusArrayCZ,
+      (PSC_TBL_ENTRY **)&memPSCTblODTPatArrayCZ,
+      (PSC_TBL_ENTRY **)&memPSCTblCadBusArrayCZ,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL
+    };
 
     extern MEM_PSC_FLOW MemPGetMaxFreqSupported;
 
-    #if OPTION_DDR3
-
-      extern PSC_TBL_ENTRY CZOdtPatTblEnt3;
-      extern MEM_PSC_FLOW MemPLookupDataBusCfgTabs3;
-
-      PSC_TBL_ENTRY* memPSCTblODTPatArrayD3CZ[] = {
-        &CZOdtPatTblEnt3,
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblMaxFreqArrayD3CZ[] = {
-        PSC_TBL_CZ_SODIMM3_MAX_FREQ_FP4
-        PSC_TBL_CZ_UDIMM3_MAX_FREQ_FP4
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblCadBusArrayD3CZ[] = {
-        PSC_TBL_CZ_SODIMM3_CAD_BUS
-        PSC_TBL_CZ_UDIMM3_CAD_BUS
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblDataBusArrayD3CZ[] = {
-        PSC_TBL_CZ_SODIMM3_DATA_BUS
-        PSC_TBL_CZ_UDIMM3_DATA_BUS
-        PSC_TBL_END
-      };
-
-      MEM_PSC_TABLE_BLOCK memPSCTblBlockD3CZ = {
-        (PSC_TBL_ENTRY **)&memPSCTblMaxFreqArrayD3CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblDataBusArrayD3CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblODTPatArrayD3CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblCadBusArrayD3CZ,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-      };
-
-      MEM_PSC_FLOW_BLOCK memPlatSpecFlowD3CZ = {
-        &memPSCTblBlockD3CZ,
-        MemPGetMaxFreqSupported,
-        MemPLookupDataBusCfgTabs3,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE
-      };
-      #undef MEM_PSC_FLOW_BLOCK_D3_CZ
-      #define MEM_PSC_FLOW_BLOCK_D3_CZ &memPlatSpecFlowD3CZ,
-    #endif
-
-    #if OPTION_DDR4
-
-      extern PSC_TBL_ENTRY CZOdtPatTblEnt4;
-      extern MEM_PSC_FLOW MemPLookupDataBusCfgTabs4;
-
-      PSC_TBL_ENTRY* memPSCTblODTPatArrayD4CZ[] = {
-        &CZOdtPatTblEnt4,
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblMaxFreqArrayD4CZ[] = {
-        PSC_TBL_CZ_SODIMM4_MAX_FREQ_FP4
-        PSC_TBL_CZ_UDIMM4_MAX_FREQ_FP4
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblCadBusArrayD4CZ[] = {
-        PSC_TBL_CZ_SODIMM4_CAD_BUS
-        PSC_TBL_CZ_UDIMM4_CAD_BUS
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblDataBusArrayD4CZ[] = {
-        PSC_TBL_CZ_SODIMM4_DATA_BUS_A0
-        PSC_TBL_CZ_SODIMM4_DATA_BUS
-        PSC_TBL_CZ_UDIMM4_DATA_BUS_A0
-        PSC_TBL_CZ_UDIMM4_DATA_BUS
-        PSC_TBL_END
-      };
-
-      MEM_PSC_TABLE_BLOCK memPSCTblBlockD4CZ = {
-        (PSC_TBL_ENTRY **)&memPSCTblMaxFreqArrayD4CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblDataBusArrayD4CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblODTPatArrayD4CZ,
-        (PSC_TBL_ENTRY **)&memPSCTblCadBusArrayD4CZ,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-      };
-
-      MEM_PSC_FLOW_BLOCK memPlatSpecFlowD4CZ = {
-        &memPSCTblBlockD4CZ,
-        MemPGetMaxFreqSupported,
-        MemPLookupDataBusCfgTabs4,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE
-      };
-      #undef MEM_PSC_FLOW_BLOCK_D4_CZ
-      #define MEM_PSC_FLOW_BLOCK_D4_CZ &memPlatSpecFlowD4CZ,
-    #endif
-  #endif
-
-  #define MEM_PSC_FLOW_BLOCK_D3_ST
-  #define MEM_PSC_FLOW_BLOCK_D4_ST
-  #if OPTION_MEMCTLR_ST
-    #if OPTION_DDR3
-      #if OPTION_UDIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY STMaxFreqTblEntUFP4D3;
-          #define PSC_TBL_ST_UDIMM3_MAX_FREQ_FP4  &STMaxFreqTblEntUFP4D3,
-        #else
-          #define PSC_TBL_ST_UDIMM3_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY STCadBusTblEnU3;
-        #define PSC_TBL_ST_UDIMM3_CAD_BUS  &STCadBusTblEnU3,
-        extern PSC_TBL_ENTRY STDataBusTblEnU3;
-        #define PSC_TBL_ST_UDIMM3_DATA_BUS  &STDataBusTblEnU3,
-      #else
-        #define PSC_TBL_ST_UDIMM3_CAD_BUS
-        #define PSC_TBL_ST_UDIMM3_DATA_BUS
-        #define PSC_TBL_ST_UDIMM3_MAX_FREQ_FP4
-      #endif
-      #if OPTION_SODIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY STMaxFreqTblEntSOFP4D3;
-          #define PSC_TBL_ST_SODIMM3_MAX_FREQ_FP4  &STMaxFreqTblEntSOFP4D3,
-        #else
-          #define PSC_TBL_ST_SODIMM3_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY STCadBusTblEnSO3;
-        #define PSC_TBL_ST_SODIMM3_CAD_BUS  &STCadBusTblEnSO3,
-        extern PSC_TBL_ENTRY STDataBusTblEnSO3;
-        #define PSC_TBL_ST_SODIMM3_DATA_BUS  &STDataBusTblEnSO3,
-      #else
-        #define PSC_TBL_ST_SODIMM3_CAD_BUS
-        #define PSC_TBL_ST_SODIMM3_DATA_BUS
-        #define PSC_TBL_ST_SODIMM3_MAX_FREQ_FP4
-      #endif
-    #else
-      #define PSC_TBL_ST_UDIMM3_CAD_BUS
-      #define PSC_TBL_ST_UDIMM3_DATA_BUS
-      #define PSC_TBL_ST_UDIMM3_MAX_FREQ_FP4
-      #define PSC_TBL_ST_SODIMM3_CAD_BUS
-      #define PSC_TBL_ST_SODIMM3_DATA_BUS
-      #define PSC_TBL_ST_SODIMM3_MAX_FREQ_FP4
-    #endif
-    #if OPTION_DDR4
-      #if OPTION_UDIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY STMaxFreqTblEntUFP4D4;
-          #define PSC_TBL_ST_UDIMM4_MAX_FREQ_FP4  &STMaxFreqTblEntUFP4D4,
-        #else
-          #define PSC_TBL_ST_UDIMM4_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY STCadBusTblEnU4;
-        #define PSC_TBL_ST_UDIMM4_CAD_BUS  &STCadBusTblEnU4,
-        extern PSC_TBL_ENTRY STDataBusTblEnU4_A0;
-        #define PSC_TBL_ST_UDIMM4_DATA_BUS_A0  &STDataBusTblEnU4_A0,
-        extern PSC_TBL_ENTRY STDataBusTblEnU4;
-        #define PSC_TBL_ST_UDIMM4_DATA_BUS  &STDataBusTblEnU4,
-      #else
-        #define PSC_TBL_ST_UDIMM4_CAD_BUS
-        #define PSC_TBL_ST_UDIMM4_DATA_BUS_A0
-        #define PSC_TBL_ST_UDIMM4_DATA_BUS
-        #define PSC_TBL_ST_UDIMM4_MAX_FREQ_FP4
-      #endif
-      #if OPTION_SODIMMS
-        #if OPTION_FP4_SOCKET_SUPPORT
-          extern PSC_TBL_ENTRY STMaxFreqTblEntSOFP4D4;
-          #define PSC_TBL_ST_SODIMM4_MAX_FREQ_FP4  &STMaxFreqTblEntSOFP4D4,
-        #else
-          #define PSC_TBL_ST_SODIMM4_MAX_FREQ_FP4
-        #endif
-        extern PSC_TBL_ENTRY STCadBusTblEnSO4;
-        #define PSC_TBL_ST_SODIMM4_CAD_BUS  &STCadBusTblEnSO4,
-        extern PSC_TBL_ENTRY STDataBusTblEnSO4_A0;
-        #define PSC_TBL_ST_SODIMM4_DATA_BUS_A0  &STDataBusTblEnSO4_A0,
-        extern PSC_TBL_ENTRY STDataBusTblEnSO4;
-        #define PSC_TBL_ST_SODIMM4_DATA_BUS  &STDataBusTblEnSO4,
-      #else
-        #define PSC_TBL_ST_SODIMM4_CAD_BUS
-        #define PSC_TBL_ST_SODIMM4_DATA_BUS_A0
-        #define PSC_TBL_ST_SODIMM4_DATA_BUS
-        #define PSC_TBL_ST_SODIMM4_MAX_FREQ_FP4
-      #endif
-    #else
-      #define PSC_TBL_ST_UDIMM4_CAD_BUS
-      #define PSC_TBL_ST_UDIMM4_DATA_BUS_A0
-      #define PSC_TBL_ST_UDIMM4_DATA_BUS
-      #define PSC_TBL_ST_UDIMM4_MAX_FREQ_FP4
-      #define PSC_TBL_ST_SODIMM4_CAD_BUS
-      #define PSC_TBL_ST_SODIMM4_DATA_BUS_A0
-      #define PSC_TBL_ST_SODIMM4_DATA_BUS
-      #define PSC_TBL_ST_SODIMM4_MAX_FREQ_FP4
-    #endif
-
-    extern MEM_PSC_FLOW MemPGetMaxFreqSupported;
-
-    #if OPTION_DDR3
-
-      extern PSC_TBL_ENTRY STOdtPatTblEnt3;
-      extern MEM_PSC_FLOW MemPLookupDataBusCfgTabs3;
-
-      PSC_TBL_ENTRY* memPSCTblODTPatArrayD3ST[] = {
-        &STOdtPatTblEnt3,
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblMaxFreqArrayD3ST[] = {
-        PSC_TBL_ST_SODIMM3_MAX_FREQ_FP4
-        PSC_TBL_ST_UDIMM3_MAX_FREQ_FP4
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblCadBusArrayD3ST[] = {
-        PSC_TBL_ST_SODIMM3_CAD_BUS
-        PSC_TBL_ST_UDIMM3_CAD_BUS
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblDataBusArrayD3ST[] = {
-        PSC_TBL_ST_SODIMM3_DATA_BUS
-        PSC_TBL_ST_UDIMM3_DATA_BUS
-        PSC_TBL_END
-      };
-
-      MEM_PSC_TABLE_BLOCK memPSCTblBlockD3ST = {
-        (PSC_TBL_ENTRY **)&memPSCTblMaxFreqArrayD3ST,
-        (PSC_TBL_ENTRY **)&memPSCTblDataBusArrayD3ST,
-        (PSC_TBL_ENTRY **)&memPSCTblODTPatArrayD3ST,
-        (PSC_TBL_ENTRY **)&memPSCTblCadBusArrayD3ST,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-      };
-
-      MEM_PSC_FLOW_BLOCK memPlatSpecFlowD3ST = {
-        &memPSCTblBlockD3ST,
-        MemPGetMaxFreqSupported,
-        MemPLookupDataBusCfgTabs3,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE
-      };
-      #undef MEM_PSC_FLOW_BLOCK_D3_ST
-      #define MEM_PSC_FLOW_BLOCK_D3_ST &memPlatSpecFlowD3ST,
-    #endif
-
-    #if OPTION_DDR4
-
-      extern PSC_TBL_ENTRY STOdtPatTblEnt4;
-      extern MEM_PSC_FLOW MemPLookupDataBusCfgTabs4;
-
-      PSC_TBL_ENTRY* memPSCTblODTPatArrayD4ST[] = {
-        &STOdtPatTblEnt4,
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblMaxFreqArrayD4ST[] = {
-        PSC_TBL_ST_SODIMM4_MAX_FREQ_FP4
-        PSC_TBL_ST_UDIMM4_MAX_FREQ_FP4
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblCadBusArrayD4ST[] = {
-        PSC_TBL_ST_SODIMM4_CAD_BUS
-        PSC_TBL_ST_UDIMM4_CAD_BUS
-        PSC_TBL_END
-      };
-
-      PSC_TBL_ENTRY* memPSCTblDataBusArrayD4ST[] = {
-        PSC_TBL_ST_SODIMM4_DATA_BUS_A0
-        PSC_TBL_ST_SODIMM4_DATA_BUS
-        PSC_TBL_ST_UDIMM4_DATA_BUS_A0
-        PSC_TBL_ST_UDIMM4_DATA_BUS
-        PSC_TBL_END
-      };
-
-      MEM_PSC_TABLE_BLOCK memPSCTblBlockD4ST = {
-        (PSC_TBL_ENTRY **)&memPSCTblMaxFreqArrayD4ST,
-        (PSC_TBL_ENTRY **)&memPSCTblDataBusArrayD4ST,
-        (PSC_TBL_ENTRY **)&memPSCTblODTPatArrayD4ST,
-        (PSC_TBL_ENTRY **)&memPSCTblCadBusArrayD4ST,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-      };
-
-      MEM_PSC_FLOW_BLOCK memPlatSpecFlowD4ST = {
-        &memPSCTblBlockD4ST,
-        MemPGetMaxFreqSupported,
-        MemPLookupDataBusCfgTabs4,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE,
-        MEM_PSC_FLOW_DEFTRUE
-      };
-      #undef MEM_PSC_FLOW_BLOCK_D4_ST
-      #define MEM_PSC_FLOW_BLOCK_D4_ST &memPlatSpecFlowD4ST,
-    #endif
+    MEM_PSC_FLOW_BLOCK memPlatSpecFlowCZ = {
+      &memPSCTblBlockCZ,
+      MemPGetMaxFreqSupported,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE,
+      MEM_PSC_FLOW_DEFTRUE
+    };
+    #define MEM_PSC_FLOW_BLOCK_CZ &memPlatSpecFlowCZ,
+  #else
+    #define MEM_PSC_FLOW_BLOCK_CZ
   #endif
 
   MEM_PSC_FLOW_BLOCK* memPlatSpecFlowArray[] = {
-    MEM_PSC_FLOW_BLOCK_D3_CZ
-    MEM_PSC_FLOW_BLOCK_D4_CZ
-    MEM_PSC_FLOW_BLOCK_D3_ST
-    MEM_PSC_FLOW_BLOCK_D4_ST
+    MEM_PSC_FLOW_BLOCK_CZ
     MEM_PSC_FLOW_BLOCK_END
   };
 
@@ -1473,10 +874,6 @@ BOOLEAN MemFS3DefConstructorRet (
     #undef MEM_NB_SUPPORT_CZ
     #define MEM_NB_SUPPORT_CZ { MEM_NB_SUPPORT_STRUCT_VERSION, NULL, NULL, NULL, MEM_FEATURE_S3_RESUME_CONSTRUCTOR_CZ, MEM_IDENDIMM_CZ, MEM_TRANS_SYS_ADDR_TO_CS_CZ },
   #endif
-  #if (OPTION_MEMCTLR_ST == TRUE)
-    #undef MEM_NB_SUPPORT_ST
-    #define MEM_NB_SUPPORT_ST { MEM_NB_SUPPORT_STRUCT_VERSION, NULL, NULL, NULL, MEM_FEATURE_S3_RESUME_CONSTRUCTOR_ST, MEM_IDENDIMM_ST, MEM_TRANS_SYS_ADDR_TO_CS_ST },
-  #endif
   /*---------------------------------------------------------------------------------------------------
    * DEFAULT Technology Training
    *
@@ -1537,7 +934,6 @@ BOOLEAN MemFS3DefConstructorRet (
  */
 MEM_NB_SUPPORT memNBInstalled[] = {
   MEM_NB_SUPPORT_CZ
-  MEM_NB_SUPPORT_ST
   MEM_NB_SUPPORT_END
 };
 

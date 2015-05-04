@@ -11,7 +11,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Core
- * @e \$Revision: 311866 $   @e \$Date: 2015-01-28 14:40:50 +0800 (Wed, 28 Jan 2015) $
+ * @e \$Revision: 314038 $   @e \$Date: 2015-03-03 06:41:06 -0600 (Tue, 03 Mar 2015) $
  */
 /*****************************************************************************
  *
@@ -101,7 +101,7 @@
 
                   // This is the release version number of the AGESA component
                   // This string MUST be exactly 12 characters long
-#define AGESA_VERSION_STRING  {'V', '1', '.', '0', '.', '8', '.', '0', 'X', ' ', ' ', ' '}
+#define AGESA_VERSION_STRING  {'V', '1', '.', '0', '.', '0', '.', '2', ' ', ' ', ' ', ' '}
 
 
 // The Carrizo FP4 solution is defined to be family 0x15 models 0x60 - 0x6F in the FP4 sockets.

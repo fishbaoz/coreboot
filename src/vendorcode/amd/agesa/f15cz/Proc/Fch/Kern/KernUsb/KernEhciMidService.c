@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 315441 $   @e \$Date: 2015-03-27 03:45:30 +0800 (Fri, 27 Mar 2015) $
+ * @e \$Revision: 310636 $   @e \$Date: 2015-01-09 17:14:02 -0600 (Fri, 09 Jan 2015) $
  *
  */
 /*;********************************************************************************
@@ -69,7 +69,6 @@
 #include "FchPlatform.h"
 #include "Filecode.h"
 #include "KernFch.h"
-#include "Ids.h"
 #define FILECODE PROC_FCH_KERN_KERNUSB_KERNEHCIMIDSERVICE_FILECODE
 //
 // Declaration of local functions
@@ -150,18 +149,14 @@ FchEhciInitAfterPciInit (
       do {
         ReadMem ( BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, &Var);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while (( Var & BIT17) && (Index < 10 ));
       Index = 0;
       RwMem (BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, ~(UINT32)BIT12, 0);
       do {
         ReadMem ( BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, &Var);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while (( Var & BIT17) && (Index < 10 ));
       RwMem (BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, ~(UINT32) BIT12, BIT12);
 
@@ -172,18 +167,14 @@ FchEhciInitAfterPciInit (
       do {
         ReadMem ( BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, &Var);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while (( Var & BIT17) && (Index < 10 ));
       Index = 0;
       RwMem (BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, 0xFFFFC000, (PortNum << 13) + DrivingStrength);
       do {
         ReadMem ( BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, &Var);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while (( Var & BIT17) && (Index < 10 ));
       RwMem (BarAddress + FCH_EHCI_BAR_REGB4, AccessWidth32, 0xFFFFC000, (PortNum << 13) + BIT12 + DrivingStrength);
       // HSSLEW = 2 <<
@@ -192,13 +183,9 @@ FchEhciInitAfterPciInit (
     RwMem (BarAddress + FCH_EHCI_BAR_REGD0, AccessWidth32, ~((UINT32) (0x0F)), (UINT32) (0x6));
     RwMem (BarAddress + FCH_EHCI_BAR_REGC4, AccessWidth32, (UINT32) (~ 0xff00ffff), 0x90001221);
     RwMem (BarAddress + FCH_EHCI_BAR_REGD4, AccessWidth32, ~((UINT32) (0xC2)), (UINT32) (0x40));
-    IEM_SKIP_CODE (IEM_WAIT) {
-      FchStall (200, StdHeader);
-    }
+    FchStall (200, StdHeader);
     RwMem (BarAddress + FCH_EHCI_BAR_REGD4, AccessWidth32, ~((UINT32) (0x02)), (UINT32) (0x02));
-    IEM_SKIP_CODE (IEM_WAIT) {
-      FchStall (400, StdHeader);
-    }
+    FchStall (400, StdHeader);
     RwMem (BarAddress + FCH_EHCI_BAR_REGD4, AccessWidth32, ~((UINT32) (0x02)), (UINT32) (0x0));
     RetEfuseValue = FchUsbCommonPhyCalibration ( FchDataPtr );
     if ( RetEfuseValue == 0 ) {
@@ -209,8 +196,6 @@ FchEhciInitAfterPciInit (
     }
     //Set EHCI_pci_configx50[6]='1' to disable EHCI MSI support
     RwPci ((UINT32) Value + FCH_EHCI_REG50, AccessWidth32, ~ ((UINT32) (0x01 << 6)), (UINT32) (0x01 << 6), StdHeader);
-    //Cfg_msi_gcg_en: cfg_msi_gcg_enable. Read-write. Reset: 0. BIOS: 1. 1=Enable
-    RwPci ((UINT32) Value + FCH_EHCI_REG50, AccessWidth32, ~ ((UINT32) (0x01 << 18)), (UINT32) (0x01 << 18), StdHeader);
     // EHCI Async Park Mode
     //Set EHCI_pci_configx50[11:8]=0x1
     //Set EHCI_pci_configx50[15:12]=0x1

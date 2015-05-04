@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 315986 $   @e \$Date: 2015-04-02 04:32:39 +0800 (Thu, 02 Apr 2015) $
+ * @e \$Revision: 311871 $   @e \$Date: 2015-01-28 01:03:13 -0600 (Wed, 28 Jan 2015) $
  *
  */
 /*
@@ -182,7 +182,6 @@ FchInitEnvSdProgram (
     if (LocalCfgPtr->Sd.SdConfig == SdDisable) {
       RwMem (ACPI_MMIO_BASE + PMIO_BASE + FCH_PMIOA_REGD3, AccessWidth8, 0xBF, 0x00);
       RwMem (ACPI_MMIO_BASE + PMIO_BASE + FCH_PMIOA_REGE8, AccessWidth8, 0xFE, 0x00);
-      ACPIMMIO8 (FCH_AOACx70_SD_D3_CONTROL) &= ~ AOAC_PWR_ON_DEV;
     }
   }
 }

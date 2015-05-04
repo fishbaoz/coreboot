@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -153,12 +153,12 @@ F15CzNbPstateDis (
   IN       AMD_CONFIG_PARAMS     *StdHeader
   );
 VOID
-F15CzTransitionToNbLow (
+TransitionToNbLow (
   IN       AMD_CONFIG_PARAMS  *StdHeader
   );
 
 VOID
-F15CzTransitionToNbHigh (
+TransitionToNbHigh (
   IN       AMD_CONFIG_PARAMS  *StdHeader
   );
 

@@ -11,7 +11,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Core
- * @e \$Revision: 314626 $   @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+ * @e \$Revision: 314282 $   @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
  */
 /*****************************************************************************
  *
@@ -184,24 +184,15 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
 
 /*  Default sockets to off  */
 #define OPTION_FP4_SOCKET_SUPPORT    FALSE
-#define OPTION_FT4_SOCKET_SUPPORT    FALSE
 
 /*  Default families to off  */
 #define OPTION_FAMILY15H_MODEL_6x    FALSE
-#define OPTION_FAMILY15H_MODEL_7x    FALSE
 
 /*  Enable the appropriate socket support  */
 #ifdef INSTALL_FP4_SOCKET_SUPPORT
   #if  INSTALL_FP4_SOCKET_SUPPORT == TRUE
     #undef OPTION_FP4_SOCKET_SUPPORT
     #define OPTION_FP4_SOCKET_SUPPORT  TRUE
-  #endif
-#endif
-
-#ifdef INSTALL_FT4_SOCKET_SUPPORT
-  #if  INSTALL_FT4_SOCKET_SUPPORT == TRUE
-    #undef OPTION_FT4_SOCKET_SUPPORT
-    #define OPTION_FT4_SOCKET_SUPPORT  TRUE
   #endif
 #endif
 
@@ -216,16 +207,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
   #endif
 #endif
 
-// F15_7x is supported in FP4 and FT4
-#ifdef INSTALL_FAMILY_15_MODEL_7x_SUPPORT
-  #if  INSTALL_FAMILY_15_MODEL_7x_SUPPORT == TRUE
-    #undef OPTION_FAMILY15H
-    #define OPTION_FAMILY15H     TRUE
-    #undef OPTION_FAMILY15H_MODEL_7x
-    #define OPTION_FAMILY15H_MODEL_7x     TRUE
-  #endif
-#endif
-
 /*  Turn off families not required by socket designations */
 #if (OPTION_FAMILY15H_MODEL_6x == TRUE)
   #if (OPTION_FP4_SOCKET_SUPPORT == FALSE)
@@ -234,30 +215,18 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
   #endif
 #endif
 
-#if (OPTION_FAMILY15H_MODEL_7x == TRUE)
-  #if ((OPTION_FP4_SOCKET_SUPPORT == FALSE) && (OPTION_FT4_SOCKET_SUPPORT == FALSE))
-    #undef OPTION_FAMILY15H_MODEL_7x
-    #define OPTION_FAMILY15H_MODEL_7x  FALSE
-  #endif
-#endif
-
-#if ((OPTION_FAMILY15H_MODEL_6x == FALSE) && (OPTION_FAMILY15H_MODEL_7x == FALSE))
+#if (OPTION_FAMILY15H_MODEL_6x == FALSE)
   #undef OPTION_FAMILY15H
   #define OPTION_FAMILY15H     FALSE
 #endif
 
 /*  Check for invalid combinations of socket/family */
 #if (OPTION_FP4_SOCKET_SUPPORT == TRUE)
-  #if ((OPTION_FAMILY15H_MODEL_6x == FALSE) && (OPTION_FAMILY15H_MODEL_7x == FALSE))
+  #if (OPTION_FAMILY15H_MODEL_6x == FALSE)
     #error No FP4 supported families included in the build
   #endif
 #endif
 
-#if (OPTION_FT4_SOCKET_SUPPORT == TRUE)
-  #if (OPTION_FAMILY15H_MODEL_7x == FALSE)
-    #error No FT4 supported families included in the build
-  #endif
-#endif
 
 /* Process AGESA private data
  *
@@ -267,12 +236,10 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
 
 /*  Default all models to off  */
 #define OPTION_FAMILY15H_CZ          FALSE
-#define OPTION_FAMILY15H_ST          FALSE
 #define OPTION_FAMILY15H_UNKNOWN     FALSE
 
 /*  Default all memory controllers to off  */
 #define OPTION_MEMCTLR_CZ            FALSE
-#define OPTION_MEMCTLR_ST            FALSE
 
 /*  Default all memory controls to off  */
 #define OPTION_HW_WRITE_LEV_TRAINING            FALSE
@@ -302,7 +269,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
 #define OPTION_DDR2                             FALSE
 #define OPTION_DDR3                             FALSE
 #define OPTION_GDDR5                            FALSE
-#define OPTION_DDR4                             FALSE
 #define OPTION_ECC                              FALSE
 #define OPTION_EMP                              FALSE
 #define OPTION_BANK_INTERLEAVE                  FALSE
@@ -316,7 +282,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
 #define OPTION_DATA_EYE                         FALSE
 #define OPTION_AGGRESSOR                        FALSE
 #define OPTION_S3_SUPPORT                       FALSE
-#define OPTION_ONDIMMTHERMAL                    FALSE
 
 /*  Default all CPU controls to off  */
 #define OPTION_CRAT                             FALSE
@@ -401,8 +366,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
     #define OPTION_SODIMMS  TRUE
     #undef OPTION_DDR3
     #define OPTION_DDR3  TRUE
-    #undef OPTION_DDR4
-    #define OPTION_DDR4  TRUE
     #undef OPTION_ECC
     #define OPTION_ECC  TRUE
     #undef OPTION_BANK_INTERLEAVE
@@ -415,87 +378,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
     #define OPTION_DIMM_EXCLUDE  FALSE
     #undef OPTION_AMP
     #define OPTION_AMP  TRUE
-    #undef OPTION_ONDIMMTHERMAL
-    #define OPTION_ONDIMMTHERMAL TRUE
-    #undef OPTION_CDIT
-    #define OPTION_CDIT  TRUE
-    #undef OPTION_CRAT
-    #define OPTION_CRAT  TRUE
-    #undef OPTION_CPU_APM
-    #define OPTION_CPU_APM TRUE
-  #endif
-
-  #if (OPTION_FAMILY15H_MODEL_7x == TRUE)
-    #undef FCH_SUPPORT
-    #define FCH_SUPPORT          TRUE
-    #undef OPTION_FAMILY15H_ST
-    #define OPTION_FAMILY15H_ST  TRUE
-    #undef OPTION_S3_SUPPORT
-    #define OPTION_S3_SUPPORT    TRUE
-    #undef OPTION_MEMCTLR_ST
-    #define OPTION_MEMCTLR_ST    TRUE
-    #undef OPTION_HW_WRITE_LEV_TRAINING
-    #define OPTION_HW_WRITE_LEV_TRAINING  FALSE
-    #undef OPTION_CONTINOUS_PATTERN_GENERATION
-    #define OPTION_CONTINOUS_PATTERN_GENERATION  FALSE
-    #undef OPTION_HW_DQS_REC_EN_TRAINING
-    #define OPTION_HW_DQS_REC_EN_TRAINING  TRUE
-    #undef OPTION_HW_DQS_REC_EN_SEED_TRAINING
-    #define OPTION_HW_DQS_REC_EN_SEED_TRAINING      FALSE
-    #undef OPTION_OPT_SW_RD_WR_POS_TRAINING
-    #define OPTION_OPT_SW_RD_WR_POS_TRAINING  FALSE
-    #undef OPTION_RDDQS_2D_TRAINING
-    #define OPTION_RDDQS_2D_TRAINING  FALSE
-    #undef OPTION_MAX_RD_LAT_TRAINING
-    #define OPTION_MAX_RD_LAT_TRAINING  FALSE
-    #undef OPTION_SW_DRAM_INIT
-    #define OPTION_SW_DRAM_INIT  FALSE
-    #undef OPTION_S3_MEM_SUPPORT
-    #define OPTION_S3_MEM_SUPPORT  TRUE
-    #undef OPTION_PRE_MEM_INIT
-    #define OPTION_PRE_MEM_INIT    TRUE
-    #undef OPTION_POST_MEM_INIT
-    #define OPTION_POST_MEM_INIT   TRUE
-    #undef OPTION_GFX_RECOVERY
-    #define OPTION_GFX_RECOVERY  TRUE
-    #undef OPTION_CPU_CORELEVELING
-    #define OPTION_CPU_CORELEVELING  TRUE
-    #undef OPTION_C6_STATE
-    #define OPTION_C6_STATE  TRUE
-    #undef OPTION_IO_CSTATE
-    #define OPTION_IO_CSTATE TRUE
-    #undef OPTION_CC6_EXIT_CONTROL
-    #define OPTION_CC6_EXIT_CONTROL TRUE
-    #undef OPTION_BTC
-    #define OPTION_BTC TRUE
-    #undef OPTION_CPB
-    #define OPTION_CPB  TRUE
-    #undef OPTION_PREFETCH_MODE
-    #define OPTION_PREFETCH_MODE TRUE
-    #undef OPTION_S3SCRIPT
-    #define OPTION_S3SCRIPT  TRUE
-    #undef OPTION_CONNECTED_STANDBY
-    #define OPTION_CONNECTED_STANDBY TRUE
-    #undef OPTION_CPU_CFOH
-    #define OPTION_CPU_CFOH  TRUE
-    #undef OPTION_UDIMMS
-    #define OPTION_UDIMMS  TRUE
-    #undef OPTION_SODIMMS
-    #define OPTION_SODIMMS  TRUE
-    #undef OPTION_DDR3
-    #define OPTION_DDR3  TRUE
-    #undef OPTION_ECC
-    #define OPTION_ECC  FALSE
-    #undef OPTION_BANK_INTERLEAVE
-    #define OPTION_BANK_INTERLEAVE  TRUE
-    #undef OPTION_DCT_INTERLEAVE
-    #define OPTION_DCT_INTERLEAVE  TRUE
-    #undef OPTION_MEM_RESTORE
-    #define OPTION_MEM_RESTORE  FALSE
-    #undef OPTION_DIMM_EXCLUDE
-    #define OPTION_DIMM_EXCLUDE  FALSE
-    #undef OPTION_AMP
-    #define OPTION_AMP  TRUE
     #undef OPTION_CDIT
     #define OPTION_CDIT  TRUE
     #undef OPTION_CRAT
@@ -505,88 +387,7 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
   #endif
 #endif
 
-#if (OPTION_FT4_SOCKET_SUPPORT == TRUE)
-  #if (OPTION_FAMILY15H_MODEL_7x == TRUE)
-    #undef FCH_SUPPORT
-    #define FCH_SUPPORT          TRUE
-    #undef OPTION_FAMILY15H_ST
-    #define OPTION_FAMILY15H_ST  TRUE
-    #undef OPTION_S3_SUPPORT
-    #define OPTION_S3_SUPPORT    TRUE
-    #undef OPTION_MEMCTLR_ST
-    #define OPTION_MEMCTLR_ST    TRUE
-    #undef OPTION_HW_WRITE_LEV_TRAINING
-    #define OPTION_HW_WRITE_LEV_TRAINING  FALSE
-    #undef OPTION_CONTINOUS_PATTERN_GENERATION
-    #define OPTION_CONTINOUS_PATTERN_GENERATION  FALSE
-    #undef OPTION_HW_DQS_REC_EN_TRAINING
-    #define OPTION_HW_DQS_REC_EN_TRAINING  TRUE
-    #undef OPTION_HW_DQS_REC_EN_SEED_TRAINING
-    #define OPTION_HW_DQS_REC_EN_SEED_TRAINING      FALSE
-    #undef OPTION_OPT_SW_RD_WR_POS_TRAINING
-    #define OPTION_OPT_SW_RD_WR_POS_TRAINING  FALSE
-    #undef OPTION_RDDQS_2D_TRAINING
-    #define OPTION_RDDQS_2D_TRAINING  FALSE
-    #undef OPTION_MAX_RD_LAT_TRAINING
-    #define OPTION_MAX_RD_LAT_TRAINING  FALSE
-    #undef OPTION_SW_DRAM_INIT
-    #define OPTION_SW_DRAM_INIT  FALSE
-    #undef OPTION_S3_MEM_SUPPORT
-    #define OPTION_S3_MEM_SUPPORT  TRUE
-    #undef OPTION_PRE_MEM_INIT
-    #define OPTION_PRE_MEM_INIT    TRUE
-    #undef OPTION_POST_MEM_INIT
-    #define OPTION_POST_MEM_INIT   TRUE
-    #undef OPTION_GFX_RECOVERY
-    #define OPTION_GFX_RECOVERY  TRUE
-    #undef OPTION_CPU_CORELEVELING
-    #define OPTION_CPU_CORELEVELING  TRUE
-    #undef OPTION_C6_STATE
-    #define OPTION_C6_STATE  TRUE
-    #undef OPTION_IO_CSTATE
-    #define OPTION_IO_CSTATE TRUE
-    #undef OPTION_CC6_EXIT_CONTROL
-    #define OPTION_CC6_EXIT_CONTROL TRUE
-    #undef OPTION_BTC
-    #define OPTION_BTC TRUE
-    #undef OPTION_CPB
-    #define OPTION_CPB  TRUE
-    #undef OPTION_PREFETCH_MODE
-    #define OPTION_PREFETCH_MODE TRUE
-    #undef OPTION_S3SCRIPT
-    #define OPTION_S3SCRIPT  TRUE
-    #undef OPTION_CONNECTED_STANDBY
-    #define OPTION_CONNECTED_STANDBY TRUE
-    #undef OPTION_CPU_CFOH
-    #define OPTION_CPU_CFOH  TRUE
-    #undef OPTION_UDIMMS
-    #define OPTION_UDIMMS  TRUE
-    #undef OPTION_SODIMMS
-    #define OPTION_SODIMMS  TRUE
-    #undef OPTION_DDR3
-    #define OPTION_DDR3  TRUE
-    #undef OPTION_ECC
-    #define OPTION_ECC  FALSE
-    #undef OPTION_BANK_INTERLEAVE
-    #define OPTION_BANK_INTERLEAVE  TRUE
-    #undef OPTION_DCT_INTERLEAVE
-    #define OPTION_DCT_INTERLEAVE  TRUE
-    #undef OPTION_MEM_RESTORE
-    #define OPTION_MEM_RESTORE  FALSE
-    #undef OPTION_DIMM_EXCLUDE
-    #define OPTION_DIMM_EXCLUDE  FALSE
-    #undef OPTION_AMP
-    #define OPTION_AMP  TRUE
-    #undef OPTION_CDIT
-    #define OPTION_CDIT  TRUE
-    #undef OPTION_CRAT
-    #define OPTION_CRAT  TRUE
-    #undef OPTION_CPU_APM
-    #define OPTION_CPU_APM TRUE
-  #endif
-#endif
-
-#if ((OPTION_FAMILY15H_CZ == TRUE) || (OPTION_FAMILY15H_ST == TRUE))
+#if (OPTION_FAMILY15H_CZ == TRUE)
   #undef  GNB_SUPPORT
   #define GNB_SUPPORT   TRUE
 #endif
@@ -627,14 +428,8 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
     #define OPTION_GDDR5               FALSE
   #endif
 #endif
-#ifdef BLDOPT_REMOVE_DDR4_SUPPORT
-  #if  BLDOPT_REMOVE_DDR4_SUPPORT == TRUE
-    #undef  OPTION_DDR4
-    #define OPTION_DDR4               FALSE
-  #endif
-#endif
-#if ((OPTION_DDR3 == FALSE) && (OPTION_GDDR5 == FALSE) && (OPTION_DDR4 == FALSE))
-  #error  BLDOPT: No DIMM type support selected. Either BLDOPT_REMOVE_DDR3_SUPPORT or BLDOPT_REMOVE_DDR4_SUPPORT or BLDOPT_REMOVE_GDDR5_SUPPORT must be FALSE.
+#if ((OPTION_DDR3 == FALSE) && (OPTION_GDDR5 == FALSE))
+  #error  BLDOPT: No DIMM type support selected. Either BLDOPT_REMOVE_DDR3_SUPPORT or BLDOPT_REMOVE_GDDR5_SUPPORT must be FALSE.
 #endif
 #ifdef BLDOPT_REMOVE_ECC_SUPPORT
   #if  BLDOPT_REMOVE_ECC_SUPPORT == TRUE
@@ -748,13 +543,6 @@ VOLATILE  AMD_MODULE_HEADER mCpuModuleID = {
   #if  BLDOPT_REMOVE_AMP_SUPPORT == TRUE
     #undef  OPTION_AMP
     #define OPTION_AMP        FALSE
-  #endif
-#endif
-
-#ifdef BLDOPT_REMOVE_ONDIMMTHERMAL_SUPPORT
-  #if  BLDOPT_REMOVE_ONDIMMTHERMAL_SUPPORT == TRUE
-    #undef  OPTION_ONDIMMTHERMAL
-    #define OPTION_ONDIMMTHERMAL    FALSE
   #endif
 #endif
 
@@ -1164,12 +952,6 @@ CONST UINT32 ROMDATA AmdPlatformTypeCgf = CFG_AMD_PLATFORM_TYPE;
   #define CFG_MEMORY_POWER_DOWN                 FALSE
 #endif
 
-#ifdef BLDCFG_MEMORY_ALTERNATIVE_MAX_ACTIVATE_COUNT
-  #define CFG_MEMORY_MAC_DEFAULT                BLDCFG_MEMORY_ALTERNATIVE_MAX_ACTIVATE_COUNT
-#else
-  #define CFG_MEMORY_MAC_DEFAULT                MAC_UNTESTEDMAC
-#endif
-
 #ifdef BLDCFG_MEMORY_EXTENDED_TEMPERATURE_RANGE
   #define CFG_MEMORY_EXTENDED_TEMPERATURE_RANGE BLDCFG_MEMORY_EXTENDED_TEMPERATURE_RANGE
 #else
@@ -1350,22 +1132,11 @@ CONST UINT32 ROMDATA AmdPlatformTypeCgf = CFG_AMD_PLATFORM_TYPE;
   #define CFG_DIMM_TYPE_USED_IN_MIXED_CONFIG      DDR3_TECHNOLOGY
 #endif
 
-#ifdef BLDCFG_DIMM_TYPE_DDR4_CAPABLE
-  #define CFG_DIMM_TYPE_DDR4_CAPABLE      BLDCFG_DIMM_TYPE_DDR4_CAPABLE
-#else
-  #define CFG_DIMM_TYPE_DDR4_CAPABLE      TRUE
-#endif
-
-#ifdef BLDCFG_DIMM_TYPE_DDR3_CAPABLE
-  #define CFG_DIMM_TYPE_DDR3_CAPABLE      BLDCFG_DIMM_TYPE_DDR3_CAPABLE
-#else
-  #define CFG_DIMM_TYPE_DDR3_CAPABLE      TRUE
-#endif
 
 #ifdef BLDCFG_CUSTOM_VDDIO_VOLTAGE
   #define CFG_CUSTOM_VDDIO_VOLTAGE        BLDCFG_CUSTOM_VDDIO_VOLTAGE
 #else
-  #define CFG_CUSTOM_VDDIO_VOLTAGE        VOLT_INITIAL
+  #define CFG_CUSTOM_VDDIO_VOLTAGE        AGESA_DEFAULTS
 #endif
 
 #ifdef BLDCFG_PROCESSOR_SCOPE_IN_SB
@@ -2233,7 +2004,6 @@ BUILD_OPT_CFG UserOptions = {
   CFG_MEMORY_ENABLE_NODE_INTERLEAVING,  // CfgMemoryEnableNodeInterleaving
   CFG_MEMORY_CHANNEL_INTERLEAVING,      // CfgMemoryChannelInterleaving
   CFG_MEMORY_POWER_DOWN,                // CfgMemoryPowerDown
-  CFG_MEMORY_MAC_DEFAULT,               // CfgMemoryMacDefault
   CFG_MEMORY_EXTENDED_TEMPERATURE_RANGE,  // CfgMemoryExtendedTemperatureRange
   CFG_POWER_DOWN_MODE,                  // CfgPowerDownMode
   CFG_ONLINE_SPARE,                     // CfgOnlineSpare
@@ -2319,8 +2089,6 @@ BUILD_OPT_CFG UserOptions = {
   },
   CFG_DP_FIXED_VOLT_SWING,              // CfgDpFixedVoltSwingType
   CFG_DIMM_TYPE_USED_IN_MIXED_CONFIG,   // CfgDimmTypeUsedInMixedConfig
-  CFG_DIMM_TYPE_DDR4_CAPABLE,           // CfgDimmTypeDdr4Capable
-  CFG_DIMM_TYPE_DDR3_CAPABLE,           // CfgDimmTypeDdr3Capable
   CFG_HYBRID_BOOST_ENABLE,              // CfgHybridBoostEnable
   CFG_GNB_IOAPIC_ADDRESS,               // CfgGnbIoapicAddress
   CFG_ENABLE_DATA_EYE,                  // CfgDataEyeEn
@@ -2627,7 +2395,6 @@ CONST DISPATCH_TABLE ROMDATA ApDispatchTable[] =
           MAKE_DBG_STR (\nAllMemClkOn           , CFG_MEMORY_ALL_CLOCKS_ON),
 
           MAKE_DBG_STR (\nPowerDownEn           , CFG_MEMORY_POWER_DOWN)
-          MAKE_DBG_STR (\nMacDefault            , CFG_MEMORY_MAC_DEFAULT)
           MAKE_DBG_STR (\nExtendedTemperatureRange  , CFG_MEMORY_EXTENDED_TEMPERATURE_RANGE)
           MAKE_DBG_STR (\nPowerDownMode         , CFG_POWER_DOWN_MODE)
           MAKE_DBG_STR (\nOnlineSpare           , CFG_ONLINE_SPARE)
@@ -2703,8 +2470,8 @@ CONST DISPATCH_TABLE ROMDATA ApDispatchTable[] =
           MAKE_DBG_STR (\nCfgGnbSwTjOffset               , CFG_GNB_THERMAL_SENSOR_CORRECTION),
           MAKE_DBG_STR (\nCfgDisplayMiscControl.VbiosFastBootEn   , CFG_DISPLAY_MISC_VBIOS_FAST_BOOT_ENABLE),
           MAKE_DBG_STR (\nCfgDimmTypeUsedInMixedConfig  , CFG_DIMM_TYPE_USED_IN_MIXED_CONFIG),
-          MAKE_DBG_STR (\nCfgDimmTypeDdr4Capable       , CFG_DIMM_TYPE_DDR4_CAPABLE),
-          MAKE_DBG_STR (\nCfgDimmTypeDdr3Capable       , CFG_DIMM_TYPE_DDR3_CAPABLE),
+          MAKE_DBG_STR (\nCfgHybridBoostEnable           , CFG_HYBRID_BOOST_ENABLE),
+          MAKE_DBG_STR (\nCfgGnbIoapicAddress            , CFG_GNB_IOAPIC_ADDRESS),
           MAKE_DBG_STR (\nCfgDataEyeEn                  , CFG_ENABLE_DATA_EYE),
           MAKE_DBG_STR (\nCfgBatteryBoostTune            , CFG_BATTERY_BOOST_TUNE),
           MAKE_DBG_STR (\nCfgDramDoubleRefreshRateEn    , CFG_DRAM_DOUBLE_REFRESH_RATE),

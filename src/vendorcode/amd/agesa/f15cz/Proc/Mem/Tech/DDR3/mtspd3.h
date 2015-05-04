@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Tech/DDR3)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 313738 $ @e \$Date: 2015-02-26 01:57:11 -0600 (Thu, 26 Feb 2015) $
  *
  **/
 /*****************************************************************************
@@ -147,10 +147,6 @@
 #define EXT_TEMP_MASK        1
 #define ASR_SHIFT            2
 #define ASR_MASK             1
-
-#define SPD_THERMAL_SENSOR  32
-#define THERMAL_SENSOR_SHIFT 7               /* [7] 1 = Thermal Sensor Present */
-#define THERMAL_SENSOR_MASK  1
 
 #define SPD_TCK_FTB     34
 #define SPD_TAA_FTB     35

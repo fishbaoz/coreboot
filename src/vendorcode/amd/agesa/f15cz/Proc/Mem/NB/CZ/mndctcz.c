@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 315229 $ @e \$Date: 2015-03-24 01:23:13 +0800 (Tue, 24 Mar 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -131,12 +131,6 @@ typedef struct {
  *----------------------------------------------------------------------------
  */
 
-BOOLEAN
-MemTCalculateRoundTripCommandDelayCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr,
-     OUT   UINT8 *ChipSel
-  );
-
 /*----------------------------------------------------------------------------
  *                            EXPORTED FUNCTIONS
  *
@@ -144,6 +138,7 @@ MemTCalculateRoundTripCommandDelayCZ (
  */
 
 extern BUILD_OPT_CFG UserOptions;
+extern MEM_PSC_FLOW_BLOCK* memPlatSpecFlowArray[];
 extern MEM_PSC_FLOW MemPGetODTPattern;
 
 /* -----------------------------------------------------------------------------*/
@@ -176,9 +171,6 @@ MemNDisableDctCZ (
   // Program D18F2x9C_x00FA_F04A_dct[3:03:03:0] = 0080h.  Abyte/abit bc. Pwrdn Rcvrs used only in loopback mode
   MemNSetBitFieldNb (NBPtr, RegFAF04A, 0x80);
 
-  // Program D18F2x9C_x00[F,8:0]1_[F,B:0]04E_dct[1:0]= 0000h
-  MemNSetBitFieldNb (NBPtr, PER_DATA_BYTE (PAD_DQ, ALL_BYTES, RegDctPhyD0091F04E), 0x0000);
-
   // Phy LP2 state
   MemNSetBitFieldNb (NBPtr, RegPwrStateCmd, 4);
 
@@ -195,6 +187,167 @@ MemNDisableDctCZ (
   MemNSetBitFieldNb (NBPtr, RegZqToCsMap, 0);
 
   NBPtr->DCTPtr->Timings.DctMemSize = 0;
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *
+ *      This function uses calculated values from DCT.Timings structure to
+ *      program its registers for CZ
+ *
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNProgramCycTimingsCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  CONST CTENTRY TmgAdjTab[] = {
+    // BitField, Min, Max, Bias, Ratio_x2
+    {BFTcl, 5, 19, 0, 2},
+    {BFTrcd, 5, 26, 0, 2},
+    {BFTrp, 5, 26, 0, 2},
+    {BFTrtp, 4, 14, 0, 2},
+    {BFTras, 8, 54, 0, 2},
+    {BFTrc, 10, 78, 0, 2},
+    {BFTwr, 5, 26, 0, 2},
+    {BFTrrd, 4, 13, 0, 2},
+    {BFTwtr, 4, 14, 0, 2},
+    {BFFourActWindow, 6, 50, 0, 2}
+  };
+
+  DCT_STRUCT *DCTPtr;
+  UINT8  *MiniMaxTmg;
+  UINT16 *MiniMaxTrfc;
+  UINT16 TrfcMax;
+  UINT8  Value8;
+  UINT8  ValFAW;
+  UINT8  ValTrrd;
+  UINT8  j;
+  UINT8  Tcwl;
+  UINT8 RdOdtTrnOnDly;
+  UINTN BitField;
+  MEM_PARAMETER_STRUCT *RefPtr;
+
+  DCTPtr = NBPtr->DCTPtr;
+  RefPtr = NBPtr->RefPtr;
+
+  ValFAW = 0;
+  ValTrrd = 0;
+  TrfcMax = 0;
+
+  //======================================================================
+  // Program DRAM Timing values
+  //======================================================================
+  //
+  MiniMaxTmg = &DCTPtr->Timings.CasL;
+  for (j = 0; j < GET_SIZE_OF (TmgAdjTab); j++) {
+    BitField = TmgAdjTab[j].BitField;
+
+    if (BitField == BFTrp) {
+      if (NBPtr->IsSupported[AdjustTrp]) {
+        MiniMaxTmg[j] ++;
+        if (MiniMaxTmg[j] < 5) {
+          MiniMaxTmg[j] = 5;
+        }
+      }
+    }
+
+    if (MiniMaxTmg[j] < TmgAdjTab[j].Min) {
+      MiniMaxTmg[j] = TmgAdjTab[j].Min;
+    } else if (MiniMaxTmg[j] > TmgAdjTab[j].Max) {
+      MiniMaxTmg[j] = TmgAdjTab[j].Max;
+    }
+
+    Value8 = (UINT8) MiniMaxTmg[j];
+
+    if (BitField == BFTwr) {
+      //
+      // Override Twr on MemPstate 0 and DDR2400
+      //
+      if ((NBPtr->MemPstate == 0) && (NBPtr->DCTPtr->Timings.TargetSpeed == DDR2400_FREQUENCY)) {
+        Value8 = 16;
+      }
+
+      if ((Value8 > 8) && ((Value8 & 1) != 0)) {
+        ASSERT (FALSE);
+      }
+    } else if (BitField == BFTrrd) {
+      ValTrrd = Value8;
+    } else if (BitField == BFFourActWindow) {
+      ValFAW = Value8;
+    }
+
+    if (BitField == BFTcl && Value8 > 18) {
+      MemNSetBitFieldNb (NBPtr, BFTclAdj, Value8 - 18);
+    }
+
+    MemNSetBitFieldNb (NBPtr, BitField, Value8);
+  }
+
+  MiniMaxTrfc = &DCTPtr->Timings.Trfc0;
+  for (j = 0; j < 4; j++) {
+    if ((NBPtr->DCTPtr->Timings.DctDimmValid & (1 << j)) != 0) {
+      if (MiniMaxTrfc[j] > TrfcMax) {
+        TrfcMax = MiniMaxTrfc[j];
+      }
+      MemNSetBitFieldNb (NBPtr, BFTrfc0 + j, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, MiniMaxTrfc[j]));
+    }
+  }
+
+  Tcwl = (UINT8) (DCTPtr->Timings.Speed / 133) + 2;
+  Tcwl = (Tcwl > 5) ? Tcwl : 5;
+  MemNSetBitFieldNb (NBPtr, BFTcwl, Tcwl);
+
+  if (RefPtr->DramDoubleRefreshRate) {
+    MemNSetBitFieldNb (NBPtr, BFTref, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, 3900));      // 3.9 us
+    MemNSetBitFieldNb (NBPtr, BFODTSDoubleRefreshRate, 0);
+  } else {
+    MemNSetBitFieldNb (NBPtr, BFTref, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, 7800));      // 7.8 us
+    MemNSetBitFieldNb (NBPtr, BFODTSDoubleRefreshRate, 1);
+  }
+
+  MemNSetBitFieldNb (NBPtr, BFTrcpage, NBPtr->DCTPtr->Timings.Trcpage);
+
+  // Txs = max(5nCK, tRFC + 10ns)
+  MemNSetBitFieldNb (NBPtr, BFTxs, MAX (0x30, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, TrfcMax + 10)));
+
+  RdOdtTrnOnDly = (DCTPtr->Timings.CasL > Tcwl) ? (DCTPtr->Timings.CasL - Tcwl) : 0;
+  MemNSetBitFieldNb (NBPtr, BFRdOdtTrnOnDly, RdOdtTrnOnDly);
+  NBPtr->FamilySpecificHook[ProgOdtControl] (NBPtr, NULL);
+
+  //
+  // Program Tstag
+  //
+  // Tstag = BIOS: MAX(D18F2x204_dct[1:0]_mp[1:0][Trrd], CEIL(D18F2x204_dct[1:0]_mp[1:0][FourActWindow]/4))
+  if (NBPtr->MemPstate == 0) {
+    for (j = 0; j < 4; j++) {
+      MemNSetBitFieldNb (NBPtr, BFTstag0 + j, MAX (ValTrrd,  (ValFAW + 3) / 4));
+    }
+  }
+
+  //
+  // Program Tmod
+  //
+  MemNSetBitFieldNb (NBPtr, BFTmod, (DCTPtr->Timings.Speed < DDR1866_FREQUENCY) ? 0x0C :
+                                    (DCTPtr->Timings.Speed > DDR1866_FREQUENCY) ? 0x10 : 0x0E);
+  //
+  // Program Tzqcs and Tzqoper
+  //
+  // Tzqcs max(64nCK, 80ns)
+  MemNSetBitFieldNb (NBPtr, BFTzqcs, MIN (6, (MAX (64, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, 80)) + 15) / 16));
+  // Tzqoper max(256nCK, 320ns)
+  MemNSetBitFieldNb (NBPtr, BFTzqoper, MIN (0xC, (MAX (256, MemUnsToMemClk (NBPtr->DCTPtr->Timings.Speed, 320)) + 31) / 32));
+
+  // Tdllk = DDR3: 512 clocks
+  MemNSetBitFieldNb (NBPtr, BFTdllk, 512);
+
+  // Program power management timing
+  MemNDramPowerMngTimingCZ (NBPtr);
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -230,6 +383,7 @@ MemNDramPowerMngTimingCZ (
   // Tcpded : 1
   MemNSetBitFieldNb (NBPtr, BFTcpded, (MemNGetBitFieldNb (NBPtr, BFDramType) == DRAM_TYPE_DDR3_CZ
                                     && MemNGetBitFieldNb (NBPtr, BFUnBuffDimm) == 1 ? 2 : 4));
+
   // Tpd = tCKE(min)
   //                               tCKE(min)
   // DDR-667   7.5ns = 3nCk     max(3nCK, 7.5ns)   = 3nCK
@@ -298,7 +452,6 @@ MemNAutoConfigCZ (
   DIE_STRUCT *MCTPtr;
   DCT_STRUCT *DCTPtr;
   UINT32 PowerDownMode;
-  UINT32 DramType;
   UINT8 NumDimmslots;
   UINT8 RankDef[3];
   UINT8 DimmAddrMap[3];
@@ -306,7 +459,6 @@ MemNAutoConfigCZ (
   MCTPtr = NBPtr->MCTPtr;
   DCTPtr = NBPtr->DCTPtr;
 
-  DramType = MemNGetBitFieldNb (NBPtr, BFDramType);
   //
   //======================================================================
   // NB Config 1 Lo Register Value
@@ -339,13 +491,15 @@ MemNAutoConfigCZ (
   IDS_OPTION_HOOK (IDS_POWERDOWN_MODE, &PowerDownMode, &(NBPtr->MemPtr->StdHeader));
   MemNSetBitFieldNb (NBPtr, BFPowerDownMode, PowerDownMode);
   MemNSetBitFieldNb (NBPtr, BFOn3RdCasStallMode, 1);
+  MemNSetBitFieldNb (NBPtr, BFMxMrsEn, 7);
+
   MemNSetBitFieldNb (NBPtr, BFDphyMemPsSelEn, 0);
   //
   //======================================================================
   // Build Dram MRS Register Value
   //======================================================================
   //
-  MemNSetBitFieldNb (NBPtr, BFPchgPDModeSel, (DramType == DRAM_TYPE_DDR3_CZ) ? 1 : 0);
+  MemNSetBitFieldNb (NBPtr, BFPchgPDModeSel, 1);
   MemNSetBitFieldNb (NBPtr, BFBurstCtrl, 1);
 
   //======================================================================
@@ -417,6 +571,168 @@ MemNAutoConfigCZ (
 /* -----------------------------------------------------------------------------*/
 /**
  *
+ *     This function programs Mem Pstate registers
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *     @param[in]       MemPstate - Mem Pstate
+ *
+ */
+
+VOID
+MemNProgramMemPstateRegD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr,
+  IN       UINT8 MemPstate
+  )
+{
+
+  if (MemPstate == 0) {
+    MemNSetBitFieldNb (NBPtr, BFMemClkFreq, MEMCLK_FREQ_TO_ID (NBPtr->DCTPtr->Timings.Speed));
+    MemNSetBitFieldNb (NBPtr, BFMemClkFreqVal, 1);  /// @todo  BKDG to clarify if this bit needs to be set
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMPState 0 Frequency = %d MHz\n", (UINT16) MEMCLK_ID_TO_FREQ (MemNGetBitFieldNb (NBPtr, BFMemClkFreq)));
+  } else {
+    MemNSetBitFieldNb (NBPtr, BFM1MemClkFreq, MEMCLK_FREQ_TO_ID (DDR667_FREQUENCY));
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMPState 1 Frequency = %d MHz\n", (UINT16) MEMCLK_ID_TO_FREQ (MemNGetBitFieldNb (NBPtr, BFM1MemClkFreq)));
+  }
+
+  //
+  // Non-SPD Timings
+  //
+  MemNSetBitFieldNb (NBPtr, BFTrwtWB, 0x1C);
+  MemNSetBitFieldNb (NBPtr, BFTrwtTO, 0x1B);
+  MemNSetBitFieldNb (NBPtr, BFTwrrd, 0xB );
+
+  MemNSetBitFieldNb (NBPtr, BFTrdrdBan, 0x2);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdSc, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdScL, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdDc, 0xB);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdDd, 0xB);
+
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdSc, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdScL, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdDc, 0xB);
+  MemNSetBitFieldNb (NBPtr, BFTwrwrDd, 0xB);
+
+  MemNSetBitFieldNb (NBPtr, BFWrOdtOnDuration, DEFAULT_WR_ODT_CZ);
+  MemNSetBitFieldNb (NBPtr, BFRdOdtOnDuration, DEFAULT_RD_ODT_CZ);
+  MemNSetBitFieldNb (NBPtr, BFWrOdtTrnOnDly, DEFAULT_RD_ODT_TRNONDLY_CZ);
+
+  MemNSetBitFieldNb (NBPtr, BFTmrd, 4);
+  MemNSetBitFieldNb (NBPtr, BFEffArbDis, 0);
+  MemNSetBitFieldNb (NBPtr, BFAggrPDDelay, 0x20);
+
+  if (NBPtr->RefPtr->EnablePowerDown) {
+    MemNSetTxpNb (NBPtr);
+    MemNSetBitFieldNb (NBPtr, BFPchgPDEnDelay, 0x20);
+  }
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *     This function programs the memory controller for training
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNConfigureDctForTrainingD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  MemNSetBitFieldNb (NBPtr, BFGsyncDis, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFAddrCmdTriEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDisAutoRefresh, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFForceAutoPchg, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDynPageCloseEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFBankSwizzleMode, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDcqBypassMax, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFPowerDownEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFZqcsInterval, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFCmdThrottleMode, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFODTSEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFBwCapEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFBankSwap, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFTraceModeEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDramScrub, 0);
+  MemNSetBitFieldNb (NBPtr, BFScrubReDirEn, 0);
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *     This function programs the memory controller for mission mode
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNConfigureDctNormalD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  MemNSetBitFieldNb (NBPtr, BFAddrCmdTriEn, 0x1);
+  MemNSetBitFieldNb (NBPtr, BFDisAutoRefresh, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFForceAutoPchg, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDynPageCloseEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFDcqBypassMax, 0x1F);
+  MemNSetBitFieldNb (NBPtr, BFZqcsInterval, 0x2);
+  MemNSetBitFieldNb (NBPtr, BFTraceModeEn, 0x0);
+  MemNSetBitFieldNb (NBPtr, BFAggrPDEn, 1);
+  MemNSetBitFieldNb (NBPtr, BFDataScrambleEn, 1);
+
+  //
+  // Power Down Enable
+  //
+  if (NBPtr->RefPtr->EnablePowerDown) {
+    MemNSetBitFieldNb (NBPtr, BFPowerDownEn, 0x1);
+  }
+
+  IEM_SKIP_CODE (IEM_LATE_DCT_CONFIG) {
+    MemNSetBitFieldNb (NBPtr, BFBankSwap, 0x1);
+    MemNSetBitFieldNb (NBPtr, BFBankSwapAddr8En, 0x1);
+
+    if (NBPtr->RefPtr->EnableBankSwizzle) {
+      MemNSetBitFieldNb (NBPtr, BFBankSwizzleMode, 1);
+    }
+  }
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *     This function programs turnaround timings for each DCT
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNProgramTurnaroundTimingsD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  // DDR3 Turnaround Parameters
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdSc, 1);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdScL, 1);
+  MemNSetBitFieldNb (NBPtr, BFTrdrdSdDc, MemNGetBitFieldNb (NBPtr, PmuCD_R_R_SD));
+  MemNSetBitFieldNb (NBPtr, BFTrdrdDd, MemNGetBitFieldNb (NBPtr, PmuCD_R_R));
+  MemNSetBitFieldNb (NBPtr, BFTrdrdBan, MemNGetBitFieldNb (NBPtr, PmuTrdrdban_Phy));
+
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdSc, 1);
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdScL, 1);
+  MemNSetBitFieldNb (NBPtr, BFTwrwrSdDc, MemNGetBitFieldNb (NBPtr, PmuCD_W_W_SD));
+  MemNSetBitFieldNb (NBPtr, BFTwrwrDd, MemNGetBitFieldNb (NBPtr, PmuCD_W_W));
+  MemNSetBitFieldNb (NBPtr, BFTwrrd, MemNGetBitFieldNb (NBPtr, PmuCD_W_R));
+
+  MemNSetBitFieldNb (NBPtr, BFTrwtTO, MemNGetBitFieldNb (NBPtr, PmuCD_R_W));
+  MemNSetBitFieldNb (NBPtr, BFTrwtWB, MemNGetBitFieldNb (NBPtr, BFTrwtTO) + 1);
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
  *
  *   This function looks up platform specific config/timing values from the interface layer and
  *   programs them into DCT.
@@ -433,39 +749,37 @@ MemNPlatformSpecCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
-  MEM_PSC_FLOW_BLOCK *PlatSpecFlowPtr;
+  UINT8 i;
   BOOLEAN Result;
   Result = FALSE;
-  //
+
   IDS_OPTION_HOOK (IDS_BEFORE_PLAT_TABLES, NBPtr, &(NBPtr->MemPtr->StdHeader));
 
   // Extract recommended settings from tables
-  //
   MemPPreparePsTabLookupConditions (NBPtr);
 
-  PlatSpecFlowPtr = (MEM_PSC_FLOW_BLOCK*) NBPtr->PlatSpecFlowPtr;
-
-  if (PlatSpecFlowPtr != NULL) {
-    //
-    // CAD Bus Config
-    //
-    if (MemPLookupCadBusCfgTabs (NBPtr, PlatSpecFlowPtr->EntryOfTables)) {
-      //
-      // Data Bus Config
-      //
-      if (PlatSpecFlowPtr->DramTerm (NBPtr, PlatSpecFlowPtr->EntryOfTables)) {
-        //
-        // ODT Pattern
-        //
-        if (MemPGetODTPattern (NBPtr, PlatSpecFlowPtr->EntryOfTables)) {
+  i = 0;
+  while (memPlatSpecFlowArray[i] != NULL) {
+    if (MemPLookupCadBusCfgTabs (NBPtr, (memPlatSpecFlowArray[i])->EntryOfTables)) {
+      if (MemPLookupDataBusCfgTabs (NBPtr, (memPlatSpecFlowArray[i])->EntryOfTables)) {
+        if (MemPGetODTPattern (NBPtr, (memPlatSpecFlowArray[i])->EntryOfTables)) {
           Result = TRUE;
+          break;
         }
       }
     }
+    i++;
   }
-  //
+
+  if (memPlatSpecFlowArray[i] == NULL) {
+    PutEventLog (AGESA_ERROR, MEM_ERROR_SAO_NOT_FOUND, NBPtr->Node, NBPtr->Dct, NBPtr->Channel, 0, &NBPtr->MemPtr->StdHeader);
+    SetMemError (AGESA_ERROR, NBPtr->MCTPtr);
+    if (!NBPtr->MemPtr->ErrorHandling (NBPtr->MCTPtr, NBPtr->Dct, EXCLUDE_ALL_CHIPSEL, &NBPtr->MemPtr->StdHeader)) {
+      ASSERT (FALSE);
+    }
+  }
+
   // Disable channel if there are errors
-  //
   IDS_SKIP_HOOK (IDS_ENFORCE_PLAT_TABLES, NBPtr, &(NBPtr->MemPtr->StdHeader)) {
     if (!Result) {
       IDS_HDT_CONSOLE (MEM_FLOW, "\t\tDisable DCT%d due to unsupported DIMM configuration\n", NBPtr->Dct);
@@ -526,7 +840,7 @@ MemNGetMaxLatParamsCZ (
   P = 2 * (MemNGetBitFieldNb (NBPtr, BFTcl) + 2 + (18 - (MemNGetBitFieldNb (NBPtr, PER_NB_PS (NBPtr->NbPstate, RegRdPtrInitVal)) + 1) / 2));
 
   // 10. N = (P/(MemClkFreq * 2) + T) * NclkFreq; Convert from PCLKs plus time to NCLKs.
-  MemClkPeriod = 1000000 / ((NBPtr->MemPstate == 0) ? NBPtr->DCTPtr->Timings.Speed : NBPtr->M1Speed);
+  MemClkPeriod = 1000000 / ((NBPtr->MemPstate == 0) ? NBPtr->DCTPtr->Timings.Speed : DDR667_FREQUENCY);
   N = ((((P * MemClkPeriod + 1) / 2) + T) * NBPtr->NBClkFreq + 500000) / 1000000 + 4;
 
   // Calculate a starting MaxRdLatency delay value with steps 5, 9, and 12 excluded
@@ -538,8 +852,7 @@ MemNGetMaxLatParamsCZ (
   // margin factor = 1 NCLK + 3 MEMCLK + ((NBCOF/DdrRate >= 2) ? 4 MEMCLK - 4 NCLK : 0)
   N = 1;
   P = 6;
-
-  if (NBPtr->NBClkFreq >= (UINT16) (((NBPtr->MemPstate == 0) ? NBPtr->DCTPtr->Timings.Speed : NBPtr->M1Speed) * 2)) {
+  if (NBPtr->NBClkFreq >= (UINT16) (((NBPtr->MemPstate == 0) ? NBPtr->DCTPtr->Timings.Speed : DDR667_FREQUENCY) * 2)) {
     P += 8;
     N += (((P * MemClkPeriod + 1) / 2) * NBPtr->NBClkFreq + 500000) / 1000000;
     N -= 4;
@@ -639,22 +952,15 @@ MemNCapSpeedBatteryLifeCZ (
   UINT16 j;
   UINT8 Dct;
   INT8   NbPs;
-  UINT32 MemPstate;
   CPU_SPECIFIC_SERVICES *FamilySpecificServices;
 
   FamilySpecificServices = NULL;
   GetCpuServicesOfCurrentCore ((CONST CPU_SPECIFIC_SERVICES **) &FamilySpecificServices, &(NBPtr->MemPtr->StdHeader));
-  IDS_HDT_CONSOLE(MEM_FLOW,"\t\tLimit Memory Speed for Each MState based on lowest Associated NB Frequency...\n");
-  //
-  // Check each NBState NCLK Frequency against the corresponding MState and limit the Memclk
-  // to be equal or less than the NCLK
-  //
-  IDS_HDT_CONSOLE(MEM_FLOW, "\t\tNBPs     NCLK       MPs     MemClk\n");
+
+
+  // Find the lowest supported NB Pstate
   NBFreq = 0;
-  for (NbPs = 0; NbPs <= 3; NbPs++) {
-    //
-    // Ge NBPState Info
-    //
+  for (NbPs = 3; NbPs >= 0; NbPs--) {
     if (FamilySpecificServices->GetNbPstateInfo (FamilySpecificServices,
                                                   NBPtr->MemPtr->PlatFormConfig,
                                                   &NBPtr->PciAddr,
@@ -663,59 +969,62 @@ MemNCapSpeedBatteryLifeCZ (
                                                   &FreqDivisor,
                                                   &VoltageInuV,
                                                   &(NBPtr->MemPtr->StdHeader))) {
-      MemPstate = MemNGetBitFieldNb (NBPtr, BFMemPstate0 + NbPs);
-      NBFreq = FreqNumeratorInMHz / FreqDivisor;
-      ASSERT (MemPstate < 2);
-      IDS_HDT_CONSOLE(MEM_FLOW, "\t\t %d       %s%dMHz     %d      ", NbPs, (NBFreq < 1000) ? " " : "", NBFreq, MemPstate);
-      //
-      // Pick Max MEMCLK that is less than or equal to NCLK
-      //
-      DdrFreq = DDR800_FREQUENCY;
-      for (j = 0; j < GET_SIZE_OF (SupportedFreq); j++) {
-        if (NBFreq >= SupportedFreq[j]) {
-          DdrFreq = SupportedFreq[j];
-          break;
-        }
+      if (MemNGetBitFieldNb (NBPtr, BFMemPstate0 + NbPs) == 0) {
+        NBFreq = FreqNumeratorInMHz / FreqDivisor;
+        break;
       }
-      //
-      // Cap MemClk frequency to lowest NCLK frequency
-      //
-      if (MemPstate == 0) {
-        //
-        // MPState 0
-        //
-        for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
-          MemNSwitchDCTNb (NBPtr, Dct);
-          IDS_HDT_CONSOLE(MEM_FLOW, "%s", (Dct > 0) ? "\n\t\t                            " : "");
-          IDS_HDT_CONSOLE(MEM_FLOW, "Dct %d: %dMHz", Dct, NBPtr->DCTPtr->Timings.TargetSpeed);
-          if (NBPtr->DCTPtr->Timings.TargetSpeed > DdrFreq) {
-            NBPtr->DCTPtr->Timings.TargetSpeed = DdrFreq;
-            IDS_HDT_CONSOLE(MEM_FLOW, " --> %dMHz", NBPtr->DCTPtr->Timings.TargetSpeed);
-          }
-        }
-        IDS_HDT_CONSOLE(MEM_FLOW, "\n");
-      } else {
-        //
-        // MPState 1
-        //
-        IDS_HDT_CONSOLE(MEM_FLOW, "%dMHz", NBPtr->M1Speed);
-        if (NBPtr->M1Speed > DdrFreq) {
-          NBPtr->M1Speed = DdrFreq;
-          IDS_HDT_CONSOLE(MEM_FLOW, " --> %dMHz", NBPtr->M1Speed);
-        }
-        IDS_HDT_CONSOLE(MEM_FLOW, "\n");
-      }
-      //
-      // Check to make sure limiting clock value is valid
-      //
-      ASSERT ((NBPtr->ChannelPtr->TechType == DDR3_TECHNOLOGY) ?
-              (DdrFreq >= DDR667_FREQUENCY) :
-              ((NBPtr->ChannelPtr->TechType == DDR4_TECHNOLOGY) ?
-               (DdrFreq >= DDR1333_FREQUENCY) :
-               (DdrFreq <= DDR1066_FREQUENCY)));
-
     }
   }
+
+  ASSERT (NBFreq > 0);
+
+  // Pick Max MEMCLK that is less than or equal to NCLK
+  DdrFreq = DDR800_FREQUENCY;
+  for (j = 0; j < GET_SIZE_OF (SupportedFreq); j++) {
+    if (NBFreq >= SupportedFreq[j]) {
+      DdrFreq = SupportedFreq[j];
+      break;
+    }
+  }
+
+  // Cap MemClk frequency to lowest NCLK frequency
+  for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
+    MemNSwitchDCTNb (NBPtr, Dct);
+    if (NBPtr->DCTPtr->Timings.TargetSpeed > DdrFreq) {
+      NBPtr->DCTPtr->Timings.TargetSpeed = DdrFreq;
+    }
+  }
+
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *    Mode Register initialization.
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNModeRegisterInitializationCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+
+  UINT32 Mr0;
+  UINT32 Mr1;
+  UINT32 Mr2;
+
+  Mr0 = MemNCalcMR0 (NBPtr);
+  Mr1 = MemNCalcMR1 (NBPtr, 0);
+  Mr2 = MemNCalcMR2 (NBPtr, 0);
+
+  // Disable MR0[8](DLLReset) for switching between Memory PStates
+  Mr0 &= 0xFEFF;
+  MemNSetBitFieldNb (NBPtr, BFMxMr0, Mr0);
+  MemNSetBitFieldNb (NBPtr, BFMxMr1, Mr1);
+  MemNSetBitFieldNb (NBPtr, BFMxMr2, Mr2);
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -733,99 +1042,6 @@ MemNConfigureDisDllShutdownSrCZ (
   )
 {
   MemNBrdcstSetUnConditionalNb (NBPtr, BFDisDllShutdownSR, 0);
-}
-
-/* -----------------------------------------------------------------------------*/
-/**
- *
- *     This function finds the DIMM that has the largest receiver enable delay
- *     that are trained by PMU
- *
- *     @param[in,out]   *NBPtr     - Pointer to the MEM_NB_BLOCK
- *     @param[out]      *ChipSel   - Pointer to the Chip select that has the
- *                                   largest Round Trip Command Delay.
- *
- *     @return   TRUE  - A chip select can be found.
- *               FALSE - A chip select cannot be found.
- */
-
-BOOLEAN
-MemNCalculateRoundTripCommandDelayCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr,
-     OUT   UINT8 *ChipSel
-  )
-{
-  BIT_FIELD_NAME BitField;
-  UINT8   ChipSelect;
-  BOOLEAN RetVal;
-  UINT16  MaxDly;
-  UINT16  DqAndDqsDly;
-  UINT8   MaxDlyCs;
-  UINT32  DqValue;
-  UINT32  DqsValue;
-  UINT32  RxRdPtrOffset;
-  UINT8  ByteLane;
-  UINT8   Dimm;
-
-  RetVal = FALSE;
-  MaxDly = 0;
-  MaxDlyCs = 0;
-
-  IDS_HDT_CONSOLE (MEM_FLOW, "\n\t\tCalculating worst-case round trip command delay on channel %d\n", NBPtr->Dct);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t MaxRxCmdDelay = (RxRdPtrOffset * 64) + RxDly(DQS) +  MAX((RxDly(DQ_H) & 0x1F), (RxDly(DQ_L) & 0x1F))\n");
-
-  RxRdPtrOffset = ( 0x3F & MemNGetBitFieldNb (NBPtr, RegDataRdPtrOffset));
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t RxRdPtrOffset = %02x\n", RxRdPtrOffset);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t                      ------- RxDly -------\n");
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tDimm     ByteLane     DQS     DQ_L     DQ_H     MaxRxCmdDelay\n");
-
-  for (ChipSelect = 0; ChipSelect < NBPtr->CsPerChannel; ChipSelect = ChipSelect + NBPtr->CsPerDelay) {
-    if ((NBPtr->DCTPtr->Timings.CsPresent & ((UINT16) ((NBPtr->CsPerDelay == 2)? 3 : 1) << ChipSelect)) != 0) {
-      Dimm = ChipSelect >> ((NBPtr->CsPerDelay == 2)? 1 : 0);
-      BitField = PER_DIMM (Dimm, RegDataRxDly);
-      IDS_HDT_CONSOLE (MEM_FLOW, "\t\t  %d         ",Dimm);
-      for (ByteLane = 0; ByteLane < ((NBPtr->MCTPtr->Status[SbEccDimms] && NBPtr->IsSupported[EccByteTraining]) ? 9 : 8); ByteLane++) {
-        IDS_HDT_CONSOLE (MEM_FLOW, "%s%d          ", (ByteLane > 0)?"\t\t            ":"", ByteLane);
-        //
-        // RxDly of DQS
-        //
-        DqsValue = MemNGetBitFieldNb (NBPtr, PER_DATA_BYTE (PAD_DQS_H, ByteLane, BitField));
-        //
-        // RxDly of DQ_L
-        //
-        DqValue = (MemNGetBitFieldNb (NBPtr, PER_DATA_BYTE (PAD_DQ_L, ByteLane, BitField)) & 0x1F);
-        //
-        // Chipselect has the worst round trip.
-        //
-        DqAndDqsDly = (UINT16) ((RxRdPtrOffset * 64) + (DqValue + DqsValue));
-        IDS_HDT_CONSOLE (MEM_FLOW, "%02x      %02x%s      ",DqsValue, DqValue, (DqAndDqsDly > MaxDly)?"*":" ");
-        if (DqAndDqsDly > MaxDly) {
-          MaxDly = DqAndDqsDly;
-          MaxDlyCs = ChipSelect;
-          RetVal = TRUE;
-        }
-        //
-        // RxDly of DQ_H
-        //
-        DqValue = (MemNGetBitFieldNb (NBPtr, PER_DATA_BYTE (PAD_DQ_H, ByteLane, BitField)) & 0x1F);
-        //
-        // Chipselect has the worst round trip.
-        //
-        DqAndDqsDly = (UINT16) ((RxRdPtrOffset * 64) + (DqValue + DqsValue));
-        IDS_HDT_CONSOLE (MEM_FLOW, "%02x%s        ", DqValue, (DqAndDqsDly > MaxDly)?"*":" ");
-        if (DqAndDqsDly > MaxDly) {
-          MaxDly = DqAndDqsDly;
-          MaxDlyCs = ChipSelect;
-          RetVal = TRUE;
-        }
-        IDS_HDT_CONSOLE (MEM_FLOW, "%02x \n", MaxDly);
-      } // End of ByteLane For Loop.
-    }
-  } // End of ChipSelect For Loop.
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMaxRxCmdDelay Value is %02x on Chipselect %d.\n\n", MaxDly, MaxDlyCs);
-  NBPtr->TechPtr->MaxDlyForMaxRdLat = MaxDly;
-  *ChipSel = MaxDlyCs;
-  return RetVal;
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -908,7 +1124,7 @@ MemTTrainMaxLatencyCZ (
 
     if (NBPtr->DCTPtr->Timings.DctMemSize != 0) {
       IDS_HDT_CONSOLE (MEM_STATUS, "\tDct %d\n", Dct);
-      if (MemNCalculateRoundTripCommandDelayCZ (NBPtr, &ChipSel)) {
+      if (TechPtr->FindMaxDlyForMaxRdLat (TechPtr, &ChipSel)) {
         TechPtr->ChipSel = ChipSel;
         if (NBPtr->GetSysAddr (NBPtr, ChipSel, &TestAddrRJ16)) {
           IDS_HDT_CONSOLE (MEM_STATUS, "\t\tCS %d\n", ChipSel);

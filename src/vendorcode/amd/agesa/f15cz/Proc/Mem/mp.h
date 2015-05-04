@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -120,16 +120,6 @@ typedef union {
     UINT16 Speed1_35V;           ///< Speed limit with voltage 1.35V
     UINT16 Speed1_25V;           ///< Speed limit with voltage 1.25V
   } _MAXFREQ_ENTRY;
-  struct {                       ///< PSCFG_MAXFREQ_ENTRY
-    UINT8 DimmPerCh;             ///< Dimm slot per chanel
-    UINT16 Dimms:4;              ///< Number of Dimms on a channel
-    UINT16 SR:4;                 ///< Number of single-rank Dimm
-    UINT16 DR:4;                 ///< Number of dual-rank Dimm
-    UINT16 QR:4;                 ///< Number of quad-rank Dimm
-    UINT16 Speed1_2V;            ///< Speed limit with voltage 1.2V
-    UINT16 Speed1_TBD1;          ///< Speed limit with future voltage TBD1
-    UINT16 Speed1_TBD2;          ///< Speed limit with future voltage TBD2
-  } _MAXFREQ_ENTRY_D4;
   struct {
     UINT8 DimmSlotPerCh;
     UINT16 CDN;                  ///< Condition
@@ -394,15 +384,11 @@ typedef struct {
 } PSC_TBL_ENTRY;
 
 #define PT_DONT_CARE 0xFF
-#define NP     1
-#define V1_5   1
+#define NP 1
+#define V1_5  1
 #define V1_35  2
 #define V1_25  4
-#define V1_2   1
-#define V_TBD1 2
-#define V_TBD2 4
-
-#define VOLT_ALL (7)
+#define VOLT_ALL (V1_5 | V1_35 | V1_25)
 #define DIMM_SR 2
 #define DIMM_DR 4
 #define DIMM_QR 8
@@ -444,40 +430,7 @@ typedef enum {
   ODT_30  = 5,     ///<  5 30 ohms
 } ODT_ENC;
 
-/// DDR4 Rtt_Nom termination encoding
-typedef enum {
-  RTTNOM_OFF  = 0, ///<  0 Rtt_Nom Disabled
-  RTTNOM_60   = 1, ///<  1 60 ohms
-  RTTNOM_120  = 2, ///<  2 120 ohms
-  RTTNOM_40   = 3, ///<  3 40 ohms
-  RTTNOM_240  = 4, ///<  4 240 ohms
-  RTTNOM_48   = 5, ///<  5 48 ohms
-  RTTNOM_80   = 6, ///<  5 80 ohms
-  RTTNOM_34   = 7, ///<  5 34 ohms
-} D4_RTT_NOM_ENC;
-
-/// DDR4 Rtt_Wr termination encoding
-typedef enum {
-  RTTWR_OFF  = 0, ///<  0 Rtt_Nom Disabled
-  RTTWR_120  = 1, ///< 1 120 ohms
-  RTTWR_240  = 2, ///<  2 24 ohms
-  RTTWR_HIZ  = 3, ///<  3 Hi-Z
-  RTTWR_80   = 4, ///<  4 80 ohms
-} D4_RTT_WR_ENC;
-
-/// DDR4 Rtt_Park termination encoding
-typedef enum {
-  RTTPRK_OFF  = 0, ///<  0 Rtt_Park Disabled
-  RTTPRK_60   = 1, ///<  1 60 ohms
-  RTTPRK_120  = 2, ///<  2 120 ohms
-  RTTPRK_40   = 3, ///<  3 40 ohms
-  RTTPRK_240  = 4, ///<  4 240 ohms
-  RTTPRK_48   = 5, ///<  5 48 ohms
-  RTTPRK_80   = 6, ///<  5 80 ohms
-  RTTPRK_34   = 7, ///<  5 34 ohms
-} D4_RTT_PRK_ENC;
-
-/// DDR3 Data Bus configuration
+/// Data Bus configuration
 typedef struct {
   UINT32 DimmPerCh:2;   ///< Bitmap of Dimm slot per chanel
   UINT32 DDRrate:18;    ///< Bitmap of DDR rate
@@ -490,23 +443,7 @@ typedef struct {
   UINT32 DqStrength:8;  ///< Data drive strength
   UINT32 DqsStrength:8; ///< DQS drive strength
   UINT32 OdtStrength:8; ///< ODT drive strength
-} PSCFG_DATABUS_ENTRY_D3;
-
-/// DDR4 Data Bus configuration
-typedef struct {
-  UINT8 DimmPerCh;   ///< Bitmap of Dimm slot per chanel
-  UINT32 DDRrate;    ///< Bitmap of DDR rate
-  UINT8 VDDIO;       ///< Bitmap of VDDIO
-  UINT8 Dimm0;       ///< Bitmap of rank type of Dimm0
-  UINT8 Dimm1;       ///< Bitmap of rank type of Dimm1
-
-  UINT8 RttNom;      ///< Rtt_Nom
-  UINT8 RttWr;       ///< Rtt_Wr
-  UINT8 RttPark;       ///< Rtt_Park
-  UINT8 DqStrength;  ///< Data drive strength
-  UINT8 DqsStrength; ///< DQS drive strength
-  UINT8 OdtStrength; ///< ODT drive strength
-} PSCFG_DATABUS_ENTRY_D4;
+} PSCFG_DATABUS_ENTRY;
 
 /*----------------------------------------------------------------------------
  *                           FUNCTIONS PROTOTYPE

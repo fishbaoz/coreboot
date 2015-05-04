@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -689,7 +689,6 @@ MemNSetupHwTrainingEngineUnb (
   Rrw->CompareMaskHigh = CPG_COMPARE_MASK_HI;
   Rrw->CompareMaskLow = CPG_COMPARE_MASK_LOW;
   Rrw->CompareMaskEcc = CPG_COMPARE_MASK_ECC;
-  Rrw->DataPatGenSel = PRBS23_I;
 
   switch (TrnType) {
   case TRN_RCVR_ENABLE:
@@ -702,23 +701,9 @@ MemNSetupHwTrainingEngineUnb (
     //
     // Max Read Latency Training
     //
-    if (NBPtr->ChannelPtr->TechType == DDR4_TECHNOLOGY) {
-      //
-      // DDR4 MRL training pattern (Bank 0 & 4 alternating)
-      //
-      Rrw->CmdTgt = CMD_TGT_AB;
-      NBPtr->TechPtr->PatternLength = 256;
-      Rrw->DataPrbsSeed = PRBS_SEED_256;
-      Rrw->TgtBankAddressB = CPG_BANK_ADDRESS_B_MRL;
-      Rrw->DataPatGenSel = PRBS23_II;
-    } else {
-      //
-      // DDR3 MRL training pattern (Bank 0 only)
-      //
-      Rrw->CmdTgt = CMD_TGT_AB;
-      NBPtr->TechPtr->PatternLength = 32;
-      Rrw->DataPrbsSeed = PRBS_SEED_32;
-    }
+    Rrw->CmdTgt = CMD_TGT_AB;
+    NBPtr->TechPtr->PatternLength = 32;
+    Rrw->DataPrbsSeed = PRBS_SEED_32;
     break;
   case TRN_DQS_POSITION:
     //
@@ -873,7 +858,7 @@ MemNPhyVoltageLevelNb (
   UINT16 BFValue;
   UINT16 RegValue;
 
-  BFValue = (UINT16) CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, DDR3_TECHNOLOGY) << 3;
+  BFValue = (UINT16) CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage) << 3;
   BFEnd = NBPtr->IsSupported[ProgramCsrComparator] ? BFCsrComparator : BFCmpVioLvl;
 
   for (BitField = BFDataRxVioLvl; BitField <= BFEnd; BitField++) {

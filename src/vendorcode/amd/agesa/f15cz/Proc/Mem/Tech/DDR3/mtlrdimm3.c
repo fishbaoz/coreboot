@@ -8,7 +8,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Tech/DDR3)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -438,7 +438,7 @@ MemTGetSpecialMBCtlWord3 (
       } else {
         Value8 = 4;
       }
-      Value8 |= CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, NBPtr->ChannelPtr->TechType);
+      Value8 |= CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage);
       break;
     case 13:
       // F0RC13

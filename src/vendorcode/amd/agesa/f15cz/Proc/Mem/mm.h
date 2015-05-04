@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem)
- * @e \$Revision: 312538 $ @e \$Date: 2015-02-09 16:53:54 +0800 (Mon, 09 Feb 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -116,105 +116,25 @@ typedef enum {
   NbRegTabKB,           ///< Heap handle for KB NB register table
   NbRegTabML,           ///< Heap handle for ML NB register table
   NbRegTabCZ,           ///< Heap handle for CZ NB register table
-  NbRegTabST,           ///< Heap handle for ST NB register table
   NumberOfNbRegTables   ///< Number of families that have NB register tables
 } NB_REG_TAB_HANDLE;
 
-
-//
-// DDR3 VDDIO Range
-//
-#define VOLT1_5_ENCODED_VAL             0
-#define VOLT1_35_ENCODED_VAL            1
-#define VOLT1_25_ENCODED_VAL            2
-//
-// DDR4 VDDIO Range
-//
-#define VOLT1_2_ENCODED_VAL             0
-#define VOLT1_TBD1_ENCODED_VAL          1
-#define VOLT1_TBD2_ENCODED_VAL          2
-
-#define VOLT_DDR3_ENCODED_LIMIT         3  // Maximum Encoded value for DDR3
-#define VOLT_DDR4_ENCODED_LIMIT         1  // Maximum Encoded value for DDR4, change to support additional voltages.
-#define VOLT_STARTING_ENCODED_VAL       0  // Lowest value for all technologies
+#define VOLT1_5_ENCODED_VAL 0
+#define VOLT1_35_ENCODED_VAL 1
+#define VOLT1_25_ENCODED_VAL 2
 #define VOLT1_5_MILLIVOLTS 1500
 #define VOLT1_35_MILLIVOLTS 1350
 #define VOLT1_25_MILLIVOLTS 1250
-#define VOLT1_2_MILLIVOLTS 1200
 #define VOLT_UNSUPPORTED_ENCODED_VAL  0xFF
-//
-// Macro to display Voltage String
-//
-#define GET_VDDIO_STRING(Vddio, TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-  ((Vddio == VOLT1_5) ?  "1.5V" :\
-  ((Vddio == VOLT1_35) ? "1.35V" :\
-  ((Vddio == VOLT1_25) ? "1.25V" :\
-    "Unsupported Voltage"))) :\
-  (TechType == DDR4_TECHNOLOGY) ?\
-  ((Vddio == VOLT1_2) ? "1.2V" :\
-    "Unsupported Voltage") :\
-    "Unsupported Voltage")
-
-#define GET_ENCODED_VDDIO_STRING(EncodedVal, TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_5_ENCODED_VAL) ?  "1.5V" :\
-  ((EncodedVal == VOLT1_35_ENCODED_VAL) ? "1.35V" :\
-  ((EncodedVal == VOLT1_25_ENCODED_VAL) ? "1.25V" :\
-    "Unsupported Voltage"))) :\
-  (TechType == DDR4_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_2_ENCODED_VAL) ?  "1.2V" :\
-    "Unsupported Voltage") :\
-    "Unsupported Voltage")
-//
-// Macro to determine the limit value for each DRAM type (for looping)
-//
-#define GET_ENCODED_VOLTAGE_LIMIT(TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-    VOLT_DDR3_ENCODED_LIMIT :\
-  (TechType == DDR4_TECHNOLOGY) ?\
-    VOLT_DDR4_ENCODED_LIMIT :\
-    VOLT_STARTING_ENCODED_VAL)
-//
-// Conversion Macro from Interface DDRVoltage value to internal index
-//
-#define CONVERT_VDDIO_TO_ENCODED(VddIo, TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-  ((VddIo == VOLT1_5) ? VOLT1_5_ENCODED_VAL :\
-  ((VddIo == VOLT1_35) ? VOLT1_35_ENCODED_VAL :\
-  ((VddIo == VOLT1_25) ? VOLT1_25_ENCODED_VAL :\
-    VOLT_UNSUPPORTED_ENCODED_VAL))):\
-  (TechType == DDR4_TECHNOLOGY) ?\
-  ((VddIo == VOLT1_2) ? VOLT1_2_ENCODED_VAL :\
-    VOLT_UNSUPPORTED_ENCODED_VAL) :\
-    VOLT_UNSUPPORTED_ENCODED_VAL)
-//
-// Conversion Macro from internal index to Interface DDRVoltage
-//
-#define CONVERT_ENCODED_TO_VDDIO(EncodedVal, TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_5_ENCODED_VAL) ? VOLT1_5 :\
-  ((EncodedVal == VOLT1_35_ENCODED_VAL) ? VOLT1_35 :\
-  ((EncodedVal == VOLT1_25_ENCODED_VAL) ? VOLT1_25 :\
-    VOLT_UNSUPPORTED))) :\
-  (TechType == DDR4_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_2_ENCODED_VAL) ? VOLT1_2 :\
-    VOLT_UNSUPPORTED) :\
-    VOLT_UNSUPPORTED)
-//
-// Conversion Macro from internal index to Interface DDRVoltage in Millivolts
-//
-#define CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS(EncodedVal, TechType) (\
-  (TechType == DDR3_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_5_ENCODED_VAL) ? VOLT1_5_MILLIVOLTS :\
-  ((EncodedVal == VOLT1_35_ENCODED_VAL) ? VOLT1_35_MILLIVOLTS :\
-  ((EncodedVal == VOLT1_25_ENCODED_VAL) ? VOLT1_25_MILLIVOLTS :\
-    0))) :\
-  (TechType == DDR4_TECHNOLOGY) ?\
-  ((EncodedVal == VOLT1_2_ENCODED_VAL) ? VOLT1_2_MILLIVOLTS :\
-  0) :\
-  0)
-
+#define CONVERT_VDDIO_TO_ENCODED(VddIo) (\
+  (VddIo == VOLT1_5) ? VOLT1_5_ENCODED_VAL : ((VddIo == VOLT1_35) ? VOLT1_35_ENCODED_VAL : ((VddIo == VOLT1_25) ? VOLT1_25_ENCODED_VAL : VOLT_UNSUPPORTED_ENCODED_VAL)) \
+)
+#define CONVERT_ENCODED_TO_VDDIO(EncodedVal) (\
+  (EncodedVal == VOLT1_5_ENCODED_VAL) ? VOLT1_5 : ((EncodedVal == VOLT1_35_ENCODED_VAL) ? VOLT1_35 : ((EncodedVal == VOLT1_25_ENCODED_VAL) ? VOLT1_25 : VOLT_UNSUPPORTED)) \
+)
+#define CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS(EncodedVal) (\
+  (EncodedVal == VOLT1_5_ENCODED_VAL) ? VOLT1_5_MILLIVOLTS : ((EncodedVal == VOLT1_35_ENCODED_VAL) ? VOLT1_35_MILLIVOLTS : ((EncodedVal == VOLT1_25_ENCODED_VAL) ? VOLT1_25_MILLIVOLTS : 0)) \
+)
 /*----------------------------------------------------------------------------
  *                         TYPEDEFS, STRUCTURES, ENUMS
  *
@@ -1726,9 +1646,6 @@ memDefFalse ( VOID );
 
 AGESA_STATUS
 memDefRetSuccess ( VOID );
-
-VOID
-memDefaultUndefined ( VOID );
 
 VOID
 MemFS3Wait10ns (

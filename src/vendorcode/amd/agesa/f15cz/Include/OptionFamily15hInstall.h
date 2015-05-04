@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Core
- * @e \$Revision: 313528 $   @e \$Date: 2015-02-24 22:23:58 +0800 (Tue, 24 Feb 2015) $
+ * @e \$Revision: 313537 $   @e \$Date: 2015-02-24 10:57:13 -0600 (Tue, 24 Feb 2015) $
  */
 /*****************************************************************************
  *
@@ -281,201 +281,6 @@
   #define OPT_F15_CZ_ID_TABLE
 #endif  //  defined (OPTION_FAMILY15H_CZ)
 
-/*
- * Install family 15h model 70h - 7Fh support
- */
-#ifdef OPTION_FAMILY15H_ST
-  #if OPTION_FAMILY15H_ST == TRUE
-    extern CONST REGISTER_TABLE ROMDATA F15StPrimaryCoreRegTableBeforeApLaunch;
-    extern CONST REGISTER_TABLE ROMDATA F15StPrimaryCoreRegTableAfterApLaunch;
-    extern CONST REGISTER_TABLE ROMDATA F15StAllCoreRegTableAfterApLaunch;
-    extern CONST REGISTER_TABLE ROMDATA F15StCURegTableBeforeApLaunch;
-    extern CONST REGISTER_TABLE ROMDATA F15StCURegTableAfterApLaunch;
-
-    /**
-     * Compute unit and Compute unit primary determination table.
-     *
-     * The two fields from the compute unit status hardware register can be used to determine whether
-     * even number cores are primary or all cores are primary.  It can be extended if it is
-     * decided to have other configs as well.  The other logically possible value sets are BitMapMapping,
-     * but they are currently not supported by the processor.
-     */
-    CONST COMPUTE_UNIT_MAP ROMDATA TopologyFam15StComputeUnitMapping[] =
-    {
-      {1, 1, 'x', 'x', EvenCoresMapping},                                     ///< 1 Compute Unit with 2 cores
-      {3, 3, 'x', 'x', EvenCoresMapping},                                     ///< 2 Compute Units both with 2 Cores
-      {1, 0, 'x', 'x', AllCoresMapping},                                      ///< 1 Compute Unit with 1 core
-      {3, 0, 'x', 'x', AllCoresMapping},                                      ///< 2 Compute Units both with 1 Core
-      {TOPOLOGY_LIST_TERMINAL, TOPOLOGY_LIST_TERMINAL, TOPOLOGY_LIST_TERMINAL, TOPOLOGY_LIST_TERMINAL, MaxComputeUnitMapping}   ///< End
-    };
-
-
-    #if USES_REGISTER_TABLES == TRUE
-      CONST REGISTER_TABLE ROMDATA *F15StRegisterTablesAfterApLaunch[] =
-      {
-        &F15StAllCoreRegTableAfterApLaunch,
-        &F15StCURegTableAfterApLaunch,
-        &F15StPrimaryCoreRegTableAfterApLaunch,
-        // the end.
-        NULL
-      };
-
-      CONST REGISTER_TABLE ROMDATA *F15StRegisterTablesBeforeApLaunch[] =
-      {
-        &F15StCURegTableBeforeApLaunch,
-        &F15StPrimaryCoreRegTableBeforeApLaunch,
-        // the end.
-        NULL
-      };
-
-      CONST REGISTER_TABLE ROMDATA *F15StRegisterTablesAfterApLaunchSecureS3[] =
-      {
-        &F15StPrimaryCoreRegTableAfterApLaunch,
-        // the end.
-        NULL
-      };
-
-      CONST REGISTER_TABLE ROMDATA *F15StRegisterTablesBeforeApLaunchSecureS3[] =
-      {
-        &F15StPrimaryCoreRegTableBeforeApLaunch,
-        // the end.
-        NULL
-      };
-    #endif
-
-    CONST REGISTER_TABLE_AT_GIVEN_TP ROMDATA F15StRegTableListAtGivenTP[] =
-    {
-      #if USES_REGISTER_TABLES == TRUE
-        {AmdRegisterTableTpBeforeApLaunch, F15StRegisterTablesBeforeApLaunch},
-        {AmdRegisterTableTpAfterApLaunch, F15StRegisterTablesAfterApLaunch},
-        {AmdRegisterTableTpBeforeApLaunchSecureS3, F15StRegisterTablesBeforeApLaunchSecureS3},
-        {AmdRegisterTableTpAfterApLaunchSecureS3, F15StRegisterTablesAfterApLaunchSecureS3},
-      #endif
-      // the end
-      {MaxAmdRegisterTableTps, NULL}
-    };
-
-    #include "OptionCpuSpecificServicesInstallReset.h"
-    #define CpuSrvcTableName                            cpuF15StServices
-
-    #define CpuSrvcDisablePstate                        F15DisablePstate
-    #define CpuSrvcTransitionPstate                     F15TransitionPstate
-    #define CpuSrvcGetProcIddMax                        F15StGetProcIddMax
-    #define CpuSrvcGetTscRate                           F15GetTscRate
-    #define CpuSrvcGetCurrentNbFrequency                F15StGetCurrentNbFrequency
-    #define CpuSrvcGetMinMaxNbFrequency                 F15StGetMinMaxNbFrequency
-    #define CpuSrvcGetNbPstateInfo                      F15StGetNbPstateInfo
-    #define CpuSrvcIsNbCofInitNeeded                    F15CommonGetNbCofVidUpdate
-    #define CpuSrvcGetNbIddMax                          F15StGetNbIddMax
-    #define CpuSrvcLaunchApCore                         F15LaunchApCore
-    #define CpuSrvcGetNumberOfPhysicalCores             F15StGetNumberOfPhysicalCores
-    #define CpuSrvcGetApCoreNumber                      F15StGetApCoreNumber
-    #define CpuSrvcCoreIdPositionInInitialApicId        F15CpuAmdCoreIdPositionInInitialApicId
-    #define CpuSrvcSetWarmResetFlag                     F15SetAgesaWarmResetFlag
-    #define CpuSrvcGetWarmResetFlag                     F15GetAgesaWarmResetFlag
-    #define CpuSrvcGetMicroCodePatchesStruct            GetF15StMicroCodePatchesStruct
-    #define CpuSrvcGetMicrocodeEquivalenceTable         GetF15StMicrocodeEquivalenceTable
-    #define CpuSrvcGetCacheInfo                         GetF15CacheInfo
-    #define CpuSrvcGetSysPmTableStruct                  GetF15StSysPmTable
-    #define CpuSrvcGetWheaInitData                      GetF15WheaInitData
-    #define CpuSrvcIsNbPstateEnabled                    F15StIsNbPstateEnabled
-    #define CpuSrvcIsSecureS3                           F15StIsSecureS3
-    #define CpuSrvcDoEntryTypeMsrRegister               SetRegisterForMsrEntry
-    #define CpuSrvcDoEntryTypePciRegister               SetRegisterForPciEntry
-    #define CpuSrvcDoEntryTypeCpuRevPciRegister         SetRegisterForCpuRevPciEntry
-    #define CpuSrvcDoEntryTypeCpuRevMsr                 SetRegisterForCpuRevMsrEntry
-    #define CpuSrvcDoEntryTypeFamSpecificWorkaround     SetRegisterForFamSpecificWorkaroundEntry
-    #define CpuSrvcDoEntryTypeCpuRevFamSpecificWorkaround SetRegisterForCpuRevFamSpecificWorkaroundEntry
-    #define CpuSrvcDoEntryTypeProfileFixup              SetRegisterForPerformanceProfileEntry
-    #define CpuSrvcDoEntryTypeCoreCountsPciRegister     SetRegisterForCoreCountsPerformanceEntry
-    #define CpuSrvcDoEntryTypeCompUnitCountsPciRegister SetRegisterForComputeUnitCountsEntry
-    #define CpuSrvcDoEntryTypeCompUnitCountsMsr         SetMsrForComputeUnitCountsEntry
-    #define CpuSrvcDoEntryTypeSmuIndexReg               SetSmuIndexRegisterEntry
-    #define CpuSrvcDoEntryTypeProfileFixupSmuIndexReg   SetSmuIndexRegisterForPerformanceEntry
-    #define CpuSrvcDoEntryTypeCopyBitField              CopyBitFieldEntry
-    #define CpuSrvcGetRegisterTableList                 F15StGetRegisterTableList
-    #define CpuSrvcGetWorkaroundTable                   F15StGetWorkaroundTable
-    #define CpuSrvcComputeUnitMap                       (COMPUTE_UNIT_MAP *) &TopologyFam15StComputeUnitMapping
-    #define CpuSrvcInitCacheDisabled                    InitCacheEnabled
-    #define CpuSrvcGetEarlyInitBeforeApLaunchOnCoreTable GetF15StEarlyInitBeforeApLaunchOnCoreTable
-    #define CpuSrvcGetEarlyInitAfterApLaunchOnCoreTable GetF15StEarlyInitAfterApLaunchOnCoreTable
-    #define CpuSrvcPatchLoaderIsSharedByCU              TRUE
-
-    #include "OptionCpuSpecificServicesInstall.h"
-    INSTALL_CPU_SPECIFIC_SERVICES_TABLE (CpuSrvcTableName);
-
-    #define ST_SOCKETS 1
-    #define ST_MODULES 1
-    #define ST_RECOVERY_SOCKETS 1
-    #define ST_RECOVERY_MODULES 1
-    extern F_CPU_GET_SUBFAMILY_ID_ARRAY GetF15StLogicalIdAndRev;
-    #define OPT_F15_ST_ID (PF_CPU_GET_SUBFAMILY_ID_ARRAY) GetF15StLogicalIdAndRev,
-    #ifndef ADVCFG_PLATFORM_SOCKETS
-      #define ADVCFG_PLATFORM_SOCKETS ST_SOCKETS
-    #else
-      #if ADVCFG_PLATFORM_SOCKETS < ST_SOCKETS
-        #undef ADVCFG_PLATFORM_SOCKETS
-        #define ADVCFG_PLATFORM_SOCKETS ST_SOCKETS
-      #endif
-    #endif
-    #ifndef ADVCFG_PLATFORM_MODULES
-      #define ADVCFG_PLATFORM_MODULES ST_MODULES
-    #else
-      #if ADVCFG_PLATFORM_MODULES < ST_MODULES
-        #undef ADVCFG_PLATFORM_MODULES
-        #define ADVCFG_PLATFORM_MODULES ST_MODULES
-      #endif
-    #endif
-
-    #if (AGESA_ENTRY_INIT_RECOVERY == TRUE) || (AGESA_ENTRY_INIT_EARLY == TRUE) || (AGESA_ENTRY_INIT_POST == TRUE)
-      #define F15_ST_UCODE_6700
-
-      #if AGESA_ENTRY_INIT_EARLY == TRUE
-        #if OPTION_EARLY_SAMPLES == TRUE
-        #endif
-
-        extern  CONST UINT8 ROMDATA  CpuF15StId6700MicrocodePatch[];
-        #undef F15_ST_UCODE_6700
-        #define F15_ST_UCODE_6700 CpuF15StId6700MicrocodePatch,
-      #endif
-
-      CONST UINT8 ROMDATA *CpuF15StMicroCodePatchArray[] =
-      {
-        F15_ST_UCODE_6700
-        NULL
-      };
-
-      CONST UINT8 ROMDATA CpuF15StNumberOfMicrocodePatches = (UINT8) ((sizeof (CpuF15StMicroCodePatchArray) / sizeof (CpuF15StMicroCodePatchArray[0])) - 1);
-    #endif
-
-    #if OPTION_EARLY_SAMPLES == TRUE
-    #endif
-    CONST PF_CPU_GET_SUBFAMILY_ID_ARRAY ROMDATA F15StLogicalIdTable[] =
-    {
-      OPT_F15_ST_ID
-    };
-
-    #define OPT_F15_ST_ID_TABLE {0x00670F00ul, {AMD_FAMILY_15_ST, AMD_F15_UNKNOWN}, F15StLogicalIdTable, (sizeof (F15StLogicalIdTable) / sizeof (F15StLogicalIdTable[0]))},
-    #define OPT_F15_ST_CPU {AMD_FAMILY_15_ST, &cpuF15StServices},
-
-  #else  //  OPTION_FAMILY15H_ST == TRUE
-    #define OPT_F15_ST_CPU
-    #define OPT_F15_ST_ID
-    #define OPT_F15_ST_ID_TABLE
-    #if defined (BLDOPT_REMOVE_FAMILY_15_MODEL_6x_SUPPORT) && (BLDOPT_REMOVE_FAMILY_15_MODEL_6x_SUPPORT)
-      CONST UINT8 ROMDATA *CpuF15StMicroCodePatchArray[] =
-      {
-        NULL
-      };
-      CONST UINT8 ROMDATA CpuF15StNumberOfMicrocodePatches = (UINT8) ((sizeof (CpuF15StMicroCodePatchArray) / sizeof (CpuF15StMicroCodePatchArray[0])) - 1);
-    #endif
-  #endif  //  OPTION_FAMILY15H_ST == TRUE
-#else  //  defined (OPTION_FAMILY15H_ST)
-  #define OPT_F15_ST_CPU
-  #define OPT_F15_ST_ID
-  #define OPT_F15_ST_ID_TABLE
-#endif  //  defined (OPTION_FAMILY15H_ST)
-
 // Family 15h maximum base address is 48 bits. Limit BLDCFG to 48 bits, if appropriate.
 #if (FAMILY_MMIO_BASE_MASK < 0xFFFF000000000000ull)
   #undef  FAMILY_MMIO_BASE_MASK
@@ -484,16 +289,15 @@
 
 
 #undef OPT_F15_ID_TABLE
-#define OPT_F15_ID_TABLE  OPT_F15_CZ_ID_TABLE OPT_F15_ST_ID_TABLE
+#define OPT_F15_ID_TABLE  OPT_F15_CZ_ID_TABLE
 
 #undef OPT_F15_TABLE
-#define OPT_F15_TABLE     OPT_F15_CZ_CPU OPT_F15_ST_CPU
+#define OPT_F15_TABLE     OPT_F15_CZ_CPU
 
 
 CONST PF_CPU_GET_SUBFAMILY_ID_ARRAY ROMDATA F15LogicalIdTable[] =
 {
   OPT_F15_CZ_ID
-  OPT_F15_ST_ID
 };
 
 #endif  // _OPTION_FAMILY_15H_INSTALL_H_

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 310418 $   @e \$Date: 2015-01-06 14:00:09 +0800 (Tue, 06 Jan 2015) $
+ * @e \$Revision: 310418 $   @e \$Date: 2015-01-06 00:00:09 -0600 (Tue, 06 Jan 2015) $
  *
  */
 /*

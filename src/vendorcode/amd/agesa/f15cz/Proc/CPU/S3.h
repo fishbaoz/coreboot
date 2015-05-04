@@ -7,7 +7,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 313524 $   @e \$Date: 2015-02-24 12:01:43 +0800 (Tue, 24 Feb 2015) $
+ * @e \$Revision: 313535 $   @e \$Date: 2015-02-24 10:42:44 -0600 (Tue, 24 Feb 2015) $
  *
  */
 /*

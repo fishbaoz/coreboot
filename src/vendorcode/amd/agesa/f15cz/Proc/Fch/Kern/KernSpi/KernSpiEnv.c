@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 313995 $   @e \$Date: 2015-03-03 12:19:40 +0800 (Tue, 03 Mar 2015) $
+ * @e \$Revision: 309233 $   @e \$Date: 2014-12-11 10:16:05 -0600 (Thu, 11 Dec 2014) $
  *
  */
 /*
@@ -819,8 +819,7 @@ AutoSpiModeSpeed (
     if (CurrentSpiDeviceProfilePtr->JEDEC_ID == DeviceID) {
       LocalCfgPtr->Spi.SpiMode = FCH_SPI_MODE_QUAL_144;
       if (CurrentSpiDeviceProfilePtr->MaxQuadSpeed >= 100 * 4) {
-//        LocalCfgPtr->Spi.SpiFastSpeed = FCH_SPI_SPEED_100M;
-        LocalCfgPtr->Spi.SpiFastSpeed = FCH_SPI_SPEED_66M;
+        LocalCfgPtr->Spi.SpiFastSpeed = FCH_SPI_SPEED_100M;
       } else if (CurrentSpiDeviceProfilePtr->MaxQuadSpeed >= 66 * 4) {
         LocalCfgPtr->Spi.SpiFastSpeed = FCH_SPI_SPEED_66M;
       } else if (CurrentSpiDeviceProfilePtr->MaxQuadSpeed >= 33 * 4) {
@@ -958,7 +957,6 @@ FchSetSpi (
         );
 
         FchSetQualMode (LocalCfgPtr->Spi.SpiMode, StdHeader);
-        RwMem (SPI_BASE + FCH_SPI_MMIO_REG22, AccessWidth16, ~((UINT32) (0xF << 8)), ((SpiFastSpeed) << 8));
       }
     }
   }

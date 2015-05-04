@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 315062 $   @e \$Date: 2015-03-19 07:54:52 +0800 (Thu, 19 Mar 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -83,7 +83,6 @@
 #include "cpuEarlyInit.h"
 #include "cpuPowerMgmtSystemTables.h"
 #include "cpuServices.h"
-#include "Ids.h"
 #include "Filecode.h"
 CODE_GROUP (G1_PEICC)
 RDATA_GROUP (G1_PEICC)
@@ -166,32 +165,29 @@ PmInitializationAtEarly (
   SYS_PM_TBL_STEP   *SysPmTable;
   CPU_SPECIFIC_SERVICES *FamilySpecificServices;
 
-  IEM_SKIP_CODE (IEM_CPU_POWER_MANAGER_TABLE) {
-    // Determine the number of steps to perform
+  // Determine the number of steps to perform
 
-    GetCpuServicesOfCurrentCore ((CONST CPU_SPECIFIC_SERVICES **) &FamilySpecificServices, StdHeader);
-    FamilySpecificServices->GetSysPmTableStruct (FamilySpecificServices, (CONST VOID **) &SysPmTable, &NumberOfSystemWideSteps, StdHeader);
+  GetCpuServicesOfCurrentCore ((CONST CPU_SPECIFIC_SERVICES **) &FamilySpecificServices, StdHeader);
+  FamilySpecificServices->GetSysPmTableStruct (FamilySpecificServices, (CONST VOID **) &SysPmTable, &NumberOfSystemWideSteps, StdHeader);
 
 
-    // Traverse the PM init table
-    ThisIsWarmReset = IsWarmReset (StdHeader);
+  // Traverse the PM init table
+  ThisIsWarmReset = IsWarmReset (StdHeader);
 
-    for (i = 0; i < NumberOfSystemWideSteps; ++i) {
-      IDS_HDT_CONSOLE (CPU_TRACE, "  Perform PM init step %d\n", i);
-      PerformThisPmStep (&i, ThisIsWarmReset, SysPmTable, FamilySpecificServices, StdHeader, CpuEarlyParams);
-    }
+  for (i = 0; i < NumberOfSystemWideSteps; ++i) {
+    IDS_HDT_CONSOLE (CPU_TRACE, "  Perform PM init step %d\n", i);
+    PerformThisPmStep (&i, ThisIsWarmReset, SysPmTable, FamilySpecificServices, StdHeader, CpuEarlyParams);
   }
+
   // GoToMemInitPstateCore0 only if there is no pending warm reset.
   GetWarmResetFlag (StdHeader, &Request);
   if (Request.RequestBit == FALSE) {
     GoToMemInitPstateCore0 (StdHeader, CpuEarlyParams);
   }
 
-  ReturnCode = AGESA_SUCCESS;
-  IEM_SKIP_CODE (IEM_EVENT_LOG) {
-    // Retrieve/Process any errors
-    ReturnCode = GetEarlyPmErrors (StdHeader);
-  }
+  // Retrieve/Process any errors
+  ReturnCode = GetEarlyPmErrors (StdHeader);
+
   return (ReturnCode);
 }
 

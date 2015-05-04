@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  OPTION
- * @e \$Revision: 311790 $   @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*****************************************************************************
@@ -143,7 +143,6 @@ typedef struct _MEM_FEAT_BLOCK_NB {
   OPTION_MEM_FEATURE_NB  *InitDllPDBypass;        ///< Initialize DllPDBypass Feature.
   OPTION_MEM_FEATURE_NB  *AggressorInit;          ///< Aggressor initialization.
   OPTION_MEM_FEATURE_NB  *LoadPmuFirmware;        ///< Load PMU firmware.
-  OPTION_MEM_FEATURE_NB  *LvDdr4;                 ///< Low voltage DDR4 dimm support
 } MEM_FEAT_BLOCK_NB;
 
 typedef AGESA_STATUS MEM_MAIN_FLOW_CONTROL (
@@ -231,7 +230,6 @@ typedef struct _MEM_FEAT_BLOCK_MAIN {
   OPTION_MEM_FEATURE_MAIN *MemRestore; ///< Memory Context Restore
   OPTION_MEM_FEATURE_MAIN *MemS3Save; ///< Memory S3 Save
   OPTION_MEM_FEATURE_MAIN *AggressorDetermination; ///< Aggressor Chipselects for all DCTs on all nodes.
-  OPTION_MEM_FEATURE_MAIN *LvDDR4; ///< Low voltage DDR4 support.
 } MEM_FEAT_BLOCK_MAIN;
 
 #define MEM_NB_SUPPORT_STRUCT_VERSION  0x01
@@ -305,9 +303,9 @@ typedef struct _MEM_NB_SUPPORT {
  */
 typedef struct _MEM_FEAT_TRAIN_SEQ {
   UINT16              OptMemTrainingSequenceListVersion; ///< Version of main feature block.
-  OPTION_MEM_FEATURE_NB *TrainingSequence;               ///< Training Sequence function.
-  OPTION_MEM_FEATURE_NB *TrainingSequenceEnabled;        ///< Enable function.
-  MEM_TECH_FEAT_BLOCK      *MemTechFeatBlock;            ///< Memory feature block.
+  OPTION_MEM_FEATURE_NB *TrainingSequence; ///< Training Sequence function.
+  OPTION_MEM_FEATURE_NB *TrainingSequenceEnabled; ///< Enable function.
+  MEM_TECH_FEAT_BLOCK      *MemTechFeatBlock; ///< Memory feature block.
 } MEM_FEAT_TRAIN_SEQ;
 
 /**
@@ -315,21 +313,21 @@ typedef struct _MEM_FEAT_TRAIN_SEQ {
  * entries which are used by PSC engine
  */
 typedef struct _MEM_PSC_TABLE_BLOCK {
-  PSC_TBL_ENTRY **TblEntryOfMaxFreq;     ///< Table entry of MaxFreq.
-  PSC_TBL_ENTRY **TblEntryOfDramTerm;    ///< Table entry of Dram Term.
-  PSC_TBL_ENTRY **TblEntryOfODTPattern;   ///< Table entry of ODT Pattern.
-  PSC_TBL_ENTRY **TblEntryOfSAO;         ///< Table entry of Slow access mode, AddrTmg and ODC..
-  PSC_TBL_ENTRY **TblEntryOfMR0WR;       ///< Table entry of MR0[WR].
-  PSC_TBL_ENTRY **TblEntryOfMR0CL;       ///< Table entry of MR0[CL].
-  PSC_TBL_ENTRY **TblEntryOfRC2IBT;      ///< Table entry of RC2 IBT.
+  PSC_TBL_ENTRY **TblEntryOfMaxFreq; ///< Table entry of MaxFreq.
+  PSC_TBL_ENTRY **TblEntryOfDramTerm; ///< Table entry of Dram Term.
+  PSC_TBL_ENTRY **TblEntryOfODTPattern; ///< Table entry of ODT Pattern.
+  PSC_TBL_ENTRY **TblEntryOfSAO; ///< Table entry of Slow access mode, AddrTmg and ODC..
+  PSC_TBL_ENTRY **TblEntryOfMR0WR; ///< Table entry of MR0[WR].
+  PSC_TBL_ENTRY **TblEntryOfMR0CL; ///< Table entry of MR0[CL].
+  PSC_TBL_ENTRY **TblEntryOfRC2IBT; ///< Table entry of RC2 IBT.
   PSC_TBL_ENTRY **TblEntryOfRC10OpSpeed; ///< Table entry of RC10[operating speed].
-  PSC_TBL_ENTRY **TblEntryOfLRIBT;       ///< Table entry of LRDIMM IBT
-  PSC_TBL_ENTRY **TblEntryOfLRNPR;       ///< Table entry of LRDIMM F0RC13[NumPhysicalRanks].
-  PSC_TBL_ENTRY **TblEntryOfLRNLR;       ///< Table entry of LRDIMM F0RC13[NumLogicalRanks].
-  PSC_TBL_ENTRY **TblEntryOfGen;         ///< Table entry of CLKDis map and CKE, ODT as well as ChipSel tri-state map.
-  PSC_TBL_ENTRY **TblEntryOfS2D;         ///< Table entry of 2D training configs
-  PSC_TBL_ENTRY **TblEntryOfWLSeed;      ///< Table entry of WL seed
-  PSC_TBL_ENTRY **TblEntryOfHWRxENSeed;  ///< Table entry of HW RxEN seed
+  PSC_TBL_ENTRY **TblEntryOfLRIBT;///< Table entry of LRDIMM IBT
+  PSC_TBL_ENTRY **TblEntryOfLRNPR; ///< Table entry of LRDIMM F0RC13[NumPhysicalRanks].
+  PSC_TBL_ENTRY **TblEntryOfLRNLR; ///< Table entry of LRDIMM F0RC13[NumLogicalRanks].
+  PSC_TBL_ENTRY **TblEntryOfGen; ///< Table entry of CLKDis map and CKE, ODT as well as ChipSel tri-state map.
+  PSC_TBL_ENTRY **TblEntryOfS2D; ///< Table entry of 2D training configs
+  PSC_TBL_ENTRY **TblEntryOfWLSeed; ///< Table entry of WL seed
+  PSC_TBL_ENTRY **TblEntryOfHWRxENSeed; ///< Table entry of HW RxEN seed
 } MEM_PSC_TABLE_BLOCK;
 
 typedef BOOLEAN MEM_PSC_FLOW (
@@ -343,18 +341,18 @@ typedef BOOLEAN MEM_PSC_FLOW (
  */
 typedef struct _MEM_PSC_FLOW_BLOCK {
   MEM_PSC_TABLE_BLOCK *EntryOfTables; ///<Entry of NB specific MEM_PSC_TABLE_BLOCK
-  MEM_PSC_FLOW *MaxFrequency;         ///< Sub-engine which performs "Max Frequency" value extraction.
-  MEM_PSC_FLOW *DramTerm;             ///< Sub-engine which performs "Dram Term" value extraction.
-  MEM_PSC_FLOW *ODTPattern;           ///< Sub-engine which performs "ODT Pattern" value extraction.
-  MEM_PSC_FLOW *SAO;                  ///< Sub-engine which performs "Slow access mode, AddrTmg and ODC" value extraction.
-  MEM_PSC_FLOW *MR0WrCL;              ///< Sub-engine which performs "MR0[WR] and MR0[CL]" value extraction.
-  MEM_PSC_FLOW *RC2IBT;               ///< Sub-engine "RC2 IBT" value extraction.
-  MEM_PSC_FLOW *RC10OpSpeed;          ///< Sub-engine "RC10[operating speed]" value extraction.
-  MEM_PSC_FLOW *LRIBT;                ///< Sub-engine "LRDIMM IBT" value extraction.
-  MEM_PSC_FLOW *LRNPR;                ///< Sub-engine "LRDIMM F0RC13[NumPhysicalRanks]" value extraction.
-  MEM_PSC_FLOW *LRNLR;                ///< Sub-engine "LRDIMM F0RC13[NumLogicalRanks]" value extraction.
-  MEM_PSC_FLOW *S2D;                  ///< Sub-engine which performs 2D training configuration  checking
-  MEM_PSC_FLOW *TrainingSeedVal;      ///< Sub-engine for WL and HW RxEn pass1 seed value extraction
+  MEM_PSC_FLOW *MaxFrequency; ///< Sub-engine which performs "Max Frequency" value extraction.
+  MEM_PSC_FLOW *DramTerm; ///< Sub-engine which performs "Dram Term" value extraction.
+  MEM_PSC_FLOW *ODTPattern; ///< Sub-engine which performs "ODT Pattern" value extraction.
+  MEM_PSC_FLOW *SAO; ///< Sub-engine which performs "Slow access mode, AddrTmg and ODC" value extraction.
+  MEM_PSC_FLOW *MR0WrCL; ///< Sub-engine which performs "MR0[WR] and MR0[CL]" value extraction.
+  MEM_PSC_FLOW *RC2IBT; ///< Sub-engine "RC2 IBT" value extraction.
+  MEM_PSC_FLOW *RC10OpSpeed; ///< Sub-engine "RC10[operating speed]" value extraction.
+  MEM_PSC_FLOW *LRIBT; ///< Sub-engine "LRDIMM IBT" value extraction.
+  MEM_PSC_FLOW *LRNPR; ///< Sub-engine "LRDIMM F0RC13[NumPhysicalRanks]" value extraction.
+  MEM_PSC_FLOW *LRNLR; ///< Sub-engine "LRDIMM F0RC13[NumLogicalRanks]" value extraction.
+  MEM_PSC_FLOW *S2D; ///< Sub-engine which performs 2D training configuration  checking
+  MEM_PSC_FLOW *TrainingSeedVal; ///< Sub-engine for WL and HW RxEn pass1 seed value extraction
 } MEM_PSC_FLOW_BLOCK;
 
 /*----------------------------------------------------------------------------------------
@@ -411,13 +409,7 @@ MemPLookupCadBusCfgTabs (
   );
 
 BOOLEAN
-MemPLookupDataBusCfgTabs3 (
-  IN OUT   MEM_NB_BLOCK *NBPtr,
-  IN       MEM_PSC_TABLE_BLOCK *EntryOfTables
-  );
-
-BOOLEAN
-MemPLookupDataBusCfgTabs4 (
+MemPLookupDataBusCfgTabs (
   IN OUT   MEM_NB_BLOCK *NBPtr,
   IN       MEM_PSC_TABLE_BLOCK *EntryOfTables
   );

@@ -100,7 +100,7 @@ AGESA_INC += -I$(AGESA_ROOT)/Proc/GNB/Modules/GnbSmuLibV8
 AGESA_INC += -I$(AGESA_ROOT)/Proc/GNB/Modules/GnbGfxIntTableV5
 AGESA_INC += -I$(AGESA_ROOT)/Proc/Psp/PspBaseLib
 AGESA_INC += -I$(AGESA_ROOT)/Proc/GNB/Modules/GnbAzaliaLib
-AGESA_INC += -I$(AGESA_ROOT)/Proc/Mem/Tech/DDR4/
+#AGESA_INC += -I$(AGESA_ROOT)/Proc/Mem/Tech/DDR4/
 #AGESA_INC += -I$(AGESA_ROOT)/Proc/GNB/Modules/GnbInitCZ
 AGESA_INC += -I$(AGESA_ROOT)/UEFI/Psp/CZ/Include
 

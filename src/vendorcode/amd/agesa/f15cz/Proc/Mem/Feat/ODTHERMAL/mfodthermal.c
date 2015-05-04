@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Feat)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -129,40 +129,73 @@ MemFOnDimmThermal (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
+  UINT8 i;
   UINT8 Dct;
   CH_DEF_STRUCT *ChannelPtr;
   MEM_DATA_STRUCT *MemPtr;
+  UINT8 *SpdBufferPtr;
+  UINT8 ThermalOp;
   BOOLEAN ODTSEn;
+  BOOLEAN ExtendTmp;
+  BOOLEAN FirstLoop;
 
-  ODTSEn = TRUE;
+  ODTSEn = FALSE;
+  ExtendTmp = FALSE;
+  FirstLoop = TRUE;
 
   ASSERT (NBPtr != NULL);
   MemPtr = NBPtr->MemPtr;
   AGESA_TESTPOINT (TpProcMemOnDimmThermal, &MemPtr->StdHeader);
-  //
-  // Enable ODTSEn only if all installed DIMMs on this node have an On-Dimm Temperature Sensor.
-  //
   if (NBPtr->MCTPtr->NodeMemSize != 0) {
     for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
       NBPtr->SwitchDCT (NBPtr, Dct);
+      // Only go through the DCT if it is not disabled.
       if (NBPtr->GetBitField (NBPtr, BFDisDramInterface) == 0) {
         ChannelPtr = NBPtr->ChannelPtr;
-        //
-        // If all DIMMs on this channel do not support the Thermal Sensor, Set ODTSEn to false and quit
-        //
-        if ((ChannelPtr->DimmThermSensorPresent & ChannelPtr->ChDimmValid) != ChannelPtr->ChDimmValid) {
-          ODTSEn = FALSE;
-          break;
+        // If Ganged mode is enabled, need to go through all dram devices on both DCTs.
+        if (!NBPtr->Ganged || (NBPtr->Dct != 1)) {
+          if (!(NBPtr->IsSupported[CheckSetSameDctODTsEn]) || (NBPtr->IsSupported[CheckSetSameDctODTsEn] && (NBPtr->Dct != 1)) ||
+             ((NBPtr->Dct != 0) && (FirstLoop == TRUE))) {
+            ODTSEn = TRUE;
+            ExtendTmp = TRUE;
+          }
         }
+        for (i = 0; i < MAX_DIMMS_PER_CHANNEL; i ++) {
+          if (NBPtr->TechPtr->GetDimmSpdBuffer (NBPtr->TechPtr, &SpdBufferPtr, i)) {
+            // Check byte 31: thermal and refresh option.
+            ThermalOp = SpdBufferPtr[THERMAL_OPT];
+            // Bit 3: ODTS readout
+            if (!((ThermalOp >> 3) & 1)) {
+              ODTSEn = FALSE;
+            }
+            // Bit 0: Extended Temperature Range.
+            if (!(ThermalOp & 1)) {
+              ExtendTmp = FALSE;
+            }
+          }
+        }
+
+        if (!NBPtr->Ganged || (NBPtr->Dct == 1)) {
+          // If in ganged mode, need to switch back to DCT0 to set the registers.
+          if (NBPtr->Ganged || NBPtr->IsSupported[CheckSetSameDctODTsEn]) {
+            NBPtr->SwitchDCT (NBPtr, 0);
+            ChannelPtr = NBPtr->ChannelPtr;
+          }
+          // If all dram devices on support ODTS
+          NBPtr->SetBitField (NBPtr, BFODTSEn, (ODTSEn == TRUE) ? 1 : 0);
+          ChannelPtr->ExtendTmp = ExtendTmp;
+        }
+        FirstLoop = FALSE;
+      } else {
+        ODTSEn = FALSE;
+        ExtendTmp = FALSE;
       }
+      IDS_HDT_CONSOLE (MEM_FLOW, "\tDct %d\n", Dct);
+      IDS_HDT_CONSOLE (MEM_FLOW, "\t\tODTSEn = %d\n", ODTSEn);
+      IDS_HDT_CONSOLE (MEM_FLOW, "\t\tExtendTmp = %d\n", ExtendTmp);
     }
   }
-  //
-  // If all dram devices on support ODTS
-  //
-  NBPtr->SetBitField (NBPtr, BFODTSEn, (ODTSEn == TRUE) ? 1 : 0);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tODTSEn = %d\n", ODTSEn);
-  return ODTSEn;
+  return TRUE;
 }
 
 

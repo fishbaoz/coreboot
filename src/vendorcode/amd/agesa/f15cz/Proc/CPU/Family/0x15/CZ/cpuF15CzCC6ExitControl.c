@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/KV
- * @e \$Revision: 309749 $   @e \$Date: 2014-12-22 09:11:33 +0800 (Mon, 22 Dec 2014) $
+ * @e \$Revision: 309749 $   @e \$Date: 2014-12-21 19:11:33 -0600 (Sun, 21 Dec 2014) $
  *
  */
 /*

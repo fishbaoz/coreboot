@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 316101 $   @e \$Date: 2015-04-03 09:33:53 +0800 (Fri, 03 Apr 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -246,14 +246,9 @@ GnbCreateIvhdHeader10hCZ (
 {
   UINT32      Value;
   PCI_ADDR    GnbIommuPciAddress;
-  MMIO_0x30        MMIO_x30_Value;
-  MMIO_0x18        MMIO_x18_Value;
-  MMIO_0x4000      MMIO_x4000_Value;
-  CAPABILITY_REG   CapValue;
-  UINT32           MsiNumPPR;
-
   GnbIommuPciAddress = GnbGetIommuPciAddressV4 (GnbHandle, StdHeader);
   Ivhd->Ivhd.Type = (UINT8) Type;
+  Ivhd->Ivhd.Flags = IVHD_FLAG_COHERENT | IVHD_FLAG_IOTLBSUP | IVHD_FLAG_ISOC | IVHD_FLAG_RESPASSPW | IVHD_FLAG_PASSPW | IVHD_FLAG_PPRSUB | IVHD_FLAG_PREFSUP;
   Ivhd->Ivhd.Length = sizeof (IVRS_IVHD_ENTRY_10H);
   Ivhd->Ivhd.DeviceId = 0x2;
   Ivhd->Ivhd.CapabilityOffset = GnbLibFindPciCapability (GnbIommuPciAddress.AddressValue, IOMMU_CAP_ID, StdHeader);
@@ -262,39 +257,12 @@ GnbCreateIvhdHeader10hCZ (
   GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0x8), AccessWidth32, (UINT8 *) &Ivhd->Ivhd.BaseAddress + 4, StdHeader);
   Ivhd->Ivhd.BaseAddress = Ivhd->Ivhd.BaseAddress & 0xfffffffffffffffe;
   ASSERT (Ivhd->Ivhd.BaseAddress != 0x0);
-
-  GnbLibMemRead (Ivhd->Ivhd.BaseAddress + 0x30, AccessWidth64, &(MMIO_x30_Value.Value), StdHeader);
-  GnbLibMemRead (Ivhd->Ivhd.BaseAddress + 0x18, AccessWidth64, &(MMIO_x18_Value.Value), StdHeader);
-  GnbLibPciRead (GnbIommuPciAddress.AddressValue | Ivhd->Ivhd.CapabilityOffset, AccessWidth32, &(CapValue.Value), StdHeader);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.Coherent != 0) ? IVHD_FLAG_COHERENT : 0);
-  Ivhd->Ivhd.Flags |= ((CapValue.Field.IommuIoTlbsup != 0) ? IVHD_FLAG_IOTLBSUP : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.Isoc != 0) ? IVHD_FLAG_ISOC : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.ResPassPW != 0) ? IVHD_FLAG_RESPASSPW : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.PassPW != 0) ? IVHD_FLAG_PASSPW : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x30_Value.Field.PPRSup != 0) ? IVHD_FLAG_PPRSUB : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x30_Value.Field.PreFSup != 0) ? IVHD_FLAG_PREFSUP : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.HtTunEn != 0) ? IVHD_FLAG_HTTUNEN : 0);
-
   GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0x10), AccessWidth32, &Value, StdHeader);
-  Ivhd->Ivhd.IommuInfo = (UINT16) (Value & 0x1f);
-  MsiNumPPR = Value >> 27;
-  GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0xC), AccessWidth32, &Value, StdHeader);
-  Ivhd->Ivhd.IommuInfo |= ((Value & 0x1f) << IVHD_INFO_UNITID_OFFSET);
-
-  GnbLibMemRead (Ivhd->Ivhd.BaseAddress + 0x4000, AccessWidth64, &(MMIO_x4000_Value.Value), StdHeader);
-  Ivhd->IommuEfr = (UINT32) ((MMIO_x30_Value.Field.XTSup << IVHD_EFR_XTSUP_OFFSET) |
-                   (MMIO_x30_Value.Field.NXSup << IVHD_EFR_NXSUP_OFFSET) |
-                   (MMIO_x30_Value.Field.GTSup << IVHD_EFR_GTSUP_OFFSET) |
-                   (MMIO_x30_Value.Field.GLXSup << IVHD_EFR_GLXSUP_OFFSET) |
-                   (MMIO_x30_Value.Field.IASup << IVHD_EFR_IASUP_OFFSET) |
-                   (MMIO_x30_Value.Field.GASup << IVHD_EFR_GASUP_OFFSET) |
-                   (MMIO_x30_Value.Field.HESup << IVHD_EFR_HESUP_OFFSET) |
-                   (MMIO_x30_Value.Field.PASmax << IVHD_EFR_PASMAX_OFFSET) |
-                   (MMIO_x4000_Value.Field.NCounter << IVHD_EFR_PNCOUNTERS_OFFSET) |
-                   (MMIO_x4000_Value.Field.NCounterBanks << IVHD_EFR_PNBANKS_OFFSET) |
-                   (MsiNumPPR << IVHD_EFR_MSINUMPPR_OFFSET) |
-                   (MMIO_x30_Value.Field.GATS << IVHD_EFR_GATS_OFFSET) |
-                   (MMIO_x30_Value.Field.HATS << IVHD_EFR_HATS_OFFSET));
+  Ivhd->Ivhd.IommuInfo = (UINT16) (Value & 0x1f) | (0x13 << IVHD_INFO_UNITID_OFFSET);
+  Ivhd->IommuEfr = (0 << IVHD_EFR_XTSUP_OFFSET) | (0 << IVHD_EFR_NXSUP_OFFSET) | (1 << IVHD_EFR_GTSUP_OFFSET) |
+                   (0 << IVHD_EFR_GLXSUP_OFFSET) | (1 << IVHD_EFR_IASUP_OFFSET) | (0 << IVHD_EFR_GASUP_OFFSET) |
+                   (0 << IVHD_EFR_HESUP_OFFSET) | (0x8 << IVHD_EFR_PASMAX_OFFSET) | (0 << IVHD_EFR_MSINUMPPR_OFFSET) |
+                   (4 << IVHD_EFR_PNCOUNTERS_OFFSET) | (2 << IVHD_EFR_PNBANKS_OFFSET);
 }
 
 /*----------------------------------------------------------------------------------------*/
@@ -319,12 +287,10 @@ GnbCreateIvhdHeader11hCZ (
   UINT32      Value;
   PCI_ADDR    GnbIommuPciAddress;
   UINT64      BaseAddress;
-  MMIO_0x30   MMIO_x30_Value;
-  MMIO_0x18   MMIO_x18_Value;
-  CAPABILITY_REG   CapValue;
 
   GnbIommuPciAddress = GnbGetIommuPciAddressV4 (GnbHandle, StdHeader);
   Ivhd->Ivhd.Type = (UINT8) Type;
+  Ivhd->Ivhd.Flags = IVHD_FLAG_COHERENT | IVHD_FLAG_IOTLBSUP | IVHD_FLAG_ISOC | IVHD_FLAG_RESPASSPW | IVHD_FLAG_PASSPW | IVHD_FLAG_PPRSUB | IVHD_FLAG_PREFSUP;
   Ivhd->Ivhd.Length = sizeof (IVRS_IVHD_ENTRY_11H);
   Ivhd->Ivhd.DeviceId = 0x2;
   Ivhd->Ivhd.CapabilityOffset = GnbLibFindPciCapability (GnbIommuPciAddress.AddressValue, IOMMU_CAP_ID, StdHeader);
@@ -333,23 +299,8 @@ GnbCreateIvhdHeader11hCZ (
   GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0x8), AccessWidth32, (UINT8 *) &Ivhd->Ivhd.BaseAddress + 4, StdHeader);
   Ivhd->Ivhd.BaseAddress = Ivhd->Ivhd.BaseAddress & 0xfffffffffffffffe;
   ASSERT (Ivhd->Ivhd.BaseAddress != 0x0);
-
-  GnbLibMemRead (Ivhd->Ivhd.BaseAddress + 0x30, AccessWidth64, &(MMIO_x30_Value.Value), StdHeader);
-  GnbLibMemRead (Ivhd->Ivhd.BaseAddress + 0x18, AccessWidth64, &(MMIO_x18_Value.Value), StdHeader);
-  GnbLibPciRead (GnbIommuPciAddress.AddressValue | Ivhd->Ivhd.CapabilityOffset, AccessWidth32, &(CapValue.Value), StdHeader);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.Coherent != 0) ? IVHD_FLAG_COHERENT : 0);
-  Ivhd->Ivhd.Flags |= ((CapValue.Field.IommuIoTlbsup != 0) ? IVHD_FLAG_IOTLBSUP : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.Isoc != 0) ? IVHD_FLAG_ISOC : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.ResPassPW != 0) ? IVHD_FLAG_RESPASSPW : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.PassPW != 0) ? IVHD_FLAG_PASSPW : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x30_Value.Field.PPRSup != 0) ? IVHD_FLAG_PPRSUB : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x30_Value.Field.PreFSup != 0) ? IVHD_FLAG_PREFSUP : 0);
-  Ivhd->Ivhd.Flags |= ((MMIO_x18_Value.Field.HtTunEn != 0) ? IVHD_FLAG_HTTUNEN : 0);
-
   GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0x10), AccessWidth32, &Value, StdHeader);
-  Ivhd->Ivhd.IommuInfo = (UINT16) (Value & 0x1f);
-  GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0xC), AccessWidth32, &Value, StdHeader);
-  Ivhd->Ivhd.IommuInfo |= ((Value & 0x1f) << IVHD_INFO_UNITID_OFFSET);
+  Ivhd->Ivhd.IommuInfo = (UINT16) (Value & 0x1f) | (0x13 << IVHD_INFO_UNITID_OFFSET);
 
   // Assign attributes
   GnbLibPciRead (GnbIommuPciAddress.AddressValue | (Ivhd->Ivhd.CapabilityOffset + 0x10), AccessWidth32, &Value, StdHeader);

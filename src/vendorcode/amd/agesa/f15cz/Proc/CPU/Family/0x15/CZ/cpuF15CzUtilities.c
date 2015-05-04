@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x15/CZ
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -805,7 +805,7 @@ F15CzNbPstateConfig (
       // We can't rely on D18F5x174[CurNbPstateLo] until a transition occurs
       if ((NbSts.StartupNbPstate != NbCtrlOnEntry.NbPstateHi) &&
           (NbSts.StartupNbPstate != NbCtrlOnEntry.NbPstateLo)) {
-        F15CzTransitionToNbLow (StdHeader);
+        TransitionToNbLow (StdHeader);
         LibAmdPciRead (AccessWidth32, PciAddress, &NbSts, StdHeader);
       }
 
@@ -839,13 +839,13 @@ F15CzNbPstateConfig (
       ASSERT (SelForCurrentNb != 0xFF);
       if (NbSts.CurNbPstateLo == 0) {
         // Current NbPstate is NbHi
-        F15CzTransitionToNbLow (StdHeader);
+        TransitionToNbLow (StdHeader);
         F15CzModifyNbPstate (&NbFuse[0], CurrentNbPstate, SelForCurrentNb, StdHeader);
-        F15CzTransitionToNbHigh (StdHeader);
+        TransitionToNbHigh (StdHeader);
       } else {
-        F15CzTransitionToNbHigh (StdHeader);
+        TransitionToNbHigh (StdHeader);
         F15CzModifyNbPstate (&NbFuse[0], CurrentNbPstate, SelForCurrentNb, StdHeader);
-        F15CzTransitionToNbLow (StdHeader);
+        TransitionToNbLow (StdHeader);
       }
       // Restore D18F5x170
       LibAmdPciWrite (AccessWidth32, PciAddress, &NbCtrlOnEntry, StdHeader);
@@ -1167,7 +1167,7 @@ F15CzNbPstateDis (
     if (NbPsCtrl.NbPstateHi != 0) {
       if (NbPsSts.CurNbPstateLo == 0) {
         // Switch to Nb Low if we're in Nb High
-        F15CzTransitionToNbLow (StdHeader);
+        TransitionToNbLow (StdHeader);
       }
 
       // NbPstateHi = 0
@@ -1181,7 +1181,7 @@ F15CzNbPstateDis (
     LibAmdPciRead (AccessWidth32, PciAddress, &NbPsSts, StdHeader);
     if (NbPsSts.CurNbPstateLo == 1) {
       // Switch to Nb High if we're in Nb Low
-      F15CzTransitionToNbHigh (StdHeader);
+      TransitionToNbHigh (StdHeader);
     }
     // NbPstateLo = 0
     // Clear F5x170[NbPstateMaxVal]
@@ -1248,7 +1248,7 @@ F15CzNbPstateDisCore (
  *
  */
 VOID
-F15CzTransitionToNbLow (
+TransitionToNbLow (
   IN       AMD_CONFIG_PARAMS  *StdHeader
   )
 {
@@ -1278,7 +1278,7 @@ F15CzTransitionToNbLow (
  *
  */
 VOID
-F15CzTransitionToNbHigh (
+TransitionToNbHigh (
   IN       AMD_CONFIG_PARAMS  *StdHeader
   )
 {

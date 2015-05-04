@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -457,8 +457,6 @@ typedef struct {
 #define CPUID_EXT_FAMILY_MASK    0x0FF00000ul
 
 #define CZ_SOCKET_FP4       0
-#define ST_SOCKET_FP4       0
-#define ST_SOCKET_FT4       3
 #define SOCKET_IGNORE       0xF
 
 #define LAPIC_BASE_ADDR_MASK    0x0000FFFFFFFFF000ull

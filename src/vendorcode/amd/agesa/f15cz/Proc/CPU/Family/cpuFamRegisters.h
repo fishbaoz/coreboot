@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  *
  */
 /*
@@ -97,10 +97,6 @@
 // Family 15h equates
 #define AMD_FAMILY_15_CZ  0x0004u
 #define AMD_FAMILY_CZ     (AMD_FAMILY_15_CZ)
-
-#define AMD_FAMILY_15_ST  0x0008u
-#define AMD_FAMILY_ST     (AMD_FAMILY_15_ST)
-
 #define AMD_FAMILY_15     AMD_FAMILY_15_CZ
 
 // Family Unknown
@@ -113,18 +109,12 @@
   // Family 15h CZ steppings
 #define AMD_F15_CZ_A0    0x0001u
 #define AMD_F15_CZ_A1    0x0002u
-  // Family 15h ST steppings
-#define AMD_F15_ST_A0    0x0010u
   // Family 15h Unknown stepping
 #define AMD_F15_UNKNOWN  0x8000u
-  // CZ
 #define AMD_F15_CZ_Ax    (AMD_F15_CZ_A0 | AMD_F15_CZ_A1)
 #define AMD_F15_CZ_ALL   (AMD_F15_CZ_Ax)
-  // ST
-#define AMD_F15_ST_Ax    (AMD_F15_ST_A0)
-#define AMD_F15_ST_ALL   (AMD_F15_ST_Ax)
 
-#define AMD_F15_ALL      (AMD_F15_CZ_ALL | AMD_F15_ST_ALL)
+#define AMD_F15_ALL      AMD_F15_CZ_ALL
 
 #endif      // _CPU_FAM_REGISTERS_H_
 

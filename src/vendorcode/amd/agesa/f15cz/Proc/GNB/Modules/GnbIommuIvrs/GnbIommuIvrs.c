@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 316101 $   @e \$Date: 2015-04-03 09:33:53 +0800 (Fri, 03 Apr 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -413,6 +413,7 @@ GnbIommuIvrsTableDump (
       }
       IDS_HDT_CONSOLE (GNB_TRACE, "  <-------------IVHD Block Device Entries End -------->\n");
       IDS_HDT_CONSOLE (GNB_TRACE, "  <-------------IVHD Block End ---------->\n");
+      Block = Block + ((IVRS_IVHD_ENTRY *) Block)->Length;
     } else if (
         (*Block == IvrsIvmdBlock) ||
         (*Block == IvrsIvmdBlockRange) ||
@@ -437,8 +438,8 @@ GnbIommuIvrsTableDump (
       IDS_HDT_CONSOLE (GNB_TRACE, "  StartAddress     = 0x%08x%08x\n", (UINT32) (((IVRS_IVMD_ENTRY *) Block)->BlockStart >> 32), (UINT32) ((IVRS_IVMD_ENTRY *) Block)->BlockStart);
       IDS_HDT_CONSOLE (GNB_TRACE, "  BockLength       = 0x%08x%08x\n", (UINT32) (((IVRS_IVMD_ENTRY *) Block)->BlockLength >> 32), (UINT32) ((IVRS_IVMD_ENTRY *) Block)->BlockLength);
       IDS_HDT_CONSOLE (GNB_TRACE, "  <-------------IVMD Block End ---------->\n");
+      Block = Block + ((IVRS_IVMD_ENTRY *) Block)->Length;
     }
-    Block = Block + ((IVRS_IVHD_ENTRY *) Block)->Length;
   }
   IDS_HDT_CONSOLE (GNB_TRACE, "<----------  IVRS Table Raw Data --------> \n");
   GnbLibDebugDumpBuffer (Ivrs, ((IOMMU_IVRS_HEADER *) Ivrs)->TableLength, 1, 16);

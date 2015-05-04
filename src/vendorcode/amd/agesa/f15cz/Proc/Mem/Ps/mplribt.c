@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -146,7 +146,7 @@ MemPGetLRIBT (
   UINT8 NOD;
   UINT8 TableSize;
   UINT32 CurDDRrate;
-  UINT8 DDRVoltage;
+  UINT8 DDR3Voltage;
   UINT16 RankTypeOfPopulatedDimm;
   UINT16 RankTypeInTable;
   UINT8 PsoMaskLRIBT;
@@ -193,14 +193,14 @@ MemPGetLRIBT (
   }
 
   CurDDRrate = (UINT32) (1 << (CurrentChannel->DCTPtr->Timings.Speed / 66));
-  DDRVoltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, CurrentChannel->TechType));
+  DDR3Voltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage));
   RankTypeOfPopulatedDimm = MemPGetPsRankType (CurrentChannel);
 
   for (i = 0; i < TableSize; i++) {
     MemPConstructRankTypeMap ((UINT16) TblPtr->Dimm0, (UINT16) TblPtr->Dimm1, (UINT16) TblPtr->Dimm2, &RankTypeInTable);
     if ((TblPtr->DimmPerCh & NOD) != 0) {
       if ((TblPtr->DDRrate & CurDDRrate) != 0) {
-        if ((TblPtr->VDDIO & DDRVoltage) != 0) {
+        if ((TblPtr->VDDIO & DDR3Voltage) != 0) {
           if ((RankTypeInTable & RankTypeOfPopulatedDimm) == RankTypeOfPopulatedDimm) {
             NBPtr->PsPtr->F0RC8 = (UINT8) TblPtr->F0RC8;
             NBPtr->PsPtr->F1RC0 = (UINT8) TblPtr->F1RC0;

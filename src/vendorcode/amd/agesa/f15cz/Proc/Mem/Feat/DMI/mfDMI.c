@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -475,9 +475,9 @@ MemFDMISupport3 (
           DmiPhysicalDimmInfoTable->ConfigSpeed = NBPtr->DCTPtr->Timings.Speed;
           // Voltage
           VoltageMap = (UINT8) (SpdDataStructure->Data[6] ^ 1);
-          DmiPhysicalDimmInfoTable->MinimumVoltage = CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS (LibAmdBitScanReverse (VoltageMap), DDR3_TECHNOLOGY);
-          DmiPhysicalDimmInfoTable->MaximumVoltage = CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS (LibAmdBitScanForward (VoltageMap), DDR3_TECHNOLOGY);
-          switch (NBPtr->RefPtr->DDRVoltage) {
+          DmiPhysicalDimmInfoTable->MinimumVoltage = CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS (LibAmdBitScanReverse (VoltageMap));
+          DmiPhysicalDimmInfoTable->MaximumVoltage = CONVERT_ENCODED_TO_VDDIO_MILLIVOLTS (LibAmdBitScanForward (VoltageMap));
+          switch (NBPtr->RefPtr->DDR3Voltage) {
           case VOLT1_5:
             DmiPhysicalDimmInfoTable->ConfiguredVoltage = 1500;
             break;

@@ -1,7 +1,7 @@
 ;*****************************************************************************
 ; AMD Generic Encapsulated Software Architecture
 ;
-;  Workfile: acwrap.inc      $Revision: 309090 $    $Date: 2014-12-10 02:28:05 +0800 (Wed, 10 Dec 2014) $
+;  Workfile: acwrap.inc      $Revision: 309090 $    $Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
 ;
 ; Description: Include file of example acwrap.inc
 ;

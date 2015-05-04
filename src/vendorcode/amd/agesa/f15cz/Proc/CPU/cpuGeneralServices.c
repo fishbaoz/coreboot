@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -846,15 +846,13 @@ WaitMicroseconds (
   UINT64 CurrentTsc;
   CPU_SPECIFIC_SERVICES *FamilySpecificServices;
 
-  IEM_SKIP_CODE (IEM_WAIT) {
-    LibAmdMsrRead (TSC, &InitialTsc, StdHeader);
-    GetCpuServicesOfCurrentCore ((CONST CPU_SPECIFIC_SERVICES **) &FamilySpecificServices, StdHeader);
-    FamilySpecificServices->GetTscRate (FamilySpecificServices, &TscRateInMhz, StdHeader);
-    NumberOfTicks = Microseconds * TscRateInMhz;
-    do {
-      LibAmdMsrRead (TSC, &CurrentTsc, StdHeader);
-    } while ((CurrentTsc - InitialTsc) < NumberOfTicks);
-  }
+  LibAmdMsrRead (TSC, &InitialTsc, StdHeader);
+  GetCpuServicesOfCurrentCore ((CONST CPU_SPECIFIC_SERVICES **) &FamilySpecificServices, StdHeader);
+  FamilySpecificServices->GetTscRate (FamilySpecificServices, &TscRateInMhz, StdHeader);
+  NumberOfTicks = Microseconds * TscRateInMhz;
+  do {
+    LibAmdMsrRead (TSC, &CurrentTsc, StdHeader);
+  } while ((CurrentTsc - InitialTsc) < NumberOfTicks);
 }
 
 /*---------------------------------------------------------------------------------------*/

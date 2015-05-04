@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 315480 $   @e \$Date: 2015-03-28 06:13:18 +0800 (Sat, 28 Mar 2015) $
+ * @e \$Revision: 311507 $   @e \$Date: 2015-01-21 16:57:51 -0600 (Wed, 21 Jan 2015) $
  *
  */
 /*;********************************************************************************
@@ -124,11 +124,6 @@ typedef struct {
   UINT32                XHCI_PMx08_xHCI_Firmware_Addr_1_Ram;       ///< XHCI_PMx08_xHCI_Firmware_Addr_1_Ram
   UINT8                 SataDevSlpPort0S5Pin;                      ///< SataDevSlpPort0S5Pin - Reserved
   UINT8                 SataDevSlpPort1S5Pin;                      ///< SataDevSlpPort1S5Pin - Reserved
-  UINT16                Dummy16;                                   ///< Dummy16 - Reserved
-  UINT32                SdMmioBase;                                ///< Sd Mmio Base - Reserved
-  UINT32                EhciMmioBase;                              ///< Ehci Mmio Base - Reserved
-  UINT32                XhciMmioBase;                              ///< Xhci Mmio Base - Reserved
-  UINT32                SataMmioBase;                              ///< Sata Mmio Base - Reserved
 } FCH_RUNTIME;
 
 ///

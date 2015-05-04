@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -704,9 +704,9 @@ MemMDramInit (
     IDS_HDT_CONSOLE (MEM_FLOW, "\nCalling out to Platform BIOS on Socket %d, Module %d...\n", CallOutIdInfo.IdField.SocketId, CallOutIdInfo.IdField.ModuleId);
     AgesaHookBeforeDramInit ((UINTN) CallOutIdInfo.IdInformation, MemMainPtr->MemPtr);
     NBPtr->FamilySpecificHook[AmpVoltageDisp] (NBPtr, NULL);
-    IDS_HDT_CONSOLE (MEM_FLOW, "\nVDDIO = 1.%dV\n", (NBPtr->RefPtr->DDRVoltage == VOLT1_5) ? 5 :
-                                          (NBPtr->RefPtr->DDRVoltage == VOLT1_35) ? 35 :
-                                          (NBPtr->RefPtr->DDRVoltage == VOLT1_25) ? 25 : 999);
+    IDS_HDT_CONSOLE (MEM_FLOW, "\nVDDIO = 1.%dV\n", (NBPtr->RefPtr->DDR3Voltage == VOLT1_5) ? 5 :
+                                          (NBPtr->RefPtr->DDR3Voltage == VOLT1_35) ? 35 :
+                                          (NBPtr->RefPtr->DDR3Voltage == VOLT1_25) ? 25 : 999);
     AGESA_TESTPOINT (TpProcMemAfterAgesaHookBeforeDramInit, &(NBPtr->MemPtr->StdHeader));
 
     // Do Dram init

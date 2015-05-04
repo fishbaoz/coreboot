@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 316245 $ @e \$Date: 2015-04-07 07:42:42 +0800 (Tue, 07 Apr 2015) $
+ * @e \$Revision: 314028 $ @e \$Date: 2015-03-03 05:56:35 -0600 (Tue, 03 Mar 2015) $
  *
  **/
 /*****************************************************************************
@@ -97,7 +97,7 @@ typedef enum {
 #define SET_S3_NB_PSTATE_OFFSET(Offset, NBPstate) ((NBPstate << 10) | Offset)
 #define SET_S3_MEM_PSTATE_OFFSET(Offset, MemPstate) ((MemPstate << 11) | Offset)
 
-#define S3_DATABLOB_REV_CZ 0x6
+#define S3_DATABLOB_REV_CZ 0x3
 
 #define GNB_D0F0x60_ADDRESS   0x60          ///<  Gnb Offset index for SMU mbox
 #define GNB_D0F0x64_DATA 0x64

@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -83,7 +83,6 @@ OPTION_DMI_RELEASE_BUFFER           ReleaseDmiBufferStub;
 #define USER_DMI_RELEASE_BUFFER     ReleaseDmiBufferStub
 
 #define  FAM15_CZ_DMI_TABLE
-#define  FAM15_ST_DMI_TABLE
 
 #ifndef OPTION_DMI
   #error  BLDOPT: Option not defined: "OPTION_DMI"
@@ -106,13 +105,6 @@ OPTION_DMI_RELEASE_BUFFER           ReleaseDmiBufferStub;
           #undef FAM15_CZ_DMI_TABLE
           #define FAM15_CZ_DMI_TABLE &ProcFamily15CzDmiTable,
         #endif
-
-        #if OPTION_FAMILY15H_ST == TRUE
-          extern PROC_FAMILY_TABLE ProcFamily15StDmiTable;
-          #undef FAM15_ST_DMI_TABLE
-          #define FAM15_ST_DMI_TABLE &ProcFamily15StDmiTable,
-        #endif
-
       #endif
     #endif
 
@@ -121,7 +113,6 @@ OPTION_DMI_RELEASE_BUFFER           ReleaseDmiBufferStub;
 
 /*  Declare the Family List. An array of pointers to tables that each describe a family  */
 CONST PROC_FAMILY_TABLE ROMDATA *ProcTables[] = {
-  FAM15_ST_DMI_TABLE
   FAM15_CZ_DMI_TABLE
   NULL
 };

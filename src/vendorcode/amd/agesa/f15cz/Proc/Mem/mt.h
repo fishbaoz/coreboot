@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -278,7 +278,7 @@ typedef struct _MEM_TECH_BLOCK {
   BOOLEAN (*AutoCycTiming) (struct _MEM_TECH_BLOCK *TechPtr); ///< configure timing based on spd data.
   BOOLEAN (*SpdSetBanks) (struct _MEM_TECH_BLOCK *TechPtr); ///< set bank address.
   BOOLEAN (*SetDqsEccTmgs) (struct _MEM_TECH_BLOCK *TechPtr); ///< DQS training.
-  VOID (*GetCSIntLvAddr) (struct _MEM_TECH_BLOCK *TechPtr, UINT8 BankAddrMap, UINT8 *LowBit, UINT8 *HiBit); ///< Get Chip select interleave address.
+  VOID (*GetCSIntLvAddr) (UINT8 BankEnc, UINT8 *LowBit, UINT8 *HiBit); ///< Get Chip select interleave address.
   VOID (*AdjustTwrwr) (struct _MEM_TECH_BLOCK *TechPtr); ///< Adjust Twrwr for certain dimm technology.
   VOID (*AdjustTwrrd) (struct _MEM_TECH_BLOCK *TechPtr); ///< Adjust Twrrd for certain dimm technology.
   INT8 (*GetLD) (struct _MEM_TECH_BLOCK *TechPtr); ///< Get LD value for certain dimm technology.

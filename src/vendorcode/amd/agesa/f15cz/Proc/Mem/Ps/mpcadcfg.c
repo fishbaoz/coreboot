@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -141,7 +141,7 @@ MemPLookupCadBusCfgTabs (
   UINT8   i;
   UINT8   TableSize;
   UINT32  CurDDRrate;
-  UINT8   DDRVoltage;
+  UINT8   DDR3Voltage;
   UINT16  RankTypeInTable;
   UINT8   PsoMaskSAO;
   PSCFG_CADBUS_ENTRY *TblPtr;
@@ -151,20 +151,15 @@ MemPLookupCadBusCfgTabs (
 
   TblPtr = (PSCFG_CADBUS_ENTRY *) MemPGetTableEntry (NBPtr, EntryOfTables->TblEntryOfSAO, &TableSize);
 
-  IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\tLooking up CAD bus entries\n");
   if (TblPtr != NULL) {
     CurDDRrate = (UINT32) (1 << (CurrentChannel->DCTPtr->Timings.Speed / 66));
-    DDRVoltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, CurrentChannel->TechType));
-    IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\t            NumDimmSlots   DDR Rate     VDDIO      Rank Type\n");
-    IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\t Current ->      %d         %08x       %02x         %x\n",
-      NBPtr->PsPtr->NumOfDimmSlots, CurDDRrate, DDRVoltage, NBPtr->PsPtr->RankType);
+    DDR3Voltage = (UINT8) (1 << CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage));
+
     for (i = 0; i < TableSize; i++) {
-      RankTypeInTable = ((UINT16) TblPtr->Dimm0) | ((UINT16) TblPtr->Dimm1 << 4) | (NP << 8) | (NP << 12);
-      IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\t    %d            %d         %08x       %02x         %04x\n",
-        i, TblPtr->DimmPerCh, TblPtr->DDRrate, TblPtr->VDDIO, RankTypeInTable);
       if ((TblPtr->DimmPerCh & NBPtr->PsPtr->NumOfDimmSlots) != 0) {
         if ((TblPtr->DDRrate & CurDDRrate) != 0) {
-          if ((TblPtr->VDDIO & DDRVoltage) != 0) {
+          if ((TblPtr->VDDIO & DDR3Voltage) != 0) {
+            RankTypeInTable = ((UINT16) TblPtr->Dimm0) | ((UINT16) TblPtr->Dimm1 << 4) | (NP << 8) | (NP << 12);
             if ((RankTypeInTable & NBPtr->PsPtr->RankType) == NBPtr->PsPtr->RankType) {
               if (NBPtr->MemPstate == MEMORY_PSTATE1) {
                 CurrentChannel->DctAddrTmgPs1 = TblPtr->AddrCmdCtl;
@@ -193,20 +188,12 @@ MemPLookupCadBusCfgTabs (
   if ((PsoMaskSAO == 0) && (i == TableSize)) {
     IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tNo CAD bus config entries\n");
   } else {
-    IDS_HDT_CONSOLE (MEM_FLOW, "\n\t\t\tCAD bus config entry found:\n");
-    IDS_HDT_CONSOLE(MEM_FLOW, "\n\t\t\t\tSlowAccMode: %x  AddrCmdTmg: %x  CKEDrvStr: %x  CSODTDrvStr: %x  CLKDrvStr: %x\n\n",
-                  TblPtr->SlowMode, TblPtr->AddrCmdCtl, NBPtr->PsPtr->CkeStrength,
-                  NBPtr->PsPtr->CsOdtStrength, NBPtr->PsPtr->AddrCmdStrength, NBPtr->PsPtr->ClkStrength);
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tCAD bus config entries found\n");
     return TRUE;
   }
 
   if (NBPtr->SharedPtr->VoltageMap != VDDIO_DETERMINED) {
     return TRUE;
-  }
-  PutEventLog (AGESA_ERROR, MEM_ERROR_CAD_BUS_TMG_NOT_FOUND, NBPtr->Node, NBPtr->Dct, NBPtr->Channel, 0, &NBPtr->MemPtr->StdHeader);
-  SetMemError (AGESA_ERROR, NBPtr->MCTPtr);
-  if (!NBPtr->MemPtr->ErrorHandling (NBPtr->MCTPtr, NBPtr->Dct, EXCLUDE_ALL_CHIPSEL, &NBPtr->MemPtr->StdHeader)) {
-    ASSERT (FALSE);
   }
 
   return FALSE;

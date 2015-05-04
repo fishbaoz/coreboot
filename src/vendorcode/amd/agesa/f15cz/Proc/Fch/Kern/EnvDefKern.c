@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 315480 $   @e \$Date: 2015-03-28 06:13:18 +0800 (Sat, 28 Mar 2015) $
+ * @e \$Revision: 311507 $   @e \$Date: 2015-01-21 16:57:51 -0600 (Wed, 21 Jan 2015) $
  *
  */
 /*
@@ -121,11 +121,6 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
     0,                       ///< XhciRamTargetBase
     0,                       ///< SataDevSlpPort0S5Pin - Reserved
     0,                       ///< SataDevSlpPort1S5Pin - Reserved
-    0,                       ///< Dummy16 - Reserved
-    0xFED81F00,              ///< Sd Mmio Base - Reserved
-    0xFED81F00,              ///< Ehci Mmio Base - Reserved
-    0xFED81F00,              ///< Xhci Mmio Base - Reserved
-    0xFED81F00,              ///< Sata Mmio Base - Reserved
   },
 
   {                          // FCH_ACPI

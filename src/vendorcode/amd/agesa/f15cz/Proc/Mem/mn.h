@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -91,6 +91,7 @@
 
 #define DCT_ACCESS_WRITE (UINT32) 0x40000000ul
 #define MTRR_VALID  11
+#define THERMAL_OPT 31
 
 #define NB_ACCESS       0
 #define DCT_PHY_ACCESS  1
@@ -214,26 +215,25 @@ TableName[BitFieldIndex] = ( \
 //
 // RELIABLE READ/WRITE MODE DEFINITIONS
 //
-#define PRECHARGE_ALL_BANKS     0xFF           ///< Use to specify PrechargeAll Command to Precharge Cmd Function
-#define CMD_TGT_A               0x00           ///< Issue Commands to Command Target A
-#define CMD_TGT_AB              0x01           ///< Issue Commands to Command Targets A and B
-#define CMD_TYPE_READ           0x00           ///< Read Command
-#define CMD_TYPE_WRITE          0x01           ///< Write Command
-#define CMD_TYPE_WR_RD          0x02           ///< Alternating Write and Read Commands
-#define CPG_BANK_ADDRESS_A      0x0            ///< Dimm Bank address used in Reliable RD/RW mode training
-#define CPG_BANK_ADDRESS_B      0x1            ///< Dimm Bank address used in Reliable RD/RW mode training
-#define CPG_BANK_ADDRESS_B_MRL  0x4            ///< Dimm Bank address used in MultiRow MRL Reliable RD/RW mode training
-#define CPG_ROW_ADDRESS_A       0x0            ///< Dimm Row address used in Reliable RD/RW mode training
-#define CPG_ROW_ADDRESS_B       0x0            ///< Dimm Row address used in Reliable RD/RW mode training
-#define CPG_COL_ADDRESS_A       0x0            ///< Dimm Column address used in Reliable RD/RW mode training
-#define CPG_COL_ADDRESS_B       0x0            ///< Dimm Column address used in Reliable RD/RW mode training
-#define CPG_COMPARE_MASK_LOW    0x00000000ul  ///< Dram DQMask[31:0] used to mask comparison on reads.  1=ignore
-#define CPG_COMPARE_MASK_HI     0x00000000ul  ///< Dram DQMask[63:32] used to mask comparison on reads.  1=ignore
-#define CPG_COMPARE_MASK_ECC    0x00          ///< Dram EccMask used to mask comparison on reads.  1=ignore
-#define PRBS_SEED_32            0x062221ul     ///< Data PRBS Seed
-#define PRBS_SEED_64            0x066665ul     ///< Data PRBS Seed
-#define PRBS_SEED_128           0x026666ul     ///< Data PRBS Seed
-#define PRBS_SEED_256           0x044443ul     ///< Data PRBS Seed
+#define PRECHARGE_ALL_BANKS 0xFF           ///< Use to specify PrechargeAll Command to Precharge Cmd Function
+#define CMD_TGT_A           0x00           ///< Issue Commands to Command Target A
+#define CMD_TGT_AB          0x01           ///< Issue Commands to Command Targets A and B
+#define CMD_TYPE_READ       0x00           ///< Read Command
+#define CMD_TYPE_WRITE      0x01           ///< Write Command
+#define CMD_TYPE_WR_RD      0x02           ///< Alternating Write and Read Commands
+#define CPG_BANK_ADDRESS_A  0x0            ///< Dimm Bank address used in Reliable RD/RW mode training
+#define CPG_BANK_ADDRESS_B  0x1            ///< Dimm Bank address used in Reliable RD/RW mode training
+#define CPG_ROW_ADDRESS_A   0x0            ///< Dimm Row address used in Reliable RD/RW mode training
+#define CPG_ROW_ADDRESS_B   0x0            ///< Dimm Row address used in Reliable RD/RW mode training
+#define CPG_COL_ADDRESS_A   0x0            ///< Dimm Column address used in Reliable RD/RW mode training
+#define CPG_COL_ADDRESS_B   0x0            ///< Dimm Column address used in Reliable RD/RW mode training
+#define CPG_COMPARE_MASK_LOW 0x00000000ul  ///< Dram DQMask[31:0] used to mask comparison on reads.  1=ignore
+#define CPG_COMPARE_MASK_HI  0x00000000ul  ///< Dram DQMask[63:32] used to mask comparison on reads.  1=ignore
+#define CPG_COMPARE_MASK_ECC 0x00          ///< Dram EccMask used to mask comparison on reads.  1=ignore
+#define PRBS_SEED_32        0x062221ul     ///< Data PRBS Seed
+#define PRBS_SEED_64        0x066665ul     ///< Data PRBS Seed
+#define PRBS_SEED_128       0x026666ul     ///< Data PRBS Seed
+#define PRBS_SEED_256       0x044443ul     ///< Data PRBS Seed
 
 
 /*----------------------------------------------------------------------------
@@ -241,28 +241,6 @@ TableName[BitFieldIndex] = ( \
  *
  *----------------------------------------------------------------------------
  */
-
-/// Memory Bus Nibble List for Write CRC DQ Mapping
-typedef enum DQ_MAP_NIBBLES {
-  DQ_0_3,    ///< DQ 0-3
-  DQ_4_7,    ///< DQ 4-7
-  DQ_8_11,   ///< DQ 8-3
-  DQ_12_15,  ///< DQ 12-15
-  DQ_16_19,  ///< DQ 16-19
-  DQ_20_23,  ///< DQ 20-23
-  DQ_24_27,  ///< DQ 24-27
-  DQ_28_31,  ///< DQ 28-31
-  DQ_32_35,  ///< DQ 32-35
-  DQ_36_39,  ///< DQ 36-39
-  DQ_40_43,  ///< DQ 40-43
-  DQ_44_47,  ///< DQ 44-47
-  DQ_48_51,  ///< DQ 48-51
-  DQ_52_55,  ///< DQ 52-55
-  DQ_56_59,  ///< DQ 56-49
-  DQ_60_63,  ///< DQ 60-63
-  DQ_64_67,  ///< DQ 64-67
-  DQ_68_71   ///< DQ 68-71
-} DQ_MAP_NIBBLES;
 
 /// Structure for Reliable Read/Write Mode Data
 /// These are values that may need to be referenced by the low level functions
@@ -279,12 +257,7 @@ typedef struct _RRW_SETTINGS {
   UINT32 CompareMaskHigh;                ///< Compare Mask Bits 63:32
   UINT8 CompareMaskEcc;                  ///< Compare Mask Ecc
   UINT32 DataPrbsSeed;                   ///< PRBS Seed value
-  UINT8 DataPatGenSel;                   ///< Data Pattern Generator
 } RRW_SETTINGS;
-
-#define PRBS23_I   0                     ///< Data Pattern Generator value for PRBS23 I
-#define PRBS23_II  1                     ///< Data Pattern Generator value for PRBS23 II
-#define PRBS23_III 2                     ///< Data Pattern Generator value for PRBS23 III
 
 /// DQS training related delays
 typedef enum {
@@ -639,8 +612,8 @@ typedef struct _MEM_NB_BLOCK {
   DIE_STRUCT *MCTPtr;             ///< point to current Node's MCT struct
   DCT_STRUCT *DCTPtr;             ///< point to current Node's DCT struct
   DCT_STRUCT *AllDCTPtr;          ///< point to all Node's DCT structs
-  CH_DEF_STRUCT *ChannelPtr;      ///< point to current channel data
-  SPD_DEF_STRUCT *SPDPtr;         ///< Point to SPD data for current DCT.
+  CH_DEF_STRUCT *ChannelPtr;       ///< point to current channel data
+  SPD_DEF_STRUCT *SPDPtr; ///< Point to SPD data for current DCT.
   struct _MEM_TECH_BLOCK *TechPtr; ///< point to technology block.
   struct _MEM_FEAT_BLOCK_NB *FeatPtr; ///< point to NB Specific feature block.
   struct _MEM_SHARED_DATA *SharedPtr;     ///< Pointer to Memory scratchpad area
@@ -652,7 +625,6 @@ typedef struct _MEM_NB_BLOCK {
   MEM_PS_BLOCK *PsPtr; ///< point to platform specific block
   MEM_PS_BLOCK *PSBlock; ///< point to the first platform specific block on this node.
   MEM_FREQ_CHANGE_PARAM *FreqChangeParam; ///< pointer to parameter of frequency change.
-  VOID *PlatSpecFlowPtr;           ///< Pointer to the Platform Specific Flow Block
 
   PCI_ADDR PciAddr;                ///< PCI address for this node
   TSEFO *NBRegTable;               ///< contains all bit field definitions
@@ -700,7 +672,7 @@ typedef struct _MEM_NB_BLOCK {
   UINT8 MaxAggressorCSEnabled[MAX_CHANNELS_PER_SOCKET]; ///< Maximum Number of Aggressor CS targeted
   UINT8 MaxAggressorDimms[MAX_CHANNELS_PER_SOCKET];  ///< Maximum Number of Aggressor CS DIMMs
   UINT8 InitialAggressorCSTarget[MAX_CHANNELS_PER_SOCKET];  ///< Initial Number of the first CS Aggressor
-  BOOLEAN OrigDisAutoRefreshState;      ///< Original state of Dis Auto Refresh
+  BOOLEAN OrigDisAutoRefreshState; ///< Original state of Dis Auto Refresh
   BOOLEAN Execute1dMaxRdLatTraining;    ///< Indicates if 1D training should be executed
   BOOLEAN Override2DTraining;                  ///< 2D training has been overriden
   VOID* PmuFirmwareImageTable;                  ///< Table of FW Images. Assigned when Memory type is known.
@@ -1274,6 +1246,11 @@ MemNEnableSwapIntlvRgnNb (
   );
 
 VOID
+MemNSetASRSRTNb (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
 MemNPrepareRcvrEnDlySeedNb (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
@@ -1674,7 +1651,7 @@ MemNGetNbClkFreqByPstateUnb (
   );
 
 VOID
-MemNAdjustDdrSpeedUnb (
+MemNAdjustDdrSpeed3Unb (
   IN OUT   MEM_NB_BLOCK *NBPtr
   );
 
@@ -1726,11 +1703,6 @@ MemNInsDlyCompareTestPatternUnb (
 VOID
 MemNGetPORFreqLimitTblDrvNb (
   IN OUT   MEM_NB_BLOCK *NBPtr
-  );
-
-UINT8
-MemTGetDQMappingByte (
-  IN DQ_MAP_NIBBLES Nibble
   );
 #endif  /* _MN_H_ */
 

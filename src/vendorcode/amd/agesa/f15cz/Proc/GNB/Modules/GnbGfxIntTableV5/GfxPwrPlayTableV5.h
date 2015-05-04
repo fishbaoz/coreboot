@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 312286 $   @e \$Date: 2015-02-04 14:11:11 +0800 (Wed, 04 Feb 2015) $
+ * @e \$Revision: 310254 $   @e \$Date: 2015-01-03 23:23:51 -0600 (Sat, 03 Jan 2015) $
  *
  */
 /*
@@ -137,7 +137,6 @@
 
 #define ATOM_PP_FANPARAMETERS_NOFAN                         0x80
 #define ATOM_PP_THERMALCONTROLLER_CZ                        19
-#define ATOM_PP_THERMALCONTROLLER_ST                        19
 
 /*----------------------------------------------------------------------------------------
  *                  T Y P E D E F S     A N D     S T R U C T U R E S

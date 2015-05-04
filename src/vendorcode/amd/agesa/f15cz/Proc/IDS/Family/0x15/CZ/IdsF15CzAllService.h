@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  IDS
- * @e \$Revision: 313044 $   @e \$Date: 2015-02-16 15:10:27 +0800 (Mon, 16 Feb 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -71,6 +71,13 @@
 #ifdef __IDS_EXTENDED__
   #include IDS_EXT_INCLUDE_F15_CZ (IdsIntF15CzAllService)
 #endif
+
+IDS_STATUS
+IdsSubHTCControlF15Cz (
+  IN OUT   VOID *DataPtr,
+  IN OUT   AMD_CONFIG_PARAMS *StdHeader,
+  IN       IDS_NV_ITEM *IdsNvPtr
+  );
 
 IDS_STATUS
 IdsSubMemoryMappingF15Cz (

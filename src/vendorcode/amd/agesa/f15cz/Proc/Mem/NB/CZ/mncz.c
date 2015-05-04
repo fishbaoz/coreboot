@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -289,7 +289,6 @@ MemNInitNBDataCZ (
 
   NBPtr->MemCleared = FALSE;
   NBPtr->StartupSpeed = DDR667_FREQUENCY;
-  NBPtr->M1Speed = NBPtr->StartupSpeed;
   NBPtr->DefDctSelIntLvAddr = 4;
   NBPtr->NbFreqChgState = 0;
   NBPtr->NbPsCtlReg = 0;
@@ -338,7 +337,7 @@ MemNInitNBDataCZ (
 
   NBPtr->SyncTargetSpeed = MemNSyncTargetSpeedNb;
   NBPtr->MemNCapSpeedBatteryLife = MemNCapSpeedBatteryLifeCZ;
-  NBPtr->ProgramCycTimings = (VOID (*) (struct _MEM_NB_BLOCK *NBPtr)) memDefaultUndefined;  // Must be redefined per technology.
+  NBPtr->ProgramCycTimings = MemNProgramCycTimingsCZ;
 
   NBPtr->PlatformSpec = (BOOLEAN (*) (MEM_NB_BLOCK *)) memDefRet;
 
@@ -356,7 +355,6 @@ MemNInitNBDataCZ (
   NBPtr->MemS3PspDetect = MemS3PspDetectionCZ;
   NBPtr->MemS3PspPlatformSecureBootEn = MemS3PspPlatformSecureBootEnCZ;
   NBPtr->MemRunningOnPsp = MemRunningOnPspCZ;
-  NBPtr->GetCSIntLvAddr = (VOID (*) (struct _MEM_NB_BLOCK *NBPtr, UINT8 BankAddrMap, UINT8 *LowBit, UINT8 *HiBit)) memDefaultUndefined;  // Must be redefined per technology.
 
   // ---------------------------------------------------------------------------
   // Training functions
@@ -376,8 +374,8 @@ MemNInitNBDataCZ (
   // ---------------------------------------------------------------------------
   // Family specific flags
   // ---------------------------------------------------------------------------
+  NBPtr->IsSupported[G5DimmInD3Socket] = TRUE;
   NBPtr->IsSupported[CheckFindPSOverideWithSocket] = TRUE;
-  NBPtr->IsSupported[EccByteTraining] = TRUE;
 
   // ---------------------------------------------------------------------------
   // Family specific hooks
@@ -386,7 +384,7 @@ MemNInitNBDataCZ (
   NBPtr->FamilySpecificHook[SetupHwTrainingEngine] = MemNSetupHwTrainingEngineUnb;
   NBPtr->FamilySpecificHook[ReleaseNbPstate] = MemNReleaseNbPstateCZ;
   NBPtr->FamilySpecificHook[FixupUmaInfo] = MemNFixupUmaInfoCZ;
-
+  NBPtr->FamilySpecificHook[AdjustCSIntLvLowAddr] = MemNCSIntLvLowAddrAdjCZ;
   NBPtr->FamilySpecificHook[ForceEccSymbolSize] = MemNForceEccSymbolSizeCZ;
   NBPtr->FamilySpecificHook[DisableMemHoleMapping] = MemNDisableMemHoleMappingCZ;
   NBPtr->FamilySpecificHook[RestoreMemHoleMapping] = MemNRestoreMemHoleMappingCZ;
@@ -474,6 +472,25 @@ MemNGetPackageTypeCZ (
   }
 
   return PkgType;
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *    Free the DRAM CAD Bus Configuration buffer.
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ *     @return  TRUE - Free DRAM CAD Bus Configuration buffer successfully.
+ *     @return  FALSE - Fail to free DRAM CAD Bus Configuration buffer.
+ */
+
+BOOLEAN
+MemNPostDramCadBusConfigCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  return (BOOLEAN) (HeapDeallocateBuffer (AMD_MEM_DRAM_CAD_BUS_CONFIG_HANDLE, &(NBPtr->MemPtr->StdHeader)) == AGESA_SUCCESS);
 }
 
 /* -----------------------------------------------------------------------------*/

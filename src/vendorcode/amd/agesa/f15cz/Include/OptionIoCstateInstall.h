@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -80,13 +80,11 @@
 
 #define OPTION_IO_CSTATE_FEAT
 #define F15_CZ_IO_CSTATE_SUPPORT
-#define F15_ST_IO_CSTATE_SUPPORT
 
 #if OPTION_IO_CSTATE == TRUE
   #if (AGESA_ENTRY_INIT_EARLY == TRUE) || (AGESA_ENTRY_INIT_POST == TRUE) || (AGESA_ENTRY_INIT_RESUME == TRUE) || (AGESA_ENTRY_INIT_LATE == TRUE)
     #ifdef OPTION_FAMILY15H
       #if OPTION_FAMILY15H == TRUE
-
         #if OPTION_FAMILY15H_CZ == TRUE
           extern CONST CPU_FEATURE_DESCRIPTOR ROMDATA CpuFeatureIoCstate;
           #undef OPTION_IO_CSTATE_FEAT
@@ -95,16 +93,6 @@
           #undef F15_CZ_IO_CSTATE_SUPPORT
           #define F15_CZ_IO_CSTATE_SUPPORT {AMD_FAMILY_15_CZ, &F15CzIoCstateSupport},
         #endif
-
-        #if OPTION_FAMILY15H_ST == TRUE
-          extern CONST CPU_FEATURE_DESCRIPTOR ROMDATA CpuFeatureIoCstate;
-          #undef OPTION_IO_CSTATE_FEAT
-          #define OPTION_IO_CSTATE_FEAT &CpuFeatureIoCstate,
-          extern CONST IO_CSTATE_FAMILY_SERVICES ROMDATA F15StIoCstateSupport;
-          #undef F15_ST_IO_CSTATE_SUPPORT
-          #define F15_ST_IO_CSTATE_SUPPORT {AMD_FAMILY_15_ST, &F15StIoCstateSupport},
-        #endif
-
       #endif
     #endif
   #endif
@@ -112,7 +100,6 @@
 
 CONST CPU_SPECIFIC_SERVICES_XLAT ROMDATA IoCstateFamilyServiceArray[] =
 {
-  F15_ST_IO_CSTATE_SUPPORT
   F15_CZ_IO_CSTATE_SUPPORT
   {0, NULL}
 };

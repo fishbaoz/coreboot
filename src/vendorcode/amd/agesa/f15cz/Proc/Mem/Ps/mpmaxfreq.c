@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -160,7 +160,7 @@ MemPGetMaxFreqSupported (
   UINT16 CDN;
   UINT16 MaxFreqSupported;
   UINT16 *SpeedArray;
-  UINT8 DDRVoltage;
+  UINT8 DDR3Voltage;
   UINT8 CurrentVoltage;
   DIMM_TYPE DimmType;
   UINT8 *MotherboardLayerPtr;
@@ -190,8 +190,6 @@ MemPGetMaxFreqSupported (
   MotherboardPower = 0;
   LogicalCpuid.Family = AMD_FAMILY_UNKNOWN;
   SpeedArray = NULL;
-
-  IDS_HDT_CONSOLE(MEM_FLOW,"\t\tDetermine Max POR Frequency for current DIMM Population...\n");
 
   MaxDimmPerCh = GetMaxDimmsPerChannel (NBPtr->RefPtr->PlatformMemoryConfiguration, NBPtr->MCTPtr->SocketId, CurrentChannel->ChannelID);
   MaxDimmSlotPerCh = MaxDimmPerCh - GetMaxSolderedDownDimmsPerChannel (NBPtr->RefPtr->PlatformMemoryConfiguration,
@@ -245,20 +243,18 @@ MemPGetMaxFreqSupported (
   while (TblEntryOfMaxFreq[i] != NULL) {
     if (((TblEntryOfMaxFreq[i])->Header.DimmType & DimmType) != 0) {
       if (((TblEntryOfMaxFreq[i])->Header.NumOfDimm & NOD) != 0) {
-        if ((TblEntryOfMaxFreq[i])->Header.TechType == CurrentChannel->TechType) {
-          if (!NBPtr->IsSupported[SelectMotherboardLayer] || ((TblEntryOfMaxFreq[i])->Header.MotherboardLayer & MotherboardLayer) != 0) {
-            if (!NBPtr->IsSupported[SelectMotherboardPower] || ((TblEntryOfMaxFreq[i])->Header.MotherboardPower & MotherboardPower) != 0) {
-              //
-              // Determine if this is the expected NB Type
-              //
-              LogicalCpuid = (TblEntryOfMaxFreq[i])->Header.LogicalCpuid;
-              PackageType = (TblEntryOfMaxFreq[i])->Header.PackageType;
-              if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
-                TblPtr = (PSCFG_MAXFREQ_ENTRY *) ((TblEntryOfMaxFreq[i])->TBLPtr);
-                TableSize = (TblEntryOfMaxFreq[i])->TableSize;
-                Type = (TblEntryOfMaxFreq[i])->Header.PSCType;
-                break;
-              }
+        if (!NBPtr->IsSupported[SelectMotherboardLayer] || ((TblEntryOfMaxFreq[i])->Header.MotherboardLayer & MotherboardLayer) != 0) {
+          if (!NBPtr->IsSupported[SelectMotherboardPower] || ((TblEntryOfMaxFreq[i])->Header.MotherboardPower & MotherboardPower) != 0) {
+            //
+            // Determine if this is the expected NB Type
+            //
+            LogicalCpuid = (TblEntryOfMaxFreq[i])->Header.LogicalCpuid;
+            PackageType = (TblEntryOfMaxFreq[i])->Header.PackageType;
+            if (MemPIsIdSupported (NBPtr, LogicalCpuid, PackageType)) {
+              TblPtr = (PSCFG_MAXFREQ_ENTRY *) ((TblEntryOfMaxFreq[i])->TBLPtr);
+              TableSize = (TblEntryOfMaxFreq[i])->TableSize;
+              Type = (TblEntryOfMaxFreq[i])->Header.PSCType;
+              break;
             }
           }
         }
@@ -269,14 +265,13 @@ MemPGetMaxFreqSupported (
 
   // Check whether no table entry is found.
   if (TblEntryOfMaxFreq[i] == NULL) {
-    IDS_HDT_CONSOLE(MEM_FLOW, "\t\tNo Max Frequency Table Found.");
     return FALSE;
   }
 
   MaxFreqSupported = UNSUPPORTED_DDR_FREQUENCY;
   CDN = 0;
-  DDRVoltage = (UINT8) CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDRVoltage, CurrentChannel->TechType);
-  IDS_HDT_CONSOLE(MEM_FLOW, "\t\tVoltage Index = %d\n",DDRVoltage);
+  DDR3Voltage = (UINT8) CONVERT_VDDIO_TO_ENCODED (NBPtr->RefPtr->DDR3Voltage);
+
   // Construct the condition value
   ((CDNMaxFreq *)&CDN)->Dimms = CurrentChannel->Dimms;
   if (Type == PSCFG_MAXFREQ) {
@@ -296,16 +291,10 @@ MemPGetMaxFreqSupported (
   } else {
     ((CDNLMaxFreq *)&CDN)->LR = CurrentChannel->Dimms;
   }
-  IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\t          NumDimmSlots   Dimms     SR     DR     QR    Speed[0],   Speed[1],   Speed[2]\n");
-  IDS_HDT_CONSOLE(MEM_FLOW,"\n\t\t Current ->      %d           %d        %x      %x      %x\n",
-    NOD, ((CDNMaxFreq *)&CDN)->Dimms, ((CDNMaxFreq *)&CDN)->SR, ((CDNMaxFreq *)&CDN)->DR, ((CDNMaxFreq *)&CDN)->QR   );
 
   for (i = 0; i < TableSize; i++) {
     NumDimmSlotInTable = TblPtr->MAXFREQ_ENTRY.DimmSlotPerCh;
     DimmPopInTable = (Type == PSCFG_MAXFREQ) ? TblPtr->MAXFREQ_ENTRY.CDN : ((PSCFG_LR_MAXFREQ_ENTRY *)TblPtr)->LR_MAXFREQ_ENTRY.CDN;
-    IDS_HDT_CONSOLE(MEM_FLOW,"\t\t\t    %d          %d           %d        %x      %x      %x     %d        %d        %d\n",
-      i, NumDimmSlotInTable, TblPtr->_MAXFREQ_ENTRY.Dimms, TblPtr->_MAXFREQ_ENTRY.SR, TblPtr->_MAXFREQ_ENTRY.DR, TblPtr->_MAXFREQ_ENTRY.QR,
-      TblPtr->MAXFREQ_ENTRY.Speed[0], TblPtr->MAXFREQ_ENTRY.Speed[1], TblPtr->MAXFREQ_ENTRY.Speed[2]);
     if (((NumDimmSlotInTable & NOD) != 0) && (CDN == DimmPopInTable)) {
       if (Type == PSCFG_MAXFREQ) {
         SpeedArray = TblPtr->MAXFREQ_ENTRY.Speed;
@@ -329,10 +318,10 @@ MemPGetMaxFreqSupported (
 
   if (SpeedArray != NULL) {
     if (NBPtr->SharedPtr->VoltageMap != VDDIO_DETERMINED) {
-      IDS_HDT_CONSOLE (MEM_FLOW, "\n\t\t\tCheck speed supported for each VDDIO for Node%d DCT%d: ", NBPtr->Node, NBPtr->Dct);
-      for (CurrentVoltage = VOLT_STARTING_ENCODED_VAL; CurrentVoltage <= GET_ENCODED_VOLTAGE_LIMIT (CurrentChannel->TechType) ; CurrentVoltage ++) {
+      IDS_HDT_CONSOLE (MEM_FLOW, "\nCheck speed supported for each VDDIO for Node%d DCT%d: ", NBPtr->Node, NBPtr->Dct);
+      for (CurrentVoltage = VOLT1_5_ENCODED_VAL; CurrentVoltage <= VOLT1_25_ENCODED_VAL; CurrentVoltage ++) {
         if (NBPtr->SharedPtr->VoltageMap & (1 << CurrentVoltage)) {
-          IDS_HDT_CONSOLE (MEM_FLOW, "%s -> %dMHz ", GET_ENCODED_VDDIO_STRING(CurrentVoltage, CurrentChannel->TechType), SpeedArray[CurrentVoltage]);
+          IDS_HDT_CONSOLE (MEM_FLOW, "%s -> %dMHz ", (CurrentVoltage == VOLT1_5_ENCODED_VAL) ? "1.5V" : ((CurrentVoltage == VOLT1_35_ENCODED_VAL) ? "1.35V" : "1.25V"), SpeedArray[CurrentVoltage]);
           if (NBPtr->DCTPtr->Timings.TargetSpeed > SpeedArray[CurrentVoltage]) {
             MaxFreqSupported = SpeedArray[CurrentVoltage];
           } else {
@@ -347,14 +336,13 @@ MemPGetMaxFreqSupported (
       }
       IDS_HDT_CONSOLE (MEM_FLOW, "\n");
     }
-    ASSERT (DDRVoltage < GET_ENCODED_VOLTAGE_LIMIT (CurrentChannel->TechType));
-    for (CurrentVoltage = DDRVoltage; CurrentVoltage != VOLT_UNSUPPORTED_ENCODED_VAL; CurrentVoltage --) {
+    ASSERT (DDR3Voltage <= VOLT1_25_ENCODED_VAL);
+    for (CurrentVoltage = DDR3Voltage; CurrentVoltage != VOLT_UNSUPPORTED_ENCODED_VAL; CurrentVoltage --) {
       if (NBPtr->SharedPtr->VoltageMap & (1 << CurrentVoltage)) {
         MaxFreqSupported = SpeedArray[CurrentVoltage];
         if (MaxFreqSupported != UNSUPPORTED_DDR_FREQUENCY) {
-          NBPtr->RefPtr->DDRVoltage = CONVERT_ENCODED_TO_VDDIO (CurrentVoltage, CurrentChannel->TechType);
-          IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tVDDIO leveraged to %s\n", GET_ENCODED_VDDIO_STRING(CurrentVoltage, CurrentChannel->TechType));
-          IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tMax Frequency supported is %d\n", MaxFreqSupported);
+          NBPtr->RefPtr->DDR3Voltage = CONVERT_ENCODED_TO_VDDIO (CurrentVoltage);
+          IDS_HDT_CONSOLE (MEM_FLOW, "\tVDDIO leveraged to %s\n", (CurrentVoltage == VOLT1_5_ENCODED_VAL) ? "1.5V" : ((CurrentVoltage == VOLT1_35_ENCODED_VAL) ? "1.35V" : "1.25V"));
           break;
         }
       }

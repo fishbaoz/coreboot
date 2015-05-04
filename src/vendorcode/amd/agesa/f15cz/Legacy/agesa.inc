@@ -9,7 +9,7 @@
 ; * @xrefitem bom "File Content Label" "Release Content"
 ; * @e project:      AGESA
 ; * @e sub-project:  Include
-; * @e \$Revision: 314626 $   @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+; * @e \$Revision: 314282 $   @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
 ;
 ; ****************************************************************************
 ; *
@@ -729,17 +729,6 @@ GnbAcp6Tx4RxBluetooth                EQU  02h            ; < 6Tx4Rx and Bluetoot
 GnbAcpPinNotConfigured               EQU  03h            ; < Not valid value, used to verify input
 GNB_ACP_AZ_I2SBUS_PIN TEXTEQU  <DWORD>
 
-; Alternative DRAM MAC
-MAC_UNTESTEDMAC                      EQU  00h            ; < Assign 0 to Untested MAC
-MAC_700k                             EQU  01h            ; < Assign 1 to 700k
-MAC_600k                             EQU  02h            ; < Assign 2 to 600k
-MAC_500k                             EQU  03h            ; < Assign 3 to 500k
-MAC_400k                             EQU  04h            ; < Assign 4 to 400k
-MAC_300k                             EQU  05h            ; < Assign 5 to 300k
-MAC_200k                             EQU  06h            ; < Assign 6 to 200k
-MAC_UNRESTRICTEDMAC                  EQU  08h            ; < Assign 8 to Unrestricted MAC
-DRAM_MAXIMUM_ACTIVATE_COUNT TEXTEQU  <DWORD>
-
 ;IOMMU requestor ID
 IOMMU_REQUESTOR_ID STRUCT
    Bus              UINT16               ?               ; <[15:8] - Bus number, [7:3] - Device number, [2:0] - Function number
@@ -980,8 +969,7 @@ AMD_PLATFORM_TYPE  TEXTEQU  <DWORD>
   DDR2_TECHNOLOGY         EQU   0       ; < DDR2 technology
   DDR3_TECHNOLOGY         EQU   1       ; < DDR3 technology
   GDDR5_TECHNOLOGY        EQU   2       ; < GDDR5 technology
-  DDR4_TECHNOLOGY         EQU   3       ; < DDR4 technology
-  UNSUPPORTED_TECHNOLOGY  EQU   4       ; < Unsupported technology
+  UNSUPPORTED_TECHNOLOGY  EQU   3       ; < Unsupported technology
 TECHNOLOGY_TYPE  TEXTEQU  <DWORD>
 
  ; Build Configuration values for BLDCFG_MEMORY_BUS_FREQUENCY_LIMIT & BLDCFG_MEMORY_CLOCK_SELECT
@@ -1018,15 +1006,12 @@ TECHNOLOGY_TYPE  TEXTEQU  <DWORD>
 
  ; Low voltage support
 
-  VOLT_INITIAL EQU 0                      ; < Initial value for VDDIO
-  VOLT1_5  EQU 1                          ; < 1.5 Volt
-  VOLT1_35 EQU 2                          ; < 1.35 Volt
-  VOLT1_25 EQU 3                          ; < 1.25 Volt
-  VOLT_DDR4_RANGE_START EQU 4             ; < Start of DDR4 Voltage Range
-  VOLT1_2   EQU VOLT_DDR4_RANGE_START     ; < 1.2 Volt
-  VOLT_TBD1 EQU (VOLT_DDR4_RANGE_START+1) ; < TBD1 Voltage
-  VOLT_TBD2 EQU (VOLT_DDR4_RANGE_START+2) ; < TBD2 Voltage
-  VOLT_UNSUPPORTED EQU 0FFh               ; < No common voltage found
+  VOLT_INITIAL EQU 0             ; < Initial value for VDDIO
+  VOLT1_5 EQU 1                  ; < 1.5 Volt
+  VOLT1_35 EQU 2                 ; < 1.35 Volt
+  VOLT1_25 EQU 3                 ; < 1.25 Volt
+  AGESA_DEFAULTS EQU 4           ; < AGESA determines the voltage setting
+  VOLT_UNSUPPORTED EQU 0FFh      ; < No common voltage found
 DIMM_VOLTAGE   TEXTEQU  <DWORD>
 
  ; AMP voltage support
@@ -1198,12 +1183,21 @@ LOCAL_STATUS_FIELD  TEXTEQU  <DWORD>
  ; SPD Data for each DIMM
 ; ===============================================================================
 SPD_DEF_STRUCT    STRUCT
-  DimmPresent                   BOOLEAN ?           ; < Indicates that the DIMM is present and Data is valid
-  PageAddress                   UINT8 ?             ; < Indicates the 256 Byte EE Page the data belongs to
-                                                    ; <      0 = Lower Page
-                                                    ; <      1 = Upper Page (DDR4 Only)
-  Data                          UINT8 (256) DUP (?) ; < Buffer for 256 Bytes of SPD data from DIMM
+  DimmPresent                   BOOLEAN ?       ; < Indicates that the DIMM is present and Data is valid
+  Data                          UINT8 (256) DUP (?)     ; < Buffer for 256 Bytes of SPD data from DIMM
 SPD_DEF_STRUCT    ENDS
+
+;//-----------------------------------------------------------------------------
+;///
+;/// SPD Data for each DIMM.
+;///
+SPD_DEF_STRUCT_DX    STRUCT
+  SpdValid BOOLEAN ?; ///< Indicates that the SPD is valid
+  DimmPresent                   BOOLEAN ?       ; < Indicates that the DIMM is present and Data is valid
+  Adderess UINT32 ?;  ///< SMBus Address
+  Data                          UINT8 (512) DUP (?)     ; < Buffer for 256 Bytes of SPD data from DIMM
+SPD_DEF_STRUCT_DX    ENDS
+
 
 ;-----------------------------------------------------------------------------
 ;
@@ -1386,7 +1380,8 @@ CH_DEF_STRUCT    STRUCT
 
   DimmSRTPresent                 UINT8 ? ; < For each bit n 0..3, 1 = DIMM n supports Extended Temperature Range where 4..7 are reserved
   DimmASRPresent                 UINT8 ? ; < For each bit n 0..3, 1 = DIMM n supports Auto Self Refresh where 4..7 are reserved
-  DimmThermSensorPresent         UINT8 ? ; < For each bit n 0..3, 1 = DIMM n has an On Dimm Thermal Sensor where 4..7 are reserved
+
+  ExtendTmp                     BOOLEAN ?       ; <  If extended temperature is supported on all dimms on a channel.
 
   MaxVref                        UINT8 ?       ; <  Maximum Vref Value for channel
 
@@ -1401,7 +1396,7 @@ CH_TIMING_STRUCT    STRUCT
   DctDimmValid                  UINT16 ?        ; < For each bit n 0..3, 1=DIMM n is valid and is/will be configured where 4..7 are reserved.
   DimmMirrorPresent             UINT16 ?        ; < For each bit n 0..3, 1=DIMM n is OnDimmMirror capable where 4..7 are reserved.
   DimmSpdCse                    UINT16 ?        ; < For each bit n 0..3, 1=DIMM n SPD checksum error where 4..7 are reserved.
-  DimmExclude                   UINT16 ?        ; < For each bit n 0..3, 1 = DIMM n gets excluded because of no common voltage is found
+  DimmExclude               UINT16 ?        ; < For each bit n 0..3, 1 = DIMM n gets excluded because of no common voltage is found
   CsPresent                     UINT16 ?        ; < For each bit n 0..7, 1=Chip-select n is present
   CsEnabled                     UINT16 ?        ; < For each bit n 0..7, 1=Chip-select n is enabled
   CsTestFail                    UINT16 ?        ; < For each bit n 0..7, 1=Chip-select n is present but disabled
@@ -1423,9 +1418,6 @@ CH_TIMING_STRUCT    STRUCT
   DIMMTrrd                      UINT16 ?        ; < Minimax Trrd*40 (ns) of DIMMs
   DIMMTwtr                      UINT16 ?        ; < Minimax Twtr*40 (ns) of DIMMs
   DIMMTfaw                      UINT16 ?        ; < Minimax Tfaw*40 (ns) of DIMMs
-  DIMMTrrdL                     UINT16 ?        ; < Minimax TrrdL*40 (ns) of DIMMs
-  DIMMTwtrL                     UINT16 ?        ; < Minimax TtwrL*40 (ns) of DIMMs
-  DIMMTccdL                     UINT16 ?        ; < Minimax TccdL*40 (ns) of DIMMs
   TargetSpeed                   UINT16 ?        ; < Target DRAM bus speed in MHz
   Speed                         UINT16 ?        ; < DRAM bus speed in MHz
                                   ; <  400 (MHz)
@@ -1444,9 +1436,6 @@ CH_TIMING_STRUCT    STRUCT
   Trrd                          UINT8 ?         ; < DCT Trrd (busclocks)
   Twtr                          UINT8 ?         ; < DCT Twtr (busclocks)
   Tfaw                          UINT8 ?         ; < DCT Tfaw (busclocks)
-  TrrdL                         UINT8 ?         ; < DCT TrrdL (busclocks)
-  TwtrL                         UINT8 ?         ; < DCT TwtrL (busclocks)
-  TccdL                         UINT8 ?         ; < DCT TccdL (busclocks)
   Trfc0                         UINT16 ?        ; < DCT Logical DIMM0 Trfc
                                   ; <  0 = 75ns (for 256Mb devs)
                                   ; <  1 = 105ns (for 512Mb devs)
@@ -1597,7 +1586,7 @@ MEM_PARAMETER_STRUCT    STRUCT
   Sub4GCacheTop                 UINT32 ?        ; < If not zero, the 32-bit top of cacheable memory.
   Sub1THoleBase                 UINT32 ?        ; < If not zero Base[47:16] (system address) of sub 1TB dram hole.
   SysLimit                      UINT32 ?        ; < Limit[47:16] (system address)
-  DDRVoltage                   DIMM_VOLTAGE ?    ; < Find support voltage and send back to platform BIOS.
+  DDR3Voltage                   DIMM_VOLTAGE ?    ; < Find support voltage and send back to platform BIOS.
   VddpVddrVoltage               VDDP_VDDR_VOLTAGE {}  ; < If VddpVddrVoltage.IsValid is TRUE then VddpVddrVoltage
                                                       ; < is 0.95 Volt. If VddpVddrVoltage.IsValid is FALSE then
                                                       ; < ignore VddpVddrVoltage.Voltage value and take no action
@@ -1657,11 +1646,6 @@ MEM_PARAMETER_STRUCT    STRUCT
   EnablePowerDown               BOOLEAN ?       ; < CKE based power down mode (1-bit)
                                    ; <   FALSE =disable (AMD default)
                                    ; <   TRUE =enable
-
-  ; Dram Mac Default
-
-  DramMacDefault                UINT8 ?         ; <   Default Maximum Activate Count
-                                   ; <   @BldCfgItem{BLDCFG_MEMORY_MAC_DEFAULT}
 
   ; Dram Extended Temperature Range
 
@@ -1760,7 +1744,7 @@ MEM_PARAMETER_STRUCT    STRUCT
                                    ; <
                                    ; <   AmpVoltageValid :
                                    ; <       TRUE - AGESA does enable AMP function, so use AmpVoltage for voltage adjustment
-                                   ; <       FALSE - AGESA does not enable AMP function, so use DDRVoltage for voltage adjustment
+                                   ; <       FALSE - AGESA does not enable AMP function, so use DDR3Voltage for voltage adjustment
                                    ; <
                                    ; <   AmpSupportDetectedButNotEnabled :
                                    ; <       TRUE - Display warning message of "AMP support detected but not enabled"
@@ -1842,6 +1826,7 @@ MEM_PARAMETER_STRUCT    STRUCT
                                    ; < 5 = VOLT_TBD1
                                    ; < 5 = VOLT_TBD2
                                    ; < 7 = AGESA_DEFAULTS
+
 
 MEM_PARAMETER_STRUCT    ENDS
 
@@ -2025,8 +2010,6 @@ MEM_ERROR_CKE_TRI_MAP_NOT_FOUND           EQU   040A3500h     ; < No CKE tristat
 MEM_ERROR_ODT_TRI_MAP_NOT_FOUND           EQU   040B3500h     ; < No ODT tristate map is found
 MEM_ERROR_CS_TRI_MAP_NOT_FOUND            EQU   040C3500h     ; < No CS tristate map is found
 MEM_ERROR_TRAINING_SEED_NOT_FOUND         EQU   040D3500h     ; < No training seed is found
-MEM_ERROR_CAD_BUS_TMG_NOT_FOUND           EQU   040E3500h     ; < No CAD Bus Timing Entries found
-MEM_ERROR_DATA_BUS_CFG_NOT_FOUND          EQU   040F3500h     ; < No Data Bus Config Entries found
 MEM_ERROR_NO_2D_WRDAT_WINDOW              EQU   040D0400h     ; < No 2D WrDat Window
 MEM_ERROR_NO_2D_WRDAT_HEIGHT              EQU   040E0400h     ; < No 2D WrDat Height
 MEM_ERROR_2D_WRDAT_ERROR                  EQU   040F0400h     ; < 2d WrDat Error
@@ -2086,7 +2069,7 @@ MEM_ERROR_PMU_TRAINING                    EQU   04120400h     ; < Fail PMU train
 
  ; AGESA_CRITICAL Memory Errors
     MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR3     EQU    04091F00h    ; < Heap allocation error for DMI table for DDR3
-    MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR4     EQU    040A1F00h    ; < Heap allocation error for DMI table for DDR4
+    MEM_ERROR_HEAP_ALLOCATE_FOR_DMI_TABLE_DDR2     EQU    040A1F00h    ; < Heap allocation error for DMI table for DDR2
     MEM_ERROR_UNSUPPORTED_DIMM_CONFIG    EQU   04011400h          ; < Dimm population is not supported
     MEM_ERROR_HEAP_ALLOCATE_FOR_CRAT_MEM_AFFINITY  EQU    040D1F00h    ;< Heap allocation error for CRAT memory affinity info
 
@@ -2452,7 +2435,6 @@ BUILD_OPT_CFG    STRUCT
   CfgMemoryEnableNodeInterleaving       BOOLEAN ?       ; < Memory Enable Node Interleaving
   CfgMemoryChannelInterleaving  BOOLEAN ?       ; < Memory Channel Interleaving
   CfgMemoryPowerDown            BOOLEAN ?       ; < Memory Power Down
-  CfgMemoryMacDefault           UINT8 ?         ; < Memory Power Down
   CfgMemoryExtendedTemperatureRange BOOLEAN ?   ; < Memory Extended Temperature Range
   CfgPowerDownMode              UINT32 ?        ; < Power Down Mode
   CfgOnlineSpare                BOOLEAN ?       ; < Online Spare
@@ -2525,8 +2507,6 @@ BUILD_OPT_CFG    STRUCT
   CfgDpFixedVoltSwingType       DP_FIXED_VOLT_SWING_TYPE ? ;To indicate fixed voltage swing value
   CfgDimmTypeUsedInMixedConfig  TECHNOLOGY_TYPE ?  ; Select the preferred technology type that AGESA will enable
                                                    ; when it is mixed with other technology types.
-  CfgDimmTypeDdr4Capable        BOOLEAN ?       ; Select DDR4 as technology type that AGESA will enable
-  CfgDimmTypeDdr3Capable        BOOLEAN ?       ; Select DDR3 as technology type that AGESA will enable
   CfgHybridBoostEnable          BOOLEAN ?          ; HyBrid Boost support
   CfgGnbIoapicAddress           UINT64  ?       ; GNB IOAPIC Base Address(NULL if platform configured)
   CfgDataEyeEn                  BOOLEAN ?       ; Enable get 2D data eye
@@ -2554,7 +2534,7 @@ BUILD_OPT_CFG    STRUCT
   CfgThermCtlLimit              UINT32 ?        ; < ThermCtl Limit
   CfgCodecVerbTable             UINT64 ?        ; < Codec Verb Table
   CfgGnbAzSsid                  UINT32 ?        ; < Azalia Ssid
-  CfgCustomVddioVoltage         UINT16 ?       ; < Custom VDDIO volatge
+  CfgCustomVddioVoltage         UINT16 ?        ; < Custom VDDIO volatge
   Reserved                      BOOLEAN ?       ; < reserved...
 BUILD_OPT_CFG    ENDS
 
@@ -2758,11 +2738,6 @@ DMI_T17_FORM_FACTOR  TEXTEQU  <DWORD>
   Ddr2FbdimmMemType     EQU    20       ; < Assign 20 to DDR2 FB-DIMM
   Ddr3MemType           EQU    24       ; < Assign 24 to DDR3
   Fbd2MemType           EQU    25       ; < Assign 25 to FBD2
-  Ddr4MemType           EQU    26       ; < Assign 26 to DDR4
-  LpDdrMemType          EQU    27       ; < Assign 27 to LPDDR
-  LpDdr2MemType         EQU    28       ; < Assign 28 to LPDDR2
-  LpDdr3MemType         EQU    29       ; < Assign 29 to LPDDR3
-  LpDdr4MemType         EQU    30       ; < Assign 30 to LPDDR4
 DMI_T17_MEMORY_TYPE  TEXTEQU  <DWORD>
 
  ; DMI Type 17 offset 13h - Type Detail
@@ -2783,7 +2758,7 @@ DMI_T17_TYPE_DETAIL    STRUCT
 ;   OUT UINT16                    NonVolatile:1;                ; < Non-volatile
 ;   OUT UINT16                    Registered:1;                 ; < Registered (Buffered)
 ;   OUT UINT16                    Unbuffered:1;                 ; < Unbuffered (Unregistered)
-;   OUT UINT16                    LRDIMM:1;                     ; < LRDIMM
+;   OUT UINT16                    Reserved2:1;                  ; < Reserved
 DMI_T17_TYPE_DETAIL    ENDS
 
  ; DMI Type 17 - Memory Device

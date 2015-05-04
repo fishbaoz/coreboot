@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -79,7 +79,6 @@
  */
 
 #define F15_CZ_PSTATE_SERVICE_SUPPORT
-#define F15_ST_PSTATE_SERVICE_SUPPORT
 
 OPTION_SSDT_FEATURE               GenerateSsdtStub;
 OPTION_ACPI_FEATURE               CreateAcpiTablesStub;
@@ -103,13 +102,6 @@ OPTION_ACPI_FEATURE               CreateAcpiTablesStub;
         #undef F15_CZ_PSTATE_SERVICE_SUPPORT
         #define F15_CZ_PSTATE_SERVICE_SUPPORT {AMD_FAMILY_15_CZ, &F15CzPstateServices},
       #endif
-
-      #if OPTION_FAMILY15H_ST == TRUE
-        extern CONST PSTATE_CPU_FAMILY_SERVICES ROMDATA F15StPstateServices;
-        #undef F15_ST_PSTATE_SERVICE_SUPPORT
-        #define F15_ST_PSTATE_SERVICE_SUPPORT {AMD_FAMILY_15_ST, &F15StPstateServices},
-      #endif
-
     #endif
   #endif
 #endif
@@ -185,7 +177,6 @@ OPTION_PSTATE_LATE_CONFIGURATION    OptionPstateLateConfiguration = {
 
 CONST CPU_SPECIFIC_SERVICES_XLAT ROMDATA PstateCpuFamilyServiceArray[] =
 {
-  F15_ST_PSTATE_SERVICE_SUPPORT
   F15_CZ_PSTATE_SERVICE_SUPPORT
   {0, NULL}
 };

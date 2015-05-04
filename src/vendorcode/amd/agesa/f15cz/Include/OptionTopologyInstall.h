@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -78,15 +78,16 @@
 /*
  * Macros will generate the correct item reference based on options
  */
-#define INTERNAL_TOPOLOGY_OPTION_FAM15_NB
-
 #if AGESA_ENTRY_INIT_EARLY == TRUE
   // Select Northbridge components
   #if OPTION_FAMILY15H == TRUE
-    #if ((OPTION_FAMILY15H_CZ == TRUE) || (OPTION_FAMILY15H_ST == TRUE))
-      #undef INTERNAL_TOPOLOGY_OPTION_FAM15_NB
-      #define INTERNAL_TOPOLOGY_OPTION_FAM15_NB     &TopoFam15Nb,
+    #if OPTION_FAMILY15H_CZ == TRUE
+      #define INTERNAL_TOPOLOGY_OPTION_FAM15CZ_NB     &TopoFam15Nb,
+    #else
+      #define INTERNAL_TOPOLOGY_OPTION_FAM15CZ_NB
     #endif
+  #else
+    #define INTERNAL_TOPOLOGY_OPTION_FAM15CZ_NB
   #endif
 
   #define INTERNAL_ONLY_NB_LIST_ITEM INTERNAL_ONLY_TOPOLOGY_OPTION_SUPPORTED_NBS,
@@ -100,7 +101,7 @@
    */
   #define INTERNAL_TOPOLOGY_OPTION_SUPPORTED_NBS \
                                              INTERNAL_ONLY_NB_LIST_ITEM \
-                                             INTERNAL_TOPOLOGY_OPTION_FAM15_NB
+                                             INTERNAL_TOPOLOGY_OPTION_FAM15CZ_NB
 
 #else
   // Not Init Early

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -172,15 +172,12 @@ MemNSyncTargetSpeedNb (
   MinSpeed = 16000;
   DdrMaxRate = 16000;
   if (NBPtr->IsSupported[CheckMaxDramRate]) {
-    //
     // Check maximum DRAM data rate that the processor is designed to support.
-    //
     DdrMaxRate = DdrMaxRateTab[MemNGetBitFieldNb (NBPtr, BFDdrMaxRate)];
     NBPtr->FamilySpecificHook[GetDdrMaxRate] (NBPtr, &DdrMaxRate);
     IDS_OPTION_HOOK (IDS_SKIP_FUSED_MAX_RATE, &DdrMaxRate, &NBPtr->MemPtr->StdHeader);
   }
 
-  IDS_HDT_CONSOLE(MEM_FLOW, "\tPlatform MemoryBusFrequencyLimit = %d\n", UserOptions.CfgMemoryBusFrequencyLimit);
   for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
     MemNSwitchDCTNb (NBPtr, Dct);
     DCTPtr = NBPtr->DCTPtr;
@@ -192,15 +189,10 @@ MemNSyncTargetSpeedNb (
     Mode[Dct] = NBPtr->RefPtr->UserTimingMode;
     // Check if input clock value is valid or not
     ASSERT ((NBPtr->ChannelPtr->TechType == DDR3_TECHNOLOGY) ?
-            (NBPtr->RefPtr->MemClockValue >= DDR667_FREQUENCY) :
-           ((NBPtr->ChannelPtr->TechType == DDR4_TECHNOLOGY) ?
-            (NBPtr->RefPtr->MemClockValue >= DDR1333_FREQUENCY) :
-            (NBPtr->RefPtr->MemClockValue <= DDR1066_FREQUENCY)));
+      (NBPtr->RefPtr->MemClockValue >= DDR667_FREQUENCY) :
+      (NBPtr->RefPtr->MemClockValue <= DDR1066_FREQUENCY));
     MemClkFreq = NBPtr->RefPtr->MemClockValue;
-    IDS_HDT_CONSOLE(MEM_FLOW, "\tDefault MemClkFreq = %d\n", MemClkFreq);
     if (DCTPtr->Timings.DctDimmValid != 0) {
-      IDS_HDT_CONSOLE (MEM_STATUS, "\tDct %d\n", Dct);
-
       Channel = MemNGetSocketRelativeChannelNb (NBPtr, Dct, 0);
       ChnlTmgMod = (UINT32 *) FindPSOverrideEntry (NBPtr->RefPtr->PlatformMemoryConfiguration, PSO_BUS_SPEED, NBPtr->MCTPtr->SocketId, Channel, 0,
                                                                     &(NBPtr->MCTPtr->LogicalCpuid), &(NBPtr->MemPtr->StdHeader));
@@ -213,9 +205,7 @@ MemNSyncTargetSpeedNb (
           // Check if input clock value is valid or not
           ASSERT ((NBPtr->ChannelPtr->TechType == DDR3_TECHNOLOGY) ?
             (ChnlTmgMod[1] >= DDR667_FREQUENCY) :
-           ((NBPtr->ChannelPtr->TechType == DDR4_TECHNOLOGY) ?
-            (ChnlTmgMod[1] >= DDR1333_FREQUENCY) :
-            (ChnlTmgMod[1] <= DDR1066_FREQUENCY)));
+            (ChnlTmgMod[1] <= DDR1066_FREQUENCY));
           MemClkFreq = ChnlTmgMod[1];
         }
       }
@@ -237,7 +227,6 @@ MemNSyncTargetSpeedNb (
           DCTPtr->Timings.TargetSpeed = (UINT16) ProposedFreq;
         }
       }
-      IDS_HDT_CONSOLE(MEM_FLOW, "\tMemClkFreq after platform limits applied =  %d\n", DCTPtr->Timings.TargetSpeed);
       IDS_SKIP_HOOK (IDS_MEM_MCLK_ABOVE_NCLK, NBPtr, &NBPtr->MemPtr->StdHeader) {
         if (DCTPtr->Timings.TargetSpeed > DdrMaxRate) {
           if (Mode[Dct] == TIMING_MODE_SPECIFIC) {
@@ -245,7 +234,6 @@ MemNSyncTargetSpeedNb (
             SetMemError (AGESA_ALERT, NBPtr->MCTPtr);
           }
           DCTPtr->Timings.TargetSpeed = DdrMaxRate;
-          IDS_HDT_CONSOLE(MEM_FLOW, "\tLimiting MemClkFreq to DdrMaxRate of %d\n", DdrMaxRate);
         }
       }
 
@@ -261,33 +249,27 @@ MemNSyncTargetSpeedNb (
         }
       }
       IDS_OPTION_HOOK (IDS_STRETCH_FREQUENCY_LIMIT, NBPtr, &NBPtr->MemPtr->StdHeader);
+
       if (MinSpeed > DCTPtr->Timings.TargetSpeed) {
         MinSpeed = DCTPtr->Timings.TargetSpeed;
       }
     }
   }
 
-  //
-  // Limit Startup Speed and M1 Speed
-  //
-  if (MinSpeed < NBPtr->StartupSpeed) {
-    NBPtr->StartupSpeed = MinSpeed;
+  if (MinSpeed == DDR667_FREQUENCY) {
+    NBPtr->StartupSpeed = DDR667_FREQUENCY;
   }
-  if (MinSpeed < NBPtr->M1Speed) {
-    NBPtr->M1Speed = MinSpeed;
-  }
-  //
+
   // Sync all DCTs to the same speed
-  //
   for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
     MemNSwitchDCTNb (NBPtr, Dct);
     NBPtr->DCTPtr->Timings.TargetSpeed = MinSpeed;
   }
-  IDS_HDT_CONSOLE(MEM_FLOW, "\n\t\tLowest supported MemClkFreq for all channels: %d\n", MinSpeed);
 
   IDS_SKIP_HOOK (IDS_MEM_MCLK_ABOVE_NCLK, NBPtr, &NBPtr->MemPtr->StdHeader) {
     NBPtr->MemNCapSpeedBatteryLife (NBPtr);
   }
+
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -998,7 +980,7 @@ MemNGetNbClkFreqByPstateUnb (
  */
 
 VOID
-MemNAdjustDdrSpeedUnb (
+MemNAdjustDdrSpeed3Unb (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
@@ -1013,7 +995,6 @@ MemNAdjustDdrSpeedUnb (
       MemNSwitchDCTNb (NBPtr, Dct);
       if (NBPtr->DCTPtr->Timings.TargetSpeed > DdrMaxRate) {
         NBPtr->DCTPtr->Timings.TargetSpeed = DdrMaxRate;
-        IDS_HDT_CONSOLE(MEM_FLOW, "\tDct %d: Limiting MemClkFreq to DdrMaxRate of %d\n", Dct, DdrMaxRate);
       }
     }
   }

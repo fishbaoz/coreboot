@@ -1,7 +1,7 @@
 ;*****************************************************************************
 ; AMD Generic Encapsulated Software Architecture
 ;
-;  $Workfile:: mu.asm   $ $Revision:: 309#$  $Date: 2014-12-10 02:28:05 +0800 (Wed, 10 Dec 2014) $
+;  $Workfile:: mu.asm   $ $Revision:: 309#$  $Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
 ; Description: Main memory controller system configuration for AGESA
 ;
 ;

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Ps/CZ)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -118,15 +118,15 @@ RDATA_GROUP (G3_DXE)
 // Format:
 //  Dimm0, Dimm1  RdODTCSHigh,   RdODTCSLow,   WrODTCSHigh,   WrODTCSLow
 //
-STATIC CONST PSCFG_2D_ODTPAT_ENTRY CZOdtPat3[] = {
+STATIC CONST PSCFG_2D_ODTPAT_ENTRY CZOdtPat[] = {
   {NP, DIMM_SR, 0x00000000, 0x00000000, 0x00000000, 0x00020000},
   {NP, DIMM_DR, 0x00000000, 0x00000000, 0x00000000, 0x02080000},
   {DIMM_SR, NP, 0x00000000, 0x00000000, 0x00000000, 0x00000001},
   {DIMM_DR, NP, 0x00000000, 0x00000000, 0x00000000, 0x00000104},
   {DIMM_SR + DIMM_DR, DIMM_SR + DIMM_DR, 0x00000000, 0x01010202, 0x00000000, 0x09030603}
 };
-CONST PSC_TBL_ENTRY CZOdtPatTblEnt3 = {
+CONST PSC_TBL_ENTRY CZOdtPatTblEnt = {
    {PSCFG_ODT_PAT_2D, DT_DONT_CARE, NOD_DONT_CARE, {AMD_FAMILY_15_CZ, AMD_F15_ALL}, PT_DONT_CARE, DDR3_TECHNOLOGY, MBL_DONT_CARE, MBP_DONT_CARE},
-   sizeof (CZOdtPat3) / sizeof (PSCFG_2D_ODTPAT_ENTRY),
-   (VOID *)&CZOdtPat3
+   sizeof (CZOdtPat) / sizeof (PSCFG_2D_ODTPAT_ENTRY),
+   (VOID *)&CZOdtPat
 };

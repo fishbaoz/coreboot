@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 312796 $   @e \$Date: 2015-02-11 18:56:00 +0800 (Wed, 11 Feb 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -344,10 +344,16 @@ PcieTrainingRelease (
 {
   UINT8                   LinkTrainingState;
   GNB_HANDLE              *GnbHandle;
+  CPU_LOGICAL_ID          LogicalId;
   UINT32                  Address;
 
   GnbHandle = GnbGetHandle (GnbLibGetHeader (Pcie));
-  Address = WRAP_SPACE2 (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  GetLogicalIdOfSocket (GnbGetSocketId (GnbHandle), &LogicalId, GnbLibGetHeader (Pcie));
+  if ((LogicalId.Revision & AMD_F15_CZ_ALL) != 0) {
+    Address = WRAP_SPACE2 (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  } else {
+    Address = WRAP_SPACE (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  }
 
   PcieRegisterWriteField (
     PcieConfigGetParentWrapper (CurrentEngine),
@@ -733,10 +739,16 @@ PcieTrainingNotPresent (
   )
 {
   GNB_HANDLE              *GnbHandle;
+  CPU_LOGICAL_ID          LogicalId;
   UINT32                  Address;
 
   GnbHandle = GnbGetHandle (GnbLibGetHeader (Pcie));
-  Address = WRAP_SPACE2 (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  GetLogicalIdOfSocket (GnbGetSocketId (GnbHandle), &LogicalId, GnbLibGetHeader (Pcie));
+  if ((LogicalId.Revision & AMD_F15_CZ_ALL) != 0) {
+    Address = WRAP_SPACE2 (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  } else {
+    Address = WRAP_SPACE (PcieConfigGetParentWrapper (CurrentEngine)->WrapId, D0F0xE4_WRAP_0800_ADDRESS + 0x100 * CurrentEngine->Type.Port.PortId);
+  }
 
   if ((CurrentEngine->Type.Port.PortData.LinkHotplug == HotplugEnhanced) || (CurrentEngine->Type.Port.PortData.LinkHotplug == HotplugServer)) {
   } else {

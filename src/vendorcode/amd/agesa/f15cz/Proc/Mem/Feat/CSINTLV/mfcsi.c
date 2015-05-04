@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Feat/Csintlv)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -212,7 +212,6 @@ MemFUndoInterleaveBanks (
           }
         }
         if (CSIntlvEnabled) {
-          IDS_HDT_CONSOLE(MEM_FLOW,"\t\tUndo CS Interleave\n");
           MemFDctInterleaveBanks (NBPtr);
           RetFlag = TRUE;
         }
@@ -287,7 +286,7 @@ MemFDctInterleaveBanks (
 
   // Swap Dram Base/Mask Addr to enable CS interleaving
   if ((Cs == MAX_CS_PER_CHANNEL) && ((EnChipSels == 2) || (EnChipSels == 4) || (EnChipSels == 8))) {
-    NBPtr->TechPtr->GetCSIntLvAddr (NBPtr->TechPtr, BankEncd0, &i, &j);
+    NBPtr->TechPtr->GetCSIntLvAddr (BankEncd0, &i, &j);
     NBPtr->DCTPtr->BankAddrMap = BankEncd0;
     NBPtr->DCTPtr->EnabledChipSels = EnChipSels;
     // Family specific CS interleaving low address adjustment
@@ -312,27 +311,13 @@ MemFDctInterleaveBanks (
       if (((BaseRegS0 | BaseRegS1) & 1) != 0) {
         // Swap Mask register bits
         MaskReg = NBPtr->GetBitField (NBPtr, BFCSMask0Reg + (Cs / 2));
-        IDS_HDT_CONSOLE(MEM_FLOW,"\t\tDimm %d Mask    : %X --> ",(Cs / 2), MaskReg);
         CsIntSwap (&MaskReg, EnChipSels, (i + Offset), (j + Offset));
-        IDS_HDT_CONSOLE(MEM_FLOW,"%X\n",MaskReg);
         NBPtr->SetBitField (NBPtr, BFCSMask0Reg + (Cs / 2), MaskReg);
 
         // Swap Base register bits
-        IDS_HDT_CONSOLE(MEM_FLOW,"\t\tCS %d Base Addr : %X --> ", Cs, BaseRegS0);
         CsIntSwap (&BaseRegS0, EnChipSels, (i + Offset), (j + Offset));
-        IDS_HDT_CONSOLE(MEM_FLOW,"%X\n", BaseRegS0);
         NBPtr->SetBitField (NBPtr, BFCSBaseAddr0Reg + Cs, BaseRegS0);
-        IDS_HDT_CONSOLE_DEBUG_CODE(
-          if (( BaseRegS1 & 1) != 0) {
-            IDS_HDT_CONSOLE(MEM_FLOW,"\t\tCS %d Base Addr : %X --> ", (Cs + 1), BaseRegS1);
-          }
-        )
         CsIntSwap (&BaseRegS1, EnChipSels, (i + Offset), (j + Offset));
-        IDS_HDT_CONSOLE_DEBUG_CODE(
-          if (( BaseRegS1 & 1) != 0) {
-            IDS_HDT_CONSOLE(MEM_FLOW,"%X\n", BaseRegS1);
-          }
-        )
         NBPtr->SetBitField (NBPtr, BFCSBaseAddr0Reg + Cs + 1, BaseRegS1);
       }
     }

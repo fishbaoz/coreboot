@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 316245 $ @e \$Date: 2015-04-07 07:42:42 +0800 (Tue, 07 Apr 2015) $
+ * @e \$Revision: 311625 $ @e \$Date: 2015-01-25 20:35:21 -0600 (Sun, 25 Jan 2015) $
  *
  **/
 /*****************************************************************************
@@ -246,9 +246,9 @@ MemNCmnGetSetFieldCZ (
   )
 {
   BF_LOCATION *BfLoc;
+  PMU_SRAM_ADDR *PmuSramAddr;
   PCI_ADDR PciAddr;
   UINT32 Address;
-  UINT32 ReadAddress;
   UINT32 SaveAddress;
   UINT32 HiBit;
   UINT32 LoBit;
@@ -258,6 +258,7 @@ MemNCmnGetSetFieldCZ (
   BOOLEAN WholeRegAccess;
   UINTN  RegIndex;
   UINT32 Value;
+  UINT32 RegOffset;
   UINT32 Field;
   BF_NAME_ENC BfNameEnc;
 
@@ -282,7 +283,7 @@ MemNCmnGetSetFieldCZ (
   UseGroup = FALSE;
   UsePadTab = FALSE;
 
-  ASSERT ((FieldName < RegIdLimit));
+  ASSERT ((FieldName < PmuSRAMRangeEnd));
 
   if (NBPtr->NBRegTable[FieldName] != 0) {
     //======================================================================
@@ -302,7 +303,7 @@ MemNCmnGetSetFieldCZ (
         WholeRegAccess = TRUE;
       }
       SaveAddress = Address = NBPtr->NBRegTable[RegIndex];
-    } else {
+    } else if (FieldName < RegIdLimit) {
       RegIndex = FieldName;
       WholeRegAccess = TRUE;
       HiBit = 31;
@@ -310,6 +311,32 @@ MemNCmnGetSetFieldCZ (
       IsMemPstate = FALSE;
       IsLinked = FALSE;
       SaveAddress = Address = NBPtr->NBRegTable[RegIndex];
+    } else {
+      // PMU SRAM fields
+      PmuSramAddr = (PMU_SRAM_ADDR *) &(NBPtr->NBRegTable[FieldName]);
+      RegIndex = RegSramMsgBlk;
+
+      RegOffset = PmuSramAddr->RegOffset;
+      if ((RegOffset >= PMU_SMB_MEM_PS0_START) && (RegOffset < PMU_SMB_MEM_PS1_START)) {
+        RegOffset += NBPtr->MemPstate * (PMU_SMB_MEM_PS1_START - PMU_SMB_MEM_PS0_START);
+      }
+      SaveAddress = Address = NBPtr->NBRegTable[RegIndex] + ((RegOffset & 0xFFE) / 2);
+
+      HiBit = PmuSramAddr->HiBit;
+      LoBit = PmuSramAddr->LoBit;
+      if ((RegOffset & 1) != 0) {
+        HiBit += 8;
+        LoBit += 8;
+      }
+      IsMemPstate = FALSE;
+      IsLinked = (BOOLEAN) PmuSramAddr->Linked;
+      BfNameEnc.FieldName = (BIT_FIELD_NAME) (FieldName | 0xFFFF0000);   // Disable SW broadcast
+      if ((HiBit - LoBit) < 15) {
+        WholeRegAccess = FALSE;
+      } else {
+        WholeRegAccess = TRUE;
+        Field &= 0xFFFF;
+      }
     }
 
     ASSERT ((HiBit < 32) && (LoBit <= HiBit));    // Only support 32 bit registers
@@ -319,7 +346,7 @@ MemNCmnGetSetFieldCZ (
     //======================================================================
     //
     if (RegIndex > DctPhyRegRangeStart) {
-      //IDS_HDT_CONSOLE (MEM_SETREG, "~                   [+] BF enum: %x\n", FieldName);
+      IDS_HDT_CONSOLE (MEM_SETREG, "~                   [+] BF enum: %x\n", FieldName);
       for (i = 0; i < BC_FIELDS; i++) {
         Limit = (UINT8) ((Address & BroadcastMask[i]) >> BroadcastBit[i]);
         if (Limit == 0) {
@@ -445,29 +472,30 @@ MemNCmnGetSetFieldCZ (
           break;    // Skip last iteration when ChipToPadTable is used
         }
 
-        if (!IsSet || !WholeRegAccess) {
-          ReadAddress = Address;
+        if (!IsSet) {
           if (BfNameEnc.Parse.Direct == 1) {
-            ReadAddress = MEM_PS_PER_INSTANCE (NBPtr->MemPstate, SaveAddress);
+            Address = MEM_PS_PER_INSTANCE (NBPtr->MemPstate, SaveAddress);
           }
+
           // Use instance 0 when reading hardware broadcast registers.
           for (i = 0; i < BC_FIELDS; i++) {
-            if ((ReadAddress & BroadcastMask[i]) == BroadcastMask[i]) {
-              ReadAddress &= ~BroadcastMask[i];
+            if ((Address & BroadcastMask[i]) == BroadcastMask[i]) {
+              Address &= ~BroadcastMask[i];
               // For broadcast chiplet address, do read from the ABYTE instance
-              if ((ReadAddress & 0xF0000) == 0x60000 || (ReadAddress & 0xF0000) == 0xF0000) {
-                ReadAddress &= 0xFFF0FFFF;
+              if ((Address & 0xF0000) == 0x60000 || (Address & 0xF0000) == 0xF0000) {
+                Address &= 0xFFF0FFFF;
               }
             }
           }
 
-          MemNCmnGetSetFieldCZ (NBPtr, 1, RegDctAddlOffset, ReadAddress);
+          MemNCmnGetSetFieldCZ (NBPtr, 1, RegDctAddlOffset, Address);
           Value = MemNCmnGetSetFieldCZ (NBPtr, 0, RegDctAddlData, 0);
-          IDS_HDT_CONSOLE (MEM_GETREG, "~R F2_9C_%x = %x\n", ReadAddress, Value);
-          if (!IsSet) {
-            Address = ReadAddress;
-            HasMoreInstances = FALSE;
-          }
+          IDS_HDT_CONSOLE (MEM_GETREG, "~R F2_9C_%x = %x\n", Address, Value);
+          HasMoreInstances = FALSE;
+        } else if (!WholeRegAccess) {
+          MemNCmnGetSetFieldCZ (NBPtr, 1, RegDctAddlOffset, Address);
+          Value = MemNCmnGetSetFieldCZ (NBPtr, 0, RegDctAddlData, 0);
+          IDS_HDT_CONSOLE (MEM_GETREG, "~R F2_9C_%x = %x\n", Address, Value);
         } else {
           Value = Field;
         }
@@ -525,8 +553,8 @@ MemNCmnGetSetFieldCZ (
             if (IsMemPstate) {
               IDS_HDT_CONSOLE (MEM_SETREG, "_mp[%d]", NBPtr->MemPstate);
             }
-            IDS_HDT_CONSOLE (MEM_SETREG, " [%d:%d] = %x\n", HiBit, LoBit, Field);
-            //IDS_HDT_CONSOLE (MEM_SETREG, ", BF enum: %x\n", FieldName);
+            IDS_HDT_CONSOLE (MEM_SETREG, " [%d:%d] = %x", HiBit, LoBit, Field);
+            IDS_HDT_CONSOLE (MEM_SETREG, ", BF enum: %x\n", FieldName);
           }
         } else {
           ASSERT (FALSE);
@@ -639,7 +667,7 @@ MemNInitNBRegTableCZ (
   }
 
   // Allocate new buffer for NBRegTable if it has not been allocated
-  AllocHeapParams.RequestedBufferSize = sizeof (TSEFO) * (RegIdLimit);
+  AllocHeapParams.RequestedBufferSize = sizeof (TSEFO) * (PmuSRAMRangeEnd);
   AllocHeapParams.BufferHandle = GENERATE_MEM_HANDLE (ALLOC_NB_REG_TABLE, NbRegTabCZ, 0, 0);
   AllocHeapParams.Persist = HEAP_SYSTEM_MEM;
   if (AGESA_SUCCESS != HeapAllocateBuffer (&AllocHeapParams, &(NBPtr->MemPtr->StdHeader))) {
@@ -746,6 +774,7 @@ MemNInitNBRegTableCZ (
   _BF_DEF (NBRegTable, RegDramCtl, BFAddrCmdTriEn, 17, 17);
   _BF_DEF (NBRegTable, RegDramCtl, BFDramType, 10, 8);
   _BF_DEF (NBRegTable, RegDramCtl, BFPtrInitReq, 4, 4);
+  _BF_DEF (NBRegTable, RegDramCtl, BFDccPgSsBusDis, 3, 3);
   _BF_DEF (NBRegTable, RegDramCtl, BFGsyncDis, 2, 2);
   _BF_DEF (NBRegTable, RegDramCtl, BFChanVal, 0, 0);
 
@@ -1343,7 +1372,7 @@ MemNInitNBRegTableCZ (
   _BF_DEF (NBRegTable, RegAbyteDqDqsRcvCntrl1, BFPowerDownRcvrAbyte, 8, 8);
   _BF_DEF (NBRegTable, RegAbyteDqDqsRcvCntrl1, BFAVoltageLevel, 12, 10);
 
-  REG_DEF (NBRegTable, RegDbyteDqDqsRcvCntrl2, 0x01F1F043);
+  REG_DEF (NBRegTable, RegDbyteDqDqsRcvCntrl2, 0x0181B043);
   _BF_DEF (NBRegTable, RegDbyteDqDqsRcvCntrl2, BFMajorModeDbyte, 2, 0);
   _BF_DEF (NBRegTable, RegDbyteDqDqsRcvCntrl2, BFExtVrefRange, 4, 4);
 
@@ -1402,10 +1431,8 @@ MemNInitNBRegTableCZ (
   // Registers trained by PMU
   REG_DEF (NBRegTable, RegDataRxDly, 0x01813380);
   REG_DEF (NBRegTable, RegDataTxDly, 0x01813381);
-
   REG_DEF (NBRegTable, RegDataTxEqHiImp, 0x0181B046);
   _BF_DEF (NBRegTable, RegDataTxEqHiImp, BFEQStrenHiP, 6, 4);
-
   REG_DEF (NBRegTable, RegDataTxEqLoImp, 0x0181B047);
   REG_DEF (NBRegTable, RegDataTxEqBoostImp, 0x0181B048);
 
@@ -2042,5 +2069,75 @@ MemNInitNBRegTableCZ (
   LINK_BF (NBRegTable, BFCurNbVid, BFCurNbVidHi);
 
   IDS_OPTION_HOOK (IDS_INIT_MEM_REG_TABLE, NBPtr, &NBPtr->MemPtr->StdHeader);
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *   This function defines bit fields that only for DDR3
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNInitNBRegTableD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  TSEFO *NBRegTable;
+
+  NBRegTable = NBPtr->NBRegTable;
+  // ---------------------------------------------------------------------------
+  // PHY
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // PMU SRAM FIELDS
+  // ---------------------------------------------------------------------------
+
+  PMU_SRAM (NBRegTable, PmuFirmwareRev    , 0x02, 15, 0);
+  PMU_SRAM (NBRegTable, PmuCpuId          , 0x04, 15, 0);
+  PMU_SRAM (NBRegTable, PmuCpuIdHi        , 0x06, 15, 0);
+
+  PMU_SRAM (NBRegTable, PmuDramType       , 0x08, 7, 0);
+  PMU_SRAM (NBRegTable, PmuModuleType     , 0x09, 7, 0);
+  PMU_SRAM (NBRegTable, PmuRawCard0       , 0x0A, 7, 0);
+  PMU_SRAM (NBRegTable, PmuRawCard1       , 0x0B, 7, 0);
+  PMU_SRAM (NBRegTable, PmuChipSelect     , 0x0E, 7, 0);
+  PMU_SRAM (NBRegTable, PmuAddrMirror     , 0x0F, 7, 0);
+
+  PMU_SRAM (NBRegTable, PmuDimm0Cols      , 0x10, 7, 0);
+  PMU_SRAM (NBRegTable, PmuDimm0Banks     , 0x11, 7, 0);
+  PMU_SRAM (NBRegTable, PmuDimm0Rows      , 0x12, 7, 0);
+  PMU_SRAM (NBRegTable, PmuDimm1Cols      , 0x13, 7, 0);
+  PMU_SRAM (NBRegTable, PmuDimm1Banks     , 0x14, 7, 0);
+  PMU_SRAM (NBRegTable, PmuDimm1Rows      , 0x15, 7, 0);
+
+  PMU_SRAM (NBRegTable, PmuTestFail       , 0x1C, 7, 0);
+  PMU_SRAM (NBRegTable, PmuPerRankTiming  , 0x1D, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCurrentTemp    , 0x1E, 15, 0);
+
+  PMU_SRAM (NBRegTable, PmuSequenceCtl    , 0x20, 15, 0);
+
+  PMU_SRAM (NBRegTable, PmuCkeSetup       , 0x23, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCsOdtSetup     , 0x24, 7, 0);
+  PMU_SRAM (NBRegTable, PmuAddrCmdSetup   , 0x25, 7, 0);
+  PMU_SRAM (NBRegTable, PmuSlowAccessMode , 0x26, 7, 0);
+  PMU_SRAM (NBRegTable, PmutRP            , 0x27, 7, 0);
+  PMU_SRAM (NBRegTable, PmutMRD           , 0x28, 7, 0);
+  PMU_SRAM (NBRegTable, PmutRFC           , 0x29, 7, 0);
+  PMU_SRAM (NBRegTable, PmuMR0            , 0x2A, 15, 0);
+  PMU_SRAM (NBRegTable, PmuMR1            , 0x2C, 15, 0);
+  PMU_SRAM (NBRegTable, PmuMR2            , 0x2E, 15, 0);
+  PMU_SRAM (NBRegTable, PmuCD_R_W         , 0x30, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCD_R_R         , 0x31, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCD_W_W         , 0x32, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCD_W_R         , 0x33, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCD_R_R_SD      , 0x34, 7, 0);
+  PMU_SRAM (NBRegTable, PmuCD_W_W_SD      , 0x35, 7, 0);
+  PMU_SRAM (NBRegTable, PmuTrdrdban_Phy   , 0x36, 7, 0);
+
+  LINK_BF (NBRegTable, PmuCpuId, PmuCpuIdHi);
 }
 

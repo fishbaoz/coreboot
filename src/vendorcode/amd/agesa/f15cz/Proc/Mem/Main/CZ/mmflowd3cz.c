@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main/CZ)
- * @e \$Revision: 316426 $ @e \$Date: 2015-04-08 14:51:16 +0800 (Wed, 08 Apr 2015) $
+ * @e \$Revision: 314282 $ @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
  *
  **/
 /*****************************************************************************
@@ -85,7 +85,6 @@
 #include "mm.h"
 #include "mn.h"
 #include "mncz.h"
-#include "mnD3cz.h"
 #include "mt.h"
 #include "mt3.h"
 #include "mu.h"
@@ -178,21 +177,14 @@ MemMFlowD3CZ (
   IDS_HDT_CONSOLE (MEM_FLOW, "Force NBPState to NBP0\n");
   MemNChangeNbFrequencyWrapUnb (NBPtr, 0);
 
-  if (NBPtr->MemPtr->ParameterListPtr->DimmTypeDddr3Capable == TRUE) {
-    IDS_HDT_CONSOLE (MEM_FLOW, "\nAnalyze DDR3 DIMM SPD Data\n");
-    if (MemTDIMMPresence3 (NBPtr[BSP_DIE].TechPtr) && (NBPtr[BSP_DIE].MCTPtr->DimmPresent != 0)) {
-      //
-      // Setup D3 Platform Specific Pointers here.
-      //
-      MemNInitNBDataD3CZ (NBPtr);
-      return MemMD3FlowCZ (MemMainPtr);
-    } else {
-      IDS_HDT_CONSOLE (MEM_FLOW, "\nNo DDR3 DIMMs found.\n");
-      PutEventLog (AGESA_FATAL, MEM_ERROR_NO_DIMM_FOUND_ON_SYSTEM, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
-      return AGESA_FATAL; // DDR3 requested but No DDR3 DIMMs found
-    }
+  NBPtr->IsSupported[G5DimmInD3Socket] = FALSE;
+
+  IDS_HDT_CONSOLE (MEM_FLOW, "\nAnalyze DIMM SPD Data\n");
+  if (MemTDIMMPresence3 (NBPtr[BSP_DIE].TechPtr) && (NBPtr[BSP_DIE].MCTPtr->DimmPresent != 0)) {
+    return MemMD3FlowCZ (MemMainPtr);
   } else {
-    return AGESA_FATAL; // UNSUPPORTED DIMMs requested
+    PutEventLog (AGESA_FATAL, MEM_ERROR_NO_DIMM_FOUND_ON_SYSTEM, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
+    return AGESA_FATAL; // No DIMMs found
   }
 }
 
@@ -221,21 +213,22 @@ MemMD3FlowCZ (
   INT8             MemPstate;
   UINT8            LowestMemPstate;
   UINT8            PmuImage;
-  UINT8            CSTestFail;
   BOOLEAN          ErrorRecovery;
   BOOLEAN          IgnoreErr;
   UINT8            i;
   UINT8            TimesMrlRetrain;
-  BOOLEAN          PmuResult;
 
   NBPtr = &MemMainPtr->NBPtr[BSP_DIE];
   ErrorRecovery = TRUE;
   IgnoreErr = FALSE;
-  CSTestFail = 0;
 
   IDS_HDT_CONSOLE (MEM_FLOW, "DDR3 Mode\n");
 
+  //----------------------------------------------------------------
+  // Defines DDR3 registers
+  //----------------------------------------------------------------
   IDS_HDT_CONSOLE (MEM_FLOW, "Determine VDDIO\n");
+  MemNInitNBRegTableD3CZ (NBPtr);
 
   //----------------------------------------------------------------
   // Clock and power gate unused channels
@@ -246,6 +239,16 @@ MemMD3FlowCZ (
   // Set DDR3 mode
   //----------------------------------------------------------------
   MemNSetDdrModeD3CZ (NBPtr);
+
+  //----------------------------------------------------------------
+  // Enable PHY Calibration
+  //----------------------------------------------------------------
+  for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
+    MemNSwitchDCTNb (NBPtr, Dct);
+    if (NBPtr->DCTPtr->Timings.DctDimmValid != 0) {
+      MemNEnablePhyCalibrationCZ (NBPtr);
+    }
+  }
 
   //----------------------------------------------------------------
   // Low voltage DDR3
@@ -267,7 +270,7 @@ MemMD3FlowCZ (
   //----------------------------------------------------------------
   // Adjust memClkFreq based on MaxDdrRate
   //----------------------------------------------------------------
-  MemNAdjustDdrSpeedUnb (NBPtr);
+  MemNAdjustDdrSpeed3Unb (NBPtr);
 
   //------------------------------------------------
   // Finalize target frequency
@@ -368,13 +371,13 @@ MemMD3FlowCZ (
             MemNProgramCadDataBusD3CZ (NBPtr);
 
             IDS_HDT_CONSOLE (MEM_FLOW, "\t\tPredriver Init\n");
-            MemNPredriverInitD3CZ (NBPtr);
+            MemNPredriverInitCZ (NBPtr);
 
             IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMode Register Initialization\n");
-            MemNModeRegisterInitializationD3CZ (NBPtr);
+            MemNModeRegisterInitializationCZ (NBPtr);
 
             IDS_HDT_CONSOLE (MEM_FLOW, "\t\tDRAM PHY Power Savings\n");
-            MemNDramPhyPowerSavingsCZ (NBPtr, DRAM_TYPE_DDR3_CZ);
+            MemNDramPhyPowerSavingsCZ (NBPtr);
           }
         }
       }
@@ -425,12 +428,38 @@ MemMD3FlowCZ (
   //------------------------------------------------------------------------
   MemMainPtr->MemPtr->ParameterListPtr->VddpVddrVoltage.IsValid = TRUE;
   MemMainPtr->MemPtr->ParameterListPtr->VddpVddrVoltage.Voltage = VOLT1_05;
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nVDDP = %s\n", (MemMainPtr->MemPtr->ParameterListPtr->VddpVddrVoltage.Voltage == VOLT1_05) ? "1.05V":
-                                              ((MemMainPtr->MemPtr->ParameterListPtr->VddpVddrVoltage.Voltage == VOLT0_95) ? "0.95V" : "Unsupported"));
 
+  //
+  // Check if there is a Vddio Override through BLDCFG
+  //
+  // VDDIO Voltage
+  if (NBPtr->RefPtr->CustomVddioSupport != AGESA_DEFAULTS) {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\nVDDIO Need to be customized Vddio %d...\n", NBPtr->RefPtr->CustomVddioSupport);
+    switch (NBPtr->RefPtr->CustomVddioSupport) {
+    case VOLT1_5:
+      NBPtr->RefPtr->DDR3Voltage = VOLT1_5;
+      break;
+    case VOLT1_35:
+      NBPtr->RefPtr->DDR3Voltage = VOLT1_35;
+      break;
+    case VOLT1_25:
+      NBPtr->RefPtr->DDR3Voltage = VOLT1_25;
+      break;
+    default:
+      ASSERT (NBPtr->RefPtr->CustomVddioSupport == AGESA_DEFAULTS);
+      NBPtr->RefPtr->CustomVddioSupport = AGESA_DEFAULTS;
+      break;
+    }
+    IDS_HDT_CONSOLE (MEM_FLOW, "\nUpdated DDR3Volatge For VDDIO = 1.%dV\n", (NBPtr->RefPtr->DDR3Voltage == VOLT1_5) ? 5 :
+                                        (NBPtr->RefPtr->DDR3Voltage == VOLT1_35) ? 35 :
+                                        (NBPtr->RefPtr->DDR3Voltage == VOLT1_25) ? 25 : 999);
+
+  }
   IDS_HDT_CONSOLE (MEM_FLOW, "\nCalling out to Platform BIOS on Socket %d, Module %d...\n", CallOutIdInfo.IdField.SocketId, CallOutIdInfo.IdField.ModuleId);
   AgesaHookBeforeDramInit ((UINTN) CallOutIdInfo.IdInformation, MemMainPtr->MemPtr);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nVDDIO = %s\n", GET_VDDIO_STRING(NBPtr->RefPtr->DDRVoltage, DDR3_TECHNOLOGY));
+  IDS_HDT_CONSOLE (MEM_FLOW, "VDDIO = 1.%dV\n", (NBPtr->RefPtr->DDR3Voltage == VOLT1_5) ? 5 :
+                                        (NBPtr->RefPtr->DDR3Voltage == VOLT1_35) ? 35 :
+                                        (NBPtr->RefPtr->DDR3Voltage == VOLT1_25) ? 25 : 999);
   AGESA_TESTPOINT (TpProcMemAfterAgesaHookBeforeDramInit, &(NBPtr->MemPtr->StdHeader));
   //
   // Check for valid VDDR/VDDP Value after callout
@@ -439,17 +468,6 @@ MemMD3FlowCZ (
     IDS_HDT_CONSOLE (MEM_FLOW, "\nFATAL ERROR: Unsupported VDDP/VDDR Value indicated by platform BIOS.\n");
     PutEventLog (AGESA_FATAL, MEM_ERROR_VDDPVDDR_UNSUPPORTED, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
     return AGESA_FATAL;
-  }
-
-  //----------------------------------------------------------------
-  // Enable PHY Calibration
-  //----------------------------------------------------------------
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nEnable Phy Calibration\n");
-  for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
-    MemNSwitchDCTNb (NBPtr, Dct);
-    if (NBPtr->DCTPtr->Timings.DctDimmValid != 0) {
-      MemNEnablePhyCalibrationCZ (NBPtr);
-    }
   }
 
   //----------------------------------------------------------------------------
@@ -478,93 +496,89 @@ MemMD3FlowCZ (
   //  Program PMU SRAM Message Block, Initiate PMU based Dram init and training
   //----------------------------------------------------------------------------
   IDS_HDT_CONSOLE (MEM_FLOW, "\nBegin PMU Based DRAM Init and Training\n");
-  //
-  // Allocate Message Block on the heap
-  //
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tAllocate the PMU SRAM Message Block buffer\n");
-  if (MemNInitPmuSramMsgBlockCZ (NBPtr) == FALSE) {
-    IDS_HDT_CONSOLE (MEM_FLOW, "\tNot able to allocate the PMU SRAM Message Block buffer\n");
-    // Not able to initialize the PMU SRAM Message Block buffer.  Log an event.
-    PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_ALLOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
+  for (PmuImage = 0; PmuImage < MemNNumberOfPmuFirmwareImageCZ (NBPtr); ++PmuImage) {
+    NBPtr->PmuFirmwareImage = PmuImage;
+    NBPtr->FeatPtr->LoadPmuFirmware (NBPtr);
+    for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
+      MemNSwitchDCTNb  (NBPtr, Dct);
+      if (NBPtr->DCTPtr->Timings.DctMemSize != 0) {
+        IDS_HDT_CONSOLE (MEM_STATUS, "\n\tDct %d\n", Dct);
+        IDS_HDT_CONSOLE (MEM_FLOW, "\t\tInitialize the PMU SRAM Message Block buffer\n");
+        if (MemNInitPmuSramMsgBlockCZ (NBPtr) == FALSE) {
+          IDS_HDT_CONSOLE (MEM_FLOW, "\t\tNot able to initialize the PMU SRAM Message Block buffer\n");
+          // Not able to initialize the PMU SRAM Message Block buffer.  Log an event.
+          PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_ALLOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
+          return AGESA_FATAL;
+        }
+
+        for (MemPstate = LowestMemPstate; MemPstate >= 0; MemPstate--) {
+          // When memory pstate is enabled, this loop will goes through M1 first then M0
+          // Otherwise, this loop only goes through M0.
+          IDS_HDT_CONSOLE (MEM_FLOW, "\t\t");
+          MemNSwitchMemPstateCZ (NBPtr, MemPstate);
+
+          IDS_HDT_CONSOLE (MEM_FLOW, "\t\tStore MPState Dependent Memory Timings in PMU Msg Block\n");
+          MemNPopulatePmuSramTimingsD3CZ (NBPtr);
+        }
+
+        MemNPopulatePmuSramConfigD3CZ (NBPtr);
+        MemNSetPmuSequenceControlCZ (NBPtr);
+        IEM_INSERT_CODE (IEM_BEFORE_PMU_MSG_BLOCK_WRITE, IemBeforePmuSramMsgBlockWriteCZ, (NBPtr));
+        if (MemNWritePmuSramMsgBlockCZ (NBPtr) == FALSE) {
+          IDS_HDT_CONSOLE (MEM_FLOW, "\t\tNot able to load the PMU SRAM Message Block in to DMEM\n");
+          // Not able to load the PMU SRAM Message Block in to DMEM.  Log an event.
+          PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_LOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
+          return AGESA_FATAL;
+        }
+
+        // Query for the calibrate completion.
+        MemNPendOnPhyCalibrateCompletionCZ (NBPtr);
+
+        MemNStartPmuNb (NBPtr);
+      }
+    }
+
+    IDS_HDT_CONSOLE (MEM_STATUS, "\n\tWait for PMU Complete on all channels\n");
+    for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
+      MemNSwitchDCTNb  (NBPtr, Dct);
+      if (NBPtr->DCTPtr->Timings.DctMemSize != 0) {
+        IDS_HDT_CONSOLE (MEM_STATUS, "\t\tDct %d\n", Dct);
+        if (MemNPendOnPmuCompletionNb (NBPtr) == FALSE) {
+          PutEventLog (AGESA_FATAL, MEM_ERROR_PMU_TRAINING, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
+          AGESA_TESTPOINT (TpProcMemPmuFailed, &(MemMainPtr->MemPtr->StdHeader));
+
+          IDS_OPTION_HOOK (IDS_MEM_ERROR_RECOVERY, &ErrorRecovery, &(MemMainPtr->MemPtr->StdHeader));
+          if (ErrorRecovery) {
+            IDS_HDT_CONSOLE (MEM_FLOW, "Chipselects that PMU failed training %x\n",MemNGetBitFieldNb (NBPtr, PmuTestFail));
+            NBPtr->DCTPtr->Timings.CsTrainFail = (UINT16) MemNGetBitFieldNb (NBPtr, PmuTestFail);
+            NBPtr->MCTPtr->ChannelTrainFail |= (UINT32)1 << Dct;
+          } else {
+            IDS_OPTION_HOOK (IDS_MEM_IGNORE_ERROR, &IgnoreErr, &(MemMainPtr->MemPtr->StdHeader));
+            if (!(IgnoreErr)) {
+              ASSERT (FALSE);
+              return AGESA_FATAL;
+            }
+          }
+        }
+        IDS_HDT_CONSOLE (MEM_STATUS, "\t\tPMU Finished\n");
+
+        // Set calibration rate.
+        // 2.10.10.2.8.3 Auto Calibration
+        MemNRateOfPhyCalibrateCZ (NBPtr);
+      }
+    }
+    IDS_HDT_CONSOLE (MEM_FLOW, "\nPMU Based Training complete\n");
+  }
+  //----------------------------------------------------------------
+  //  De-allocate the PMU SRAM Message Block buffer.
+  //----------------------------------------------------------------
+  IDS_HDT_CONSOLE (MEM_FLOW, "\nDe-allocate PMU SRAM Message Block buffer\n");
+  if (MemNPostPmuSramMsgBlockCZ (NBPtr) == FALSE) {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\tNot able to free the PMU SRAM Message Block buffer\n");
+    // Not able to free the PMU SRAM Message Block buffer.  Log an event.
+    PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_DEALLOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
     return AGESA_FATAL;
   }
-
-  for (PmuImage = 0; PmuImage < NBPtr->PmuFirmwareImageTableSize; PmuImage++) {
-    //
-    // Load PMU Firmware Image
-    //
-    NBPtr->PmuFirmwareImage = PmuImage;
-    //
-    // Check PMU Firmware Image
-    //
-    if (MemNCheckPmuFirmwareImageCZ (NBPtr)) {
-      NBPtr->FeatPtr->LoadPmuFirmware (NBPtr);
-      for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
-        MemNSwitchDCTNb  (NBPtr, Dct);
-        if (NBPtr->DCTPtr->Timings.DctMemSize != 0) {
-          IDS_HDT_CONSOLE (MEM_STATUS, "\n\tDct %d\n", Dct);
-          for (MemPstate = LowestMemPstate; MemPstate >= 0; MemPstate--) {
-            // When memory pstate is enabled, this loop will goes through M1 first then M0
-            // Otherwise, this loop only goes through M0.
-            IDS_HDT_CONSOLE (MEM_FLOW, "\t\t");
-            MemNSwitchMemPstateCZ (NBPtr, MemPstate);
-
-            IDS_HDT_CONSOLE (MEM_FLOW, "\t\tStore MPState Dependent Memory Timings in PMU Msg Block\n");
-            MemNPopulatePmuSramTimingsD3CZ (NBPtr);
-          }
-
-          MemNPopulatePmuSramConfigD3CZ (NBPtr);
-          MemNSetPmuSequenceControlD3CZ (NBPtr);
-          IEM_INSERT_CODE (IEM_BEFORE_PMU_MSG_BLOCK_WRITE, IemBeforePmuSramMsgBlockWriteCZ, (NBPtr));
-          if (MemNWritePmuSramMsgBlockCZ (NBPtr) == FALSE) {
-            IDS_HDT_CONSOLE (MEM_FLOW, "\t\tNot able to load the PMU SRAM Message Block in to DMEM\n");
-            // Not able to load the PMU SRAM Message Block in to DMEM.  Log an event.
-            PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_LOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
-            return AGESA_FATAL;
-          }
-
-          // Query for the calibrate completion.
-          MemNPendOnPhyCalibrateCompletionCZ (NBPtr);
-
-          MemNStartPmuNb (NBPtr);
-        }
-      }
-
-      IDS_HDT_CONSOLE (MEM_STATUS, "\n\tWait for PMU Complete on all channels\n");
-      for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
-        MemNSwitchDCTNb  (NBPtr, Dct);
-        if (NBPtr->DCTPtr->Timings.DctMemSize != 0) {
-          IDS_HDT_CONSOLE (MEM_STATUS, "\t\tDct %d\n", Dct);
-          //
-          // Wait for PMU Completion
-          //
-          PmuResult = MemNPendOnPmuCompletionNb (NBPtr);
-          //
-          // Update PMU Message block from SRAM
-          //
-          MemNReadPmuSramMsgBlockCZ (NBPtr);
-          if (PmuResult == FALSE) {
-            //
-            // PMU Training Failure
-            //
-            AGESA_TESTPOINT (TpProcMemPmuFailed, &(MemMainPtr->MemPtr->StdHeader));
-            CSTestFail = ((PMU_SRAM_MSG_BLOCK_CZ*)NBPtr->PsPtr->PmuSramMsgBlockPtr)->CsTestFail;
-            NBPtr->MCTPtr->ChannelTrainFail |= (UINT32)1 << Dct;
-            IDS_HDT_CONSOLE (MEM_FLOW, "\n\t\tPMU Training Failure. CSTestFail[CS7:CS0] = %x\n", CSTestFail);
-            PutEventLog (AGESA_FATAL, MEM_ERROR_PMU_TRAINING, 0, 0, Dct, CSTestFail, &(MemMainPtr->MemPtr->StdHeader));
-            if (!NBPtr->MemPtr->ErrorHandling (NBPtr->MCTPtr, Dct, CSTestFail, &(MemMainPtr->MemPtr->StdHeader))) {
-              ASSERT (FALSE);
-            }
-          } // MemNPendOnPmuCompletionNb
-          IDS_HDT_CONSOLE (MEM_STATUS, "\t\tPMU Finished\n");
-          // Set calibration rate.
-          // 2.10.10.2.8.3 Auto Calibration
-          MemNRateOfPhyCalibrateCZ (NBPtr);
-        } // Dct Memsize
-      } // Wait all channels
-    } // Check PMU Firmware Image
-  }
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nPMU Based Training complete\n");
 
   //----------------------------------------------------------------
   // Disable chipselects that failed training
@@ -713,6 +727,7 @@ MemMD3FlowCZ (
   IDS_HDT_CONSOLE (MEM_FLOW, "Allocate C6 and ACP Engine Storage\n");
   MemNAllocateC6AndAcpEngineStorageCZ (NBPtr);
 
+
   //----------------------------------------------------------------
   // UMA Allocation & UMAMemTyping
   //----------------------------------------------------------------
@@ -763,17 +778,6 @@ MemMD3FlowCZ (
   IDS_HDT_CONSOLE (MEM_FLOW, "S3 Save\n");
   if (!MemMS3Save (MemMainPtr)) {
     return AGESA_CRITICAL;
-  }
-
-  //----------------------------------------------------------------
-  //  De-allocate the PMU SRAM Message Block buffer.
-  //----------------------------------------------------------------
-  IDS_HDT_CONSOLE (MEM_FLOW, "\nDe-allocate PMU SRAM Message Block buffer\n");
-  if (MemNPostPmuSramMsgBlockCZ (NBPtr) == FALSE) {
-    IDS_HDT_CONSOLE (MEM_FLOW, "\tNot able to free the PMU SRAM Message Block buffer\n");
-    // Not able to free the PMU SRAM Message Block buffer.  Log an event.
-    PutEventLog (AGESA_FATAL, MEM_ERROR_HEAP_DEALLOCATE_FOR_PMU_SRAM_MSG_BLOCK, 0, 0, 0, 0, &(MemMainPtr->MemPtr->StdHeader));
-    return AGESA_FATAL;
   }
 
   //----------------------------------------------------------------

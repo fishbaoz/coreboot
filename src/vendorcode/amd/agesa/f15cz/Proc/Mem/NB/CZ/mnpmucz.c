@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 316426 $ @e \$Date: 2015-04-08 14:51:16 +0800 (Wed, 08 Apr 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -77,9 +77,7 @@
  */
 
 #include "AGESA.h"
-#include "amdlib.h"
 #include "Ids.h"
-#include "cpuRegisters.h"
 #include "mm.h"
 #include "mn.h"
 #include "mu.h"
@@ -87,7 +85,7 @@
 #include "mtsdi3.h"
 #include "mnreg.h"
 #include "mnpmu.h"
-#include "mnPmuFirmwareCZ.h"
+#include "mnPmuFirmwareD3cz.h"
 #include "Filecode.h"
 #include "heapManager.h"
 #include "mnPmuSramMsgBlockCZ.h"
@@ -119,6 +117,17 @@ RDATA_GROUP (G3_DXE)
  *----------------------------------------------------------------------------
  */
 
+VOID
+STATIC
+MemNLoadPmuFirmwareImage0CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
+
+VOID
+STATIC
+MemNLoadPmuFirmwareImage1CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  );
 /*----------------------------------------------------------------------------
  *                            EXPORTED FUNCTIONS
  *
@@ -128,41 +137,98 @@ RDATA_GROUP (G3_DXE)
 /* -----------------------------------------------------------------------------*/
 /**
  *
- *     This function populates the Base DRAM Configuration common to all DRAM
- *      types for the purpose of passing to PMU SRAM
+ *     This function set the PMU sequence control for DRAM training
  *
  *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
  *
  */
 
 VOID
-MemNPopulatePmuSramConfigCZ (
+MemNSetPmuSequenceControlCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
+  LOCATE_HEAP_PTR LocHeap;
+  PMU_SRAM_MSG_BLOCK_CZ *PmuSramMsgBlockPtr;
+
+  LocHeap.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
+
+  if (HeapLocateBuffer (&LocHeap, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
+    ASSERT(FALSE); // Could not locate heap for PMU SRAM Message Block buffer.
+  }
+
+  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) LocHeap.BufferPtr;
+
+  // Both images get program with same sequenceCtl, each image would ignore the ones that did not apply to it.
+  if (NBPtr->RefPtr->PmuTrainMode == PMU_TRAIN_1D) {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tPMU 1D Training\n");
+    // [0] 1=DevInit [1] 1=WrLvl Training, [2] 1=RxEnDly Training, [3] 1=1D Rd-Dqs Training, [4] 1=1D Wr-Dq Training.
+    PmuSramMsgBlockPtr->SequenceCtl = 0x1F;
+  } else if (NBPtr->RefPtr->PmuTrainMode == PMU_TRAIN_1D_2D_READ) {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tPMU 1D and 2D read Training\n");
+    // [0] 1=DevInit [1] 1=WrLvl Training, [2] 1=RxEnDly Training, [3] 1=1D Rd-Dqs Training, [4] 1=1D Wr-Dq Training, [5] 1=2D Read Training.
+    PmuSramMsgBlockPtr->SequenceCtl = 0x3F;
+  } else if (NBPtr->RefPtr->PmuTrainMode == PMU_TRAIN_1D_2D) {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tPMU 1D and 2D Training\n");
+    // [0] 1=DevInit [1] 1=WrLvl Training, [2] 1=RxEnDly Training, [3] 1=1D Rd-Dqs Training, [4] 1=1D Wr-Dq Training, [5] 1=2D Read Training, [6] 1=2D Write Training.
+    PmuSramMsgBlockPtr->SequenceCtl = 0x7F;
+  } else {
+    IDS_HDT_CONSOLE (MEM_FLOW, "\t\tPMU Train auto\n");
+    if (PmuFirmwareD3Image1CZ.SramSize != PMU_IMAGE_NOT_USEABLE) {
+      // PMU 1D and 2D Training
+      PmuSramMsgBlockPtr->SequenceCtl = 0x7F;
+    } else {
+      // PMU 1D Training
+      PmuSramMsgBlockPtr->SequenceCtl = 0x1F;
+    }
+  }
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *     This function passes to PMU DRAM configuration over PMU SRAM for DDR3 DRAM init and training
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNPopulatePmuSramConfigD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  UINT8 *SpdBufferPtr;
   UINT8 AddrMirror;
   UINT8 i;
+  UINT8 Dimm;
+  UINT8 DramType;
+  UINT8 ModuleType;
+  UINT8  NbPs;
+  LOCATE_HEAP_PTR LocHeap;
   PMU_SRAM_MSG_BLOCK_CZ *PmuSramMsgBlockPtr;
-  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) NBPtr->PsPtr->PmuSramMsgBlockPtr;
+
+  LocHeap.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
+
+  if (HeapLocateBuffer (&LocHeap, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
+    ASSERT(FALSE); // Could not locate heap for PMU SRAM Message Block buffer.
+  }
+
+  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) LocHeap.BufferPtr;
   //
   //  Enable MTEST signal for debug
   //
   DEBUG_CODE (
-    PmuSramMsgBlockPtr->MsgMisc = 0x01;
+    PmuSramMsgBlockPtr->Reserved0 = 0x01;
   )
-
-  PmuSramMsgBlockPtr->TableRevision = 5;
+  // Starting from Revision 1, CZ SMB supports MstateEn.
+  PmuSramMsgBlockPtr->Revision = 1;
   PmuSramMsgBlockPtr->CpuId = MemNGetBitFieldNb (NBPtr, RegCpuid);
-  PmuSramMsgBlockPtr->CsPresent = (UINT8) NBPtr->DCTPtr->Timings.CsPresent;
-  //
-  // PerRankTiming
-  //
-  if (MemNGetBitFieldNb (NBPtr, BFPerRankTimingEn) == 1) {
-    PmuSramMsgBlockPtr->DctCfg |= SMB_PER_RANK_TMG;
-  }
-  //
-  // Address Mirror
-  //
+  PmuSramMsgBlockPtr->ChipSelect = (UINT8) NBPtr->DCTPtr->Timings.CsPresent;
+
+  //F2xA8[PerRankTiming] = 0
+  PmuSramMsgBlockPtr->PerRankTiming = 0;
+
   AddrMirror = 0;
   for (i = 0; i < 8; i++) {
     if (((i & 1) != 0) && ((NBPtr->DCTPtr->Timings.DimmMirrorPresent & (1 << (i >> 1))) != 0)) {
@@ -171,14 +237,49 @@ MemNPopulatePmuSramConfigCZ (
   }
 
   PmuSramMsgBlockPtr->AddrMirror = AddrMirror;
-  //
-  // Dram Type / Module Type
-  //
-  PmuSramMsgBlockPtr->DramType = NBPtr->PsPtr->SpdDramType;
-  PmuSramMsgBlockPtr->ModuleType = NBPtr->PsPtr->SpdModuleType;
-  //
+
+  DramType = 0;
+  ModuleType = 0;
+  for (Dimm = 0; Dimm < 2; Dimm++) {
+    if (NBPtr->TechPtr->GetDimmSpdBuffer (NBPtr->TechPtr, &SpdBufferPtr, Dimm)) {
+      DramType = SpdBufferPtr[2];
+      ModuleType = SpdBufferPtr[3];
+
+      if (Dimm == 0) {
+        PmuSramMsgBlockPtr->RawCard0 = SpdBufferPtr[62];
+        PmuSramMsgBlockPtr->Dimm0Rows =  ((SpdBufferPtr[5] >> 3) & 0x7) + 12;
+        PmuSramMsgBlockPtr->Dimm0Cols = (SpdBufferPtr[5] & 0x7) + 9;
+        PmuSramMsgBlockPtr->Dimm0Banks = ((SpdBufferPtr[4] >> 4) & 0x7) + 3;
+      } else {
+        PmuSramMsgBlockPtr->RawCard1 = SpdBufferPtr[62];
+        PmuSramMsgBlockPtr->Dimm1Rows =  ((SpdBufferPtr[5] >> 3) & 0x7) + 12;
+        PmuSramMsgBlockPtr->Dimm1Cols = (SpdBufferPtr[5] & 0x7) + 9;
+        PmuSramMsgBlockPtr->Dimm1Banks = ((SpdBufferPtr[4] >> 4) & 0x7) + 3;
+      }
+    }
+  }
+
+  PmuSramMsgBlockPtr->DramType = DramType;
+  PmuSramMsgBlockPtr->ModuleType = ModuleType;
+
+  // M1StateEn = 0000b when Memory P-states are disabled
+  PmuSramMsgBlockPtr->M1StateEn = 0;
+
+  // SMBx4B[M1stateEn[3:0]]
+  // Bit 0 is for NbP0
+  // Bit 1 is for NbP1
+  // Bit 2 is for NbP2
+  // Bit 3 is for NbP3
+  // For each bit
+  // 1=M1 is used for that NbPstate
+  // 0=M0 is used for that NbPstate
+  if (MemNGetBitFieldNb (NBPtr, BFMemPstateDis) == 0) {
+    for (NbPs = 0; NbPs < 4; ++NbPs) {
+      PmuSramMsgBlockPtr->M1StateEn |= (MemNGetBitFieldNb (NBPtr, BFMemPstate0 + NbPs) << NbPs);
+    }
+  }
+
   // Bit 7 of ModuleType of byte offset 9 in the SMB is the ECC train bit.
-  //
   if (NBPtr->RefPtr->EnableEccFeature && NBPtr->MCTPtr->Status[SbEccDimms]) {
     PmuSramMsgBlockPtr->ModuleType |= PMU_TRAINS_ECC_LANES;
   }
@@ -187,7 +288,7 @@ MemNPopulatePmuSramConfigCZ (
 /* -----------------------------------------------------------------------------*/
 /**
  *
- *     This function passes to PMU DRAM timings over PMU SRAM for DRAM init and training.
+ *     This function passes to PMU DRAM timings over PMU SRAM for DDR3 DRAM init and training.
  *     Timings are MemPstate dependent.
  *
  *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
@@ -195,17 +296,81 @@ MemNPopulatePmuSramConfigCZ (
  */
 
 VOID
-MemNPopulatePmuSramTimingsCZ (
+MemNPopulatePmuSramTimingsD3CZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
+  UINT32 Mr0;
+  UINT32 Mr1;
+  UINT32 Mr2;
+  UINT16 *MiniMaxTrfc;
+  UINT16 Trfc;
+  UINT8  j;
+  LOCATE_HEAP_PTR LocHeap;
   PMU_SRAM_MSG_BLOCK_CZ *PmuSramMsgBlockPtr;
-  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) NBPtr->PsPtr->PmuSramMsgBlockPtr;
-  //
-  // 2T Timing Mode
-  //
-  PmuSramMsgBlockPtr->DctCfg |= (NBPtr->ChannelPtr->SlowMode) ? SMB_2T_TMG : 0;
 
+  LocHeap.BufferHandle = AMD_MEM_PMU_SRAM_MSG_BLOCK_HANDLE;
+
+  if (HeapLocateBuffer (&LocHeap, &(NBPtr->MemPtr->StdHeader)) != AGESA_SUCCESS) {
+    ASSERT(FALSE); // Could not locate heap for PMU SRAM Message Block buffer.
+  }
+
+  PmuSramMsgBlockPtr = (PMU_SRAM_MSG_BLOCK_CZ *) LocHeap.BufferPtr;
+
+
+  if (NBPtr->MemPstate == 0) {
+    PmuSramMsgBlockPtr->TRP_M0 = (UINT8) MemNGetBitFieldNb (NBPtr, BFTrp);
+    PmuSramMsgBlockPtr->TMRD_M0 = (UINT8) MemNGetBitFieldNb (NBPtr, BFTmrd);
+    PmuSramMsgBlockPtr->SlowAccessMode_M0 = (NBPtr->ChannelPtr->SlowMode) ? 1 : 0;
+    PmuSramMsgBlockPtr->CkeSetup_M0 = (UINT8) (NBPtr->ChannelPtr->DctAddrTmg & 0xFF);
+    PmuSramMsgBlockPtr->CsOdtSetup_M0 = (UINT8) ((NBPtr->ChannelPtr->DctAddrTmg >> 8) & 0xFF);
+    PmuSramMsgBlockPtr->AddrCmdSetup_M0 = (UINT8) ((NBPtr->ChannelPtr->DctAddrTmg >> 16) & 0xFF);
+  } else {
+    PmuSramMsgBlockPtr->TRP_M1 = (UINT8) MemNGetBitFieldNb (NBPtr, BFTrp);
+    PmuSramMsgBlockPtr->TMRD_M1 = (UINT8) MemNGetBitFieldNb (NBPtr, BFTmrd);
+    PmuSramMsgBlockPtr->SlowAccessMode_M1 = (NBPtr->ChannelPtr->SlowModePs1) ? 1 : 0;
+    PmuSramMsgBlockPtr->CkeSetup_M1 = (UINT8) (NBPtr->ChannelPtr->DctAddrTmgPs1 & 0xFF);
+    PmuSramMsgBlockPtr->CsOdtSetup_M1 = (UINT8) ((NBPtr->ChannelPtr->DctAddrTmgPs1 >> 8) & 0xFF);
+    PmuSramMsgBlockPtr->AddrCmdSetup_M1 = (UINT8) ((NBPtr->ChannelPtr->DctAddrTmgPs1 >> 16) & 0xFF);
+  }
+
+  MiniMaxTrfc = &NBPtr->DCTPtr->Timings.Trfc0;
+  Trfc = 0;
+  for (j = 0; j < 4; j++) {
+    if (Trfc < MiniMaxTrfc[j]) {
+      Trfc = MiniMaxTrfc[j];
+    }
+  }
+
+  if (NBPtr->MemPstate == 0) {
+    PmuSramMsgBlockPtr->TRFC_M0 = (UINT8)MemUnsToMemClk (NBPtr->DCTPtr->Timings.TargetSpeed, Trfc);
+  } else {
+    PmuSramMsgBlockPtr->TRFC_M1 = (UINT8)MemUnsToMemClk (DDR667_FREQUENCY, Trfc);
+  }
+
+  Mr0 = (UINT16) MemNGetBitFieldNb (NBPtr, BFMxMr0);
+  Mr1 = (UINT16) MemNGetBitFieldNb (NBPtr, BFMxMr1);
+  Mr2 = (UINT16) MemNGetBitFieldNb (NBPtr, BFMxMr2);
+
+  // Program MrsAddress[8]=1 (DLL):DLL reset for PMU init.
+  Mr0 |= 1 << 8;
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMR0 %04x\n", Mr0);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMR1 %04x\n", Mr1);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\tMR2 %04x\n", Mr2);
+
+  if (NBPtr->MemPstate == 0) {
+    PmuSramMsgBlockPtr->MR0_M0 =  (UINT16) Mr0;
+    PmuSramMsgBlockPtr->MR1_M0 =  (UINT16) Mr1;
+    PmuSramMsgBlockPtr->MR2_M0 =  (UINT16) Mr2;
+  } else {
+    PmuSramMsgBlockPtr->MR0_M1 =  (UINT16) Mr0;
+    PmuSramMsgBlockPtr->MR1_M1 =  (UINT16) Mr1;
+    PmuSramMsgBlockPtr->MR2_M1 =  (UINT16) Mr2;
+  }
+
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tMR0 %04x\n", Mr0);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tMR1 %04x\n", Mr1);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\t\t\tMR2 %04x\n", Mr2);
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -223,7 +388,37 @@ MemNLoadPmuFirmwareCZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
-  MemNLoadPmuFirmwareImageCZ (NBPtr);
+  if (NBPtr->PmuFirmwareImage == 0) {
+    MemNLoadPmuFirmwareImage0CZ (NBPtr);
+  } else {
+    MemNLoadPmuFirmwareImage1CZ (NBPtr);
+  }
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *    Determine the number of PMU images will be use.
+ *
+ *
+ *     @param[in,out]   *NBPtr     - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+UINT8
+MemNNumberOfPmuFirmwareImageCZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  UINT8 result;
+
+  if ((PmuFirmwareD3Image1CZ.SramSize == PMU_IMAGE_NOT_USEABLE) || (NBPtr->RefPtr->PmuTrainMode == PMU_TRAIN_1D)) {
+    result = PMU_IMAGE_MIN_CZ;
+  } else {
+    result = PMU_IMAGE_MAX_CZ;
+  }
+
+  return result;
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -254,48 +449,7 @@ MemNDisablePmuCZ (
 /* -----------------------------------------------------------------------------*/
 /**
  *
- *    Checks whether PMU Firmware Image Should be run
- *
- *
- *     @param[in,out]   *NBPtr     - Pointer to the MEM_NB_BLOCK
- *
- *     Returns: TRUE - Image Should be run
- *              FLASE - Image Should not be run
- *
- */
-
-BOOLEAN
-MemNCheckPmuFirmwareImageCZ (
-  IN OUT   MEM_NB_BLOCK *NBPtr
-  )
-{
-  BOOLEAN result;
-  //
-  // Validate Image in table
-  //
-  result = TRUE;
-
-  if (((PMU_FIRMWARE*) NBPtr->PmuFirmwareImageTable)[NBPtr->PmuFirmwareImage].SramSize == PMU_IMAGE_NOT_USEABLE) {
-    //
-    // Unusable image
-    //
-    result = FALSE;
-  }
-  if (NBPtr->PmuFirmwareImage == 1) {
-    //
-    // 2D Training Image (Skip if 1D Mode)
-    //
-    if (NBPtr->RefPtr->PmuTrainMode == PMU_TRAIN_1D) {
-      result = FALSE;
-    }
-  }
-  return result;
-}
-
-/* -----------------------------------------------------------------------------*/
-/**
- *
- *    Load PMU Image to PMU SRAM.
+ *    Load PMU image0 to PMU SRAM.
  *
  *
  *     @param[in,out]   *NBPtr     - Pointer to the MEM_NB_BLOCK
@@ -303,31 +457,20 @@ MemNCheckPmuFirmwareImageCZ (
  */
 
 VOID
-MemNLoadPmuFirmwareImageCZ (
+STATIC
+MemNLoadPmuFirmwareImage0CZ (
   IN OUT   MEM_NB_BLOCK *NBPtr
   )
 {
-  UINT8 PmuFirmwareImage;
-  PMU_FIRMWARE *PmuFirmwareImagePtr;
   UINT16 i;
   UINT8 Dct;
 
   // Sanity check the size of the PMU SRAM
   ASSERT (PMU_SRAM_DMEM_SIZE_CZ <= PMU_SRAM_DMEM_SIZE_MAX);
   ASSERT (PMU_SRAM_IMEM_SIZE_CZ <= PMU_SRAM_IMEM_SIZE_MAX);
-  // Check the FW Image Table Pointer
-  ASSERT (NBPtr->PmuFirmwareImage < PMU_IMAGE_MAX_CZ);
-
-  PmuFirmwareImage = NBPtr->PmuFirmwareImage;
-  PmuFirmwareImagePtr = &((PMU_FIRMWARE*) NBPtr->PmuFirmwareImageTable)[PmuFirmwareImage];
 
   for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
     MemNSwitchDCTNb  (NBPtr, Dct);
-    if (PmuFirmwareImage > 0) {
-      // Program D18F2x9C_x0002_0099_dct[3:0][PmuReset,PmuStall] = 1,1.
-      // Program D18F2x9C_x0002_000E_dct[3:0][PhyDisable]=0. Tester_mode=0.
-      MemNPmuResetNb (NBPtr);
-    }
     MemNSetBitFieldNb (NBPtr, BFPmuReset, 0);
   }
   // Switch back to Dct 0
@@ -337,24 +480,83 @@ MemNLoadPmuFirmwareImageCZ (
   MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 1);
 
   // Write the word to D18F2x9C_x0005_[BFF:0000]_dct[3:0] and using the autoincrement feature.
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Data Image %d to DMEM\n", PmuFirmwareImage);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Data image0 to DMEM\n");
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, PMU_FIRMWARE_SRAM_START | DCT_ACCESS_WRITE | DCT_OFFSET_AUTO_INC_EN | PMU_SRAM_DMEM_OFFSET);
 
-  for (i = 0; i < PMU_SRAM_DMEM_SIZE_CZ / sizeof (PmuFirmwareImagePtr->SramDataImage[0]); i++) {
-    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareImagePtr->SramDataImage[i]);
+  for (i = 0; i < PMU_SRAM_DMEM_SIZE_CZ / sizeof (PmuFirmwareD3Image0CZ.SramDataImage[0]); i++) {
+    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareD3Image0CZ.SramDataImage[i]);
   }
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
 
   // Write the word to D18F2x9C_x0005_[5BFF:4000]_dct[3:0] and using the autoincrement feature.
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Code Image %d to IMEM\n", PmuFirmwareImage);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Code image0 to IMEM\n");
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, PMU_FIRMWARE_SRAM_START | DCT_ACCESS_WRITE | DCT_OFFSET_AUTO_INC_EN | PMU_SRAM_IMEM_OFFSET);
-  for (i = 0; i < PMU_SRAM_IMEM_SIZE_CZ / sizeof (PmuFirmwareImagePtr->SramCodeImage[0]); i++) {
-    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareImagePtr->SramCodeImage[i]);
+  for (i = 0; i < PMU_SRAM_IMEM_SIZE_CZ / sizeof (PmuFirmwareD3Image0CZ.SramCodeImage[0]); i++) {
+    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareD3Image0CZ.SramCodeImage[i]);
   }
 
   MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
   // Disable DCT broadcast
   MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tPMU firmware revision %x is loaded successfully!\n", ((PMU_SRAM_MSG_BLOCK_CZ*)&PmuFirmwareImagePtr->SramDataImage)->PmuRevision) ;
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tPMU firmware revision %x is loaded successfully!\n", MemNGetBitFieldNb (NBPtr, PmuFirmwareRev));
+}
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *    Load PMU image1 to PMU SRAM.
+ *
+ *
+ *     @param[in,out]   *NBPtr     - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+STATIC
+MemNLoadPmuFirmwareImage1CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  UINT16 i;
+  UINT8 Dct;
+
+  // Sanity check the size of the PMU SRAM
+  ASSERT (PMU_SRAM_DMEM_SIZE_CZ <= PMU_SRAM_DMEM_SIZE_MAX);
+  ASSERT (PMU_SRAM_IMEM_SIZE_CZ <= PMU_SRAM_IMEM_SIZE_MAX);
+
+  for (Dct = 0; Dct < NBPtr->DctCount; Dct++) {
+    MemNSwitchDCTNb  (NBPtr, Dct);
+    // Program D18F2x9C_x0002_0099_dct[3:0][PmuReset,PmuStall] = 1,1.
+    // Program D18F2x9C_x0002_000E_dct[3:0][PhyDisable]=0. Tester_mode=0.
+    MemNPmuResetNb (NBPtr);
+
+    MemNSetBitFieldNb (NBPtr, BFPmuReset, 0);
+  }
+  // Switch back to Dct 0
+  MemNSwitchDCTNb  (NBPtr, 0);
+
+  // Set DctCfgBcEn to broadcast to all enabled DCTs
+  MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 1);
+
+  // Write the word to D18F2x9C_x0005_[BFF:0000]_dct[3:0] and using the autoincrement feature.
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Data image1 to DMEM\n");
+  MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, PMU_FIRMWARE_SRAM_START | DCT_ACCESS_WRITE | DCT_OFFSET_AUTO_INC_EN | PMU_SRAM_DMEM_OFFSET);
+
+  for (i = 0; i < PMU_SRAM_DMEM_SIZE_CZ / sizeof (PmuFirmwareD3Image1CZ.SramDataImage[0]); i++) {
+    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareD3Image1CZ.SramDataImage[i]);
+  }
+  MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
+
+  // Write the word to D18F2x9C_x0005_[5BFF:4000]_dct[3:0] and using the autoincrement feature.
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tLoading PMU Code image1 to IMEM\n");
+  MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, PMU_FIRMWARE_SRAM_START | DCT_ACCESS_WRITE | DCT_OFFSET_AUTO_INC_EN | PMU_SRAM_IMEM_OFFSET);
+  for (i = 0; i < PMU_SRAM_IMEM_SIZE_CZ / sizeof (PmuFirmwareD3Image1CZ.SramCodeImage[0]); i++) {
+    MemNSetBitFieldNb (NBPtr, RegDctAddlData, PmuFirmwareD3Image1CZ.SramCodeImage[i]);
+  }
+
+  MemNSetBitFieldNb (NBPtr, RegDctAddlOffset, 0);
+  // Disable DCT broadcast
+  MemNSetBitFieldNb (NBPtr, BFDctCfgBcEn, 0);
+  IDS_HDT_CONSOLE (MEM_FLOW, "\tPMU firmware revision %x is loaded successfully!\n", MemNGetBitFieldNb (NBPtr, PmuFirmwareRev));
 }
 

@@ -8,7 +8,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  PSP
- * @e \$Revision: 310954 $   @e \$Date: 2015-01-14 20:07:16 +0800 (Wed, 14 Jan 2015) $
+ * @e \$Revision: 310954 $   @e \$Date: 2015-01-14 06:07:16 -0600 (Wed, 14 Jan 2015) $
  *
  */
 /*****************************************************************************

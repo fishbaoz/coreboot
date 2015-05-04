@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU/Family/0x16
- * @e \$Revision: 315356 $   @e \$Date: 2015-03-25 14:29:02 +0800 (Wed, 25 Mar 2015) $
+ * @e \$Revision: 311006 $   @e \$Date: 2015-01-15 00:10:23 -0600 (Thu, 15 Jan 2015) $
  *
  */
 /*
@@ -248,7 +248,6 @@ F15InitializeApmWeights (
 
   TaskPtr.FuncAddress.PfApTaskI = ProgramApmWeightsOnAps;
   TaskPtr.DataTransfer.DataSizeInDwords = (UINT16) (sizeof (ApmWeights) >> 2);
-  TaskPtr.ExeFlags = WAIT_FOR_CORE;
   TaskPtr.DataTransfer.DataPtr = ApmWeights;
   TaskPtr.DataTransfer.DataTransferFlags = 0;
 

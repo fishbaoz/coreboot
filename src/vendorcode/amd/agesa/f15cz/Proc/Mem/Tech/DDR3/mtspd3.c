@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Tech/DDR3)
- * @e \$Revision: 314626 $ @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+ * @e \$Revision: 313738 $ @e \$Date: 2015-02-26 01:57:11 -0600 (Thu, 26 Feb 2015) $
  *
  **/
 /*****************************************************************************
@@ -199,7 +199,6 @@ MemTDIMMPresence3 (
   MEM_NB_BLOCK *NBPtr;
   BOOLEAN SPDCtrl;
   UINT8 Devwidth;
-  UINT8 BaseModuleType;
   UINT8 MaxDimms;
   UINT8 NumDimmslots;
   UINT8 Value8;
@@ -241,7 +240,6 @@ MemTDIMMPresence3 (
           if (SpdBufferPtr[SPD_TYPE] == JED_DDR3SDRAM) {
             ChannelPtr->ChDimmValid |= DimmMask;
             MCTPtr->DimmValid |= DimmMask;
-            NBPtr->PsPtr->SpdDramType = JED_DDR3SDRAM;
           } else if (NBPtr->IsSupported[G5DimmInD3Socket]) {
             // If a non-DDR3 DIMM is installed, mark all DIMMs of that channel as not present
             MCTPtr->DimmPresent &= ~((UINT32) 0xFF << Dct);
@@ -269,9 +267,7 @@ MemTDIMMPresence3 (
           //
           //  Check module type information.
           //
-          BaseModuleType = SpdBufferPtr[SPD_DIMM_TYPE];
-          NBPtr->PsPtr->SpdModuleType = BaseModuleType;
-          if (BaseModuleType == JED_LRDIMM) {
+          if (SpdBufferPtr[SPD_DIMM_TYPE] == JED_LRDIMM) {
             //
             // LRDIMMS
             //
@@ -420,12 +416,6 @@ MemTDIMMPresence3 (
           // Auto Self Refresh
           if ((SpdBufferPtr[SPD_THERMAL_OPTIONS] & ASR_MASK) != 0) {
             ChannelPtr->DimmASRPresent |= DimmMask;
-          }
-          //
-          // Check for an On-DIMM Thermal Sensor
-          //
-          if (((SpdBufferPtr[SPD_THERMAL_SENSOR] >> THERMAL_SENSOR_SHIFT) & THERMAL_SENSOR_MASK) != 0) {
-            ChannelPtr->DimmThermSensorPresent |= DimmMask;
           }
           //
           // Get byte62: Reference Raw Card information
@@ -997,23 +987,26 @@ MemTSPDSetBanks3 (
  *
  *      This function returns the low bit that will be swapped to enable CS interleaving
  *
- *     @param[in,out] *TechPtr   - Pointer to the MEM_TECH_BLOCK
- *     @param[in]    BankAddrMap - AddrMap Bank encoding from F2x80
- *     @param[in]        *LowBit - pointer to low bit
- *     @param[in]        *HiBit  - pointer hight bit
+ *     @param[in]   BankEnc - AddrMap Bank encoding from F2x80
+ *     @param[in]   *LowBit - pointer to low bit
+ *     @param[in]   *HiBit  - pointer hight bit
  *
  */
 
 VOID
 MemTGetCSIntLvAddr3 (
-  IN OUT   MEM_TECH_BLOCK *TechPtr,
-  IN       UINT8 BankAddrMap,
-  OUT   UINT8 *LowBit,
-  OUT   UINT8 *HiBit
+  IN       UINT8 BankEnc,
+     OUT   UINT8 *LowBit,
+     OUT   UINT8 *HiBit
   )
 {
-  TechPtr->NBPtr->GetCSIntLvAddr (TechPtr->NBPtr, BankAddrMap, LowBit, HiBit);
-  return;
+  CONST UINT8 ArrCodesLo[] = {0, 8, 8, 0, 0, 8, 9, 8, 9, 9, 8, 9, 10};
+  CONST UINT8 ArrCodesHi[] = {0, 20, 21, 0, 0, 22, 22, 23, 23, 24, 24, 25, 26};
+  ASSERT (BankEnc < GET_SIZE_OF (ArrCodesLo));
+  ASSERT (BankEnc < GET_SIZE_OF (ArrCodesHi));
+  //  return ArrCodes[BankEnc];
+  *LowBit = ArrCodesLo[BankEnc];
+  *HiBit = ArrCodesHi[BankEnc];
 }
 
 /*----------------------------------------------------------------------------
@@ -1210,10 +1203,8 @@ MemTSPDGetTrcpage3 (
   UINT32 TrcpageMax;
   MEM_NB_BLOCK *NBPtr;
   CH_DEF_STRUCT *ChannelPtr;
-  MEM_PARAMETER_STRUCT *RefPtr;
 
   NBPtr = TechPtr->NBPtr;
-  RefPtr = NBPtr->MemPtr->ParameterListPtr;
 
   TmacInCount = 0;
   TrcpageMax = 0xFF;
@@ -1225,10 +1216,6 @@ MemTSPDGetTrcpage3 (
 
       Tmac = SpdBufferPtr[SPD_MAC] & 0xF;
       Tmaw = (SpdBufferPtr[SPD_MAC] >> 4) & 0x3;
-
-      if (Tmac == 0) {
-        Tmac = (RefPtr->DramMacDefault == 0) ? 8 : RefPtr->DramMacDefault;
-      }
 
       switch (Tmac) {
       case 0:

@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/Main)
- * @e \$Revision: 314626 $ @e \$Date: 2015-03-12 14:12:32 +0800 (Thu, 12 Mar 2015) $
+ * @e \$Revision: 314282 $ @e \$Date: 2015-03-08 04:44:40 -0500 (Sun, 08 Mar 2015) $
  *
  **/
 /*****************************************************************************
@@ -86,7 +86,6 @@
 #include "GeneralServices.h"
 #include "cpuFamilyTranslation.h"
 #include "OptionMemory.h"
-#include "PlatformMemoryConfiguration.h"
 #include "mm.h"
 #include "mn.h"
 #include "mt.h"
@@ -175,8 +174,6 @@ AmdMemAuto (
   UINT8 DieCount;
   UINT8 Tab;
   CPU_SPECIFIC_SERVICES *FamilySpecificServices;
-  BOOLEAN TechInstalled;
-  TECHNOLOGY_TYPE *TechTypePtr;
 
   ASSERT (MemPtr != NULL);
 
@@ -194,7 +191,6 @@ AmdMemAuto (
   IDS_HDT_CONSOLE (MEM_FLOW, "\tChannelIntlv : %d\n", MemPtr->ParameterListPtr->EnableChannelIntlv);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tEccFeature : %d\n", MemPtr->ParameterListPtr->EnableEccFeature);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tPowerDown : %d\n", MemPtr->ParameterListPtr->EnablePowerDown);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tMacDefault : %d\n", MemPtr->ParameterListPtr->DramMacDefault);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tExtendedTemperatureRange : %d\n", MemPtr->ParameterListPtr->EnableExtendedTemperatureRange);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tOnLineSpare : %d\n", MemPtr->ParameterListPtr->EnableOnLineSpareCtl);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tParity : %d\n", MemPtr->ParameterListPtr->EnableParity);
@@ -207,14 +203,8 @@ AmdMemAuto (
   IDS_HDT_CONSOLE (MEM_FLOW, "\tSaveMemContextCtl : %d\n", MemPtr->ParameterListPtr->SaveMemContextCtl);
   IDS_HDT_CONSOLE (MEM_FLOW, "\tExternalVrefCtl : %d\n", MemPtr->ParameterListPtr->ExternalVrefCtl );
   IDS_HDT_CONSOLE (MEM_FLOW, "\tForceTrainMode : %d\n", MemPtr->ParameterListPtr->ForceTrainMode );
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tPmuTrainMode : %d\n", MemPtr->ParameterListPtr->PmuTrainMode );
   IDS_HDT_CONSOLE (MEM_FLOW, "\tAMP : %d\n\n", MemPtr->ParameterListPtr->AmpEnable);
-  IDS_HDT_CONSOLE (MEM_FLOW, "\tCustomVddio : %d\n\n", MemPtr->ParameterListPtr->CustomVddioSupport);
 
-  //
-  // Force the DDR Voltage based upon the CustomVDDIO override by platform BIOS prior to calling AmdInitPost
-  //
-  MemPtr->ParameterListPtr->DDRVoltage = MemPtr->ParameterListPtr->CustomVddioSupport;
   //----------------------------------------------------------------------------
   // Get TSC rate, which will be used later in Wait10ns routine
   //----------------------------------------------------------------------------
@@ -298,35 +288,15 @@ AmdMemAuto (
   //----------------------------------------------------------------
   for (Die = 0 ; Die < DieCount ; Die++ ) {
     i = 0;
-    TechInstalled = FALSE;
-    //
-    // Validate the installed Technology
-    //
-    TechTypePtr = (TECHNOLOGY_TYPE *) FindPSOverrideEntry (NBPtr->RefPtr->PlatformMemoryConfiguration, PSO_MEM_TECH, NBPtr[Die].MCTPtr->SocketId, 0, 0, NULL, NULL);
-    if (TechTypePtr != NULL) {
-      //
-      // Run the list of Tech block contructors
-      //
-      while (memTechInstalled[i] != NULL) {
-        if (memTechInstalled[i] (&TechPtr[Die], &NBPtr[Die])) {
-          NBPtr[Die].TechPtr = &TechPtr[Die];
-          TechInstalled = TRUE;
-        }
-        i++;
-      }
-    } else {
-      //
-      // Run only the first Constructor in the list
-      //
+    while (memTechInstalled[i] != NULL) {
       if (memTechInstalled[i] (&TechPtr[Die], &NBPtr[Die])) {
         NBPtr[Die].TechPtr = &TechPtr[Die];
-        TechInstalled = TRUE;
+        break;
       }
+      i++;
     }
-    //
     // Couldn't find a Tech block which supported this family
-    //
-    if (TechInstalled == FALSE) {
+    if (memTechInstalled[i] == NULL) {
       return AGESA_FATAL;
     }
   }

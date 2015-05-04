@@ -1,7 +1,7 @@
 ;*****************************************************************************
 ; AMD Generic Encapsulated Software Architecture
 ;
-;  Workfile: ueficar.inc    $Revision:: 315356  $    $Date:: 2015-03-25 14:29:02 +0800 (Wed, 25 Mar 2015) $
+;  Workfile: ueficar.inc    $Revision:: 309090  $    $Date:: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
 ;
 ; Description: Code to setup and break down UEFI cache-as-stack and heap and
 ; execution cache map.
@@ -119,11 +119,6 @@ ENDIF
 ;       STACK_AT_BOTTOM (default)
 ;              Indicate stack is at the bottom of cache as RAM.
 ;
-;       BspStackSize (default: STACK_SIZE_64K)
-;              could be STACK_SIZE_64K, STACK_SIZE_128K, STACK_SIZE_192K, STACK_SIZE_256K
-;              N O T E: BspStackSize must be the same as the one in PspPlatformDriver.c (RESUME_BSP_STACK_SIZE)
-;
-;
 ;   In:
 ;       EAX  = BIST value collected after reset by host env
 ;       EBX  = Return address (preserved)
@@ -194,7 +189,7 @@ ENDIF
 ;           o A processor's stack and heap are contiguous, with stack on 'top'.
 ;
 ;======================================================================
-AMD_ENABLE_UEFI_STACK MACRO StackPosition, BspStackSize
+AMD_ENABLE_UEFI_STACK MACRO StackPosition
     ;local   AmdEnableUefiStackAbort    ; not needed IFF macro (correctly) only used once
 
     movd    mm1, ebp                    ; Save user requested register
@@ -206,13 +201,9 @@ AMD_ENABLE_UEFI_STACK MACRO StackPosition, BspStackSize
     ;   So, use the old stack allocation process for stack, then mimick current UEFI (~v0.9)
     ;   operation to fill in the data stack frame.
     IFNB <StackPosition>
-        IFNB <BspStackSize>
-            AMD_ENABLE_STACK StackPosition, BspStackSize
-        ELSE
-            jmp $ ; W A R N I N G! we only get one parameter
-        ENDIF
+        AMD_ENABLE_STACK StackPosition
     ELSE
-        AMD_ENABLE_STACK STACK_AT_BOTTOM, STACK_SIZE_64K
+        AMD_ENABLE_STACK STACK_AT_BOTTOM
     ENDIF
     cmp     eax, AGESA_SUCCESS          ; Abort if not first entry; future versions will not allow multi-entry
     jne     AmdEnableUefiStackAbort

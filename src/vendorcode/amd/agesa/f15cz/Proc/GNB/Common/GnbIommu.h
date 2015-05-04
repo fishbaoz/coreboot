@@ -8,7 +8,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: GNB
- * @e \$Revision: 316101 $   @e \$Date: 2015-04-03 09:33:53 +0800 (Fri, 03 Apr 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*
@@ -233,62 +233,6 @@ typedef struct {
   UINT64  BlockStart;         ///< IVMD start address
   UINT64  BlockLength;        ///< IVMD memory block length
 } IVRS_IVMD_ENTRY;
-
-/// MMIO Offset 0x30
-typedef union {
-  struct {                                           ///<
-    UINT64                PreFSup:1;                 ///<
-    UINT64                PPRSup:1;                  ///<
-    UINT64                XTSup:1;                   ///<
-    UINT64                NXSup:1;                   ///<
-    UINT64                GTSup:1;                   ///<
-    UINT64                EFRignored:1;              ///<
-    UINT64                IASup:1;                   ///<
-    UINT64                GASup:1;                   ///<
-    UINT64                HESup:1;                   ///<
-    UINT64                PCSup:1;                   ///<
-    UINT64                HATS:2;                    ///<
-    UINT64                GATS:2;                    ///<
-    UINT64                GLXSup:2;                  ///<
-    UINT64                SmiFSup:2;                 ///<
-    UINT64                SmiFRC:3;                  ///<
-    UINT64                GAMSup:3;                  ///<
-    UINT64                Reserved_31_24:8;          ///<
-    UINT64                PASmax:5;                  ///<
-    UINT64                Reserved_63_37:27;         ///<
-  } Field;
-
-  UINT64 Value;
-} MMIO_0x30;
-
-/// MMIO Offset 0x18
-typedef union {
-  struct {                                           ///<
-    UINT64                IommuEn:1;                 ///<
-    UINT64                HtTunEn:1;                 ///<
-    UINT64                Field_7_2:6;               ///<
-    UINT64                PassPW:1;                  ///<
-    UINT64                ResPassPW:1;               ///<
-    UINT64                Coherent:1;                ///<
-    UINT64                Isoc:1;                    ///<
-    UINT64                Field_63_12:52;            ///<
-  } Field;
-
-  UINT64 Value;
-} MMIO_0x18;
-
-/// MMIO Offset 0x4000
-typedef union {
-  struct {                                           ///<
-    UINT64               Reserved_6_0:7;             ///<
-    UINT64               NCounter:4;                 ///<
-    UINT64               Reserved_11:1;              ///<
-    UINT64               NCounterBanks:6;            ///<
-    UINT64               Reserved_63_18:46;          ///<
-  } Field;
-
-  UINT64 Value;
-} MMIO_0x4000;
 
 /// Capability offset 0
 typedef union {

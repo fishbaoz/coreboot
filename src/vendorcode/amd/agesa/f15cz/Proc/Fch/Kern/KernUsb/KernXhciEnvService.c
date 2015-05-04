@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 314087 $   @e \$Date: 2015-03-04 12:03:46 +0800 (Wed, 04 Mar 2015) $
+ * @e \$Revision: 314274 $   @e \$Date: 2015-03-08 03:53:49 -0500 (Sun, 08 Mar 2015) $
  *
  */
 /*;********************************************************************************
@@ -69,7 +69,6 @@
 #include "FchPlatform.h"
 #include "GeneralServices.h"
 #include "KernFch.h"
-#include "Ids.h"
 #include "Filecode.h"
 #define FILECODE PROC_FCH_KERN_KERNUSB_KERNXHCIENVSERVICE_FILECODE
 
@@ -223,9 +222,7 @@ FchXhciUsbPhyCalibrated (
       WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
       ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
       Index++;
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (10, StdHeader);
-      }
+      FchStall (10, StdHeader);
     } while ((RegValue & BIT17) && (Index < 10 ));
     Index = 0;
     do {
@@ -233,9 +230,7 @@ FchXhciUsbPhyCalibrated (
       WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
       ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
       Index++;
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (10, StdHeader);
-      }
+      FchStall (10, StdHeader);
     } while ((RegValue & BIT17) && (Index < 10 ));
     RwXhci0IndReg ( FCH_XHCI_IND60_REG00, 0xFFFFC000, (Port << 13) + BIT12 + DrivingStrength, StdHeader);
   }
@@ -247,13 +242,9 @@ FchXhciUsbPhyCalibrated (
   RwXhci0IndReg ( FCH_XHCI_IND60_REG0C, ~ ((UINT32) (0xff << 24)), ((UINT32) (0x90 << 24)), StdHeader);
   RwXhci0IndReg ( FCH_XHCI_IND60_REG54, ~ ((UINT32) (0x03 << 6)), ((UINT32) (0x01 << 6)), StdHeader);
   RwXhci0IndReg ( FCH_XHCI_IND60_REG54, ~ ((UINT32) (0x01 << 1)), ((UINT32) (0x00 << 1)), StdHeader);
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (200, StdHeader);
-  }
+  FchStall (200, StdHeader);
   RwXhci0IndReg ( FCH_XHCI_IND60_REG54, ~ ((UINT32) (0x01 << 1)), ((UINT32) (0x01 << 1)), StdHeader);
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (400, StdHeader);
-  }
+  FchStall (400, StdHeader);
   RwXhci0IndReg ( FCH_XHCI_IND60_REG54, ~ ((UINT32) (0x01 << 1)), ((UINT32) (0x00 << 1)), StdHeader);
 }
 
@@ -324,9 +315,7 @@ FchXhciInitIndirectReg (
       WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
       ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
       Index++;
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (10, StdHeader);
-      }
+      FchStall (10, StdHeader);
     } while ((RegValue & BIT17) && (Index < 10 ));
     RwXhci0IndReg ( FCH_XHCI_IND60_REG00, ~(UINT32)BIT12, 0, StdHeader);
 
@@ -336,9 +325,7 @@ FchXhciInitIndirectReg (
       WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
       ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
       Index++;
-      IEM_SKIP_CODE (IEM_WAIT) {
-        FchStall (10, StdHeader);
-      }
+      FchStall (10, StdHeader);
     } while ((RegValue & BIT17) && (Index < 10 ));
     RwXhci0IndReg ( FCH_XHCI_IND60_REG00, ~(UINT32)BIT12, BIT12, StdHeader);
   }
@@ -367,9 +354,7 @@ FchXhciInitIndirectReg (
         WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
         ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while ((RegValue & BIT17) && (Index < 10 ));
       RwXhci0IndReg ( FCH_XHCI_IND60_REG00, 0xFFFE0000, (Port << 13) + DrivingStrength, StdHeader);
       Register = FCH_XHCI_IND60_REG00;
@@ -378,9 +363,7 @@ FchXhciInitIndirectReg (
         WritePci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x48, AccessWidth32, &Register, StdHeader);
         ReadPci ((USB_XHCI_BUS_DEV_FUN << 16) + 0x4C, AccessWidth32, &RegValue, StdHeader);
         Index++;
-        IEM_SKIP_CODE (IEM_WAIT) {
-          FchStall (10, StdHeader);
-        }
+        FchStall (10, StdHeader);
       } while ((RegValue & BIT17) && (Index < 10 ));
       RwXhci0IndReg ( FCH_XHCI_IND60_REG00, 0xFFFE0000, (Port << 13) + BIT12 + DrivingStrength, StdHeader);
     }
@@ -503,9 +486,7 @@ FchXhciInitBeforePciInit (
     return;
   }
   RwMem (ACPI_MMIO_BASE + XHCI_BASE + XHCI_ACPI_MMIO_AMD_REG00, AccessWidth32, 0x00090000, 0x00400700);
-  IEM_SKIP_CODE (IEM_WAIT) {
-    FchStall (20, StdHeader);
-  }
+  FchStall (20, StdHeader);
 
   RwPci ((LPC_BUS_DEV_FUN << 16) + FCH_LPC_REGC8 + 3, AccessWidth8, 0x7F, BIT7, StdHeader);
 

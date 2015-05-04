@@ -8,7 +8,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AMD Hudson-2 UEFI Driver
  * @e sub-project   IMC Control Driver
- * @e \$Revision: 309090 $   @e \$Date: 2014-12-10 02:28:05 +0800 (Wed, 10 Dec 2014) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*****************************************************************************

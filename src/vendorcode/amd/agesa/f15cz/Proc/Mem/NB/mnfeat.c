@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB)
- * @e \$Revision: 311790 $ @e \$Date: 2015-01-27 13:03:49 +0800 (Tue, 27 Jan 2015) $
+ * @e \$Revision: 309090 $ @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  **/
 /*****************************************************************************
@@ -458,7 +458,6 @@ MemNContReadPatternUnb (
   // Program the PRBS Seed
   //
   NBPtr->SetBitField (NBPtr, BFDataPrbsSeed, Rrw->DataPrbsSeed);
-  NBPtr->SetBitField (NBPtr, BFDataPatGenSel, Rrw->DataPatGenSel);
   //
   // Set the Command Count
   //
@@ -562,7 +561,6 @@ MemNContWritePatternUnb (
   // Program the PRBS Seed
   //
   NBPtr->SetBitField (NBPtr, BFDataPrbsSeed, Rrw->DataPrbsSeed);
-  NBPtr->SetBitField (NBPtr, BFDataPatGenSel, Rrw->DataPatGenSel);
   //
   // Set the Command Count
   //

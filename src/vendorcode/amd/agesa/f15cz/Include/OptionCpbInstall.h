@@ -10,7 +10,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  Options
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309899 $   @e \$Date: 2014-12-23 02:21:13 -0600 (Tue, 23 Dec 2014) $
  */
 /*****************************************************************************
  *
@@ -79,7 +79,6 @@
  */
 #define OPTION_CPB_FEAT
 #define F15_CZ_CPB_SUPPORT
-#define F15_ST_CPB_SUPPORT
 
 #if OPTION_CPB == TRUE
   #if (AGESA_ENTRY_INIT_EARLY == TRUE) || (AGESA_ENTRY_INIT_LATE == TRUE) || (AGESA_ENTRY_INIT_LATE_RESTORE == TRUE)
@@ -94,16 +93,6 @@
           #undef F15_CZ_CPB_SUPPORT
           #define F15_CZ_CPB_SUPPORT {AMD_FAMILY_15_CZ, &F15CzCpbSupport},
         #endif
-
-        #if (OPTION_FAMILY15H_ST == TRUE)
-          extern CONST CPU_FEATURE_DESCRIPTOR ROMDATA CpuFeatureCpb;
-          #undef OPTION_CPB_FEAT
-          #define OPTION_CPB_FEAT &CpuFeatureCpb,
-          extern CONST CPB_FAMILY_SERVICES ROMDATA F15StCpbSupport;
-          #undef F15_ST_CPB_SUPPORT
-          #define F15_ST_CPB_SUPPORT {AMD_FAMILY_15_ST, &F15StCpbSupport},
-        #endif
-
       #endif
     #endif
   #endif
@@ -111,7 +100,6 @@
 
 CONST CPU_SPECIFIC_SERVICES_XLAT ROMDATA CpbFamilyServiceArray[] =
 {
-  F15_ST_CPB_SUPPORT
   F15_CZ_CPB_SUPPORT
   {0, NULL}
 };

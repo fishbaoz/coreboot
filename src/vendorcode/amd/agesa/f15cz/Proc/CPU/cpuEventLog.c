@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:      AGESA
  * @e sub-project:  CPU
- * @e \$Revision: 311976 $   @e \$Date: 2015-01-29 13:34:44 +0800 (Thu, 29 Jan 2015) $
+ * @e \$Revision: 309090 $   @e \$Date: 2014-12-09 12:28:05 -0600 (Tue, 09 Dec 2014) $
  *
  */
 /*****************************************************************************
@@ -227,53 +227,51 @@ PutEventLog (
   IN       AMD_CONFIG_PARAMS *StdHeader
   )
 {
-  IEM_SKIP_CODE (IEM_EVENT_LOG) {
-    UINT16 Index;
-    AGESA_STRUCT_BUFFER *AgesaEventAlloc;
+  UINT16 Index;
+  AGESA_STRUCT_BUFFER *AgesaEventAlloc;
 
-    IDS_HDT_CONSOLE (MAIN_FLOW, "\n * %s Event: %08x Data: %x, %x, %x, %x\n\n",
-                      (EventClass == AGESA_FATAL)       ? "FATAL"       :
-                      (EventClass == AGESA_CRITICAL)    ? "CRITICAL"    :
-                      (EventClass == AGESA_ERROR)       ? "ERROR"       :
-                      (EventClass == AGESA_WARNING)     ? "WARNING"     :
-                      (EventClass == AGESA_ALERT)       ? "ALERT"       :
-                      (EventClass == AGESA_BOUNDS_CHK)  ? "BOUNDS_CHK"  :
-                      (EventClass == AGESA_UNSUPPORTED) ? "UNSUPPORTED" :
-                      "SUCCESS", EventInfo, DataParam1, DataParam2, DataParam3, DataParam4);
+  IDS_HDT_CONSOLE (MAIN_FLOW, "\n * %s Event: %08x Data: %x, %x, %x, %x\n\n",
+                    (EventClass == AGESA_FATAL)       ? "FATAL"       :
+                    (EventClass == AGESA_CRITICAL)    ? "CRITICAL"    :
+                    (EventClass == AGESA_ERROR)       ? "ERROR"       :
+                    (EventClass == AGESA_WARNING)     ? "WARNING"     :
+                    (EventClass == AGESA_ALERT)       ? "ALERT"       :
+                    (EventClass == AGESA_BOUNDS_CHK)  ? "BOUNDS_CHK"  :
+                    (EventClass == AGESA_UNSUPPORTED) ? "UNSUPPORTED" :
+                    "SUCCESS", EventInfo, DataParam1, DataParam2, DataParam3, DataParam4);
 
-    AgesaEventAlloc = NULL;
-    GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
-    ASSERT (AgesaEventAlloc != NULL);
-    Index = AgesaEventAlloc->WriteRecordPtr;
+  AgesaEventAlloc = NULL;
+  GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
+  ASSERT (AgesaEventAlloc != NULL);
+  Index = AgesaEventAlloc->WriteRecordPtr;
 
-    // Add the new event log data into a circular buffer
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventClass = EventClass;
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventInfo  = EventInfo;
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam1 = DataParam1;
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam2 = DataParam2;
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam3 = DataParam3;
-    AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam4 = DataParam4;
+  // Add the new event log data into a circular buffer
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventClass = EventClass;
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventInfo  = EventInfo;
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam1 = DataParam1;
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam2 = DataParam2;
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam3 = DataParam3;
+  AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam4 = DataParam4;
 
-    if ((AgesaEventAlloc->WriteRecordPtr == AgesaEventAlloc->ReadRecordPtr) &&
-               (AgesaEventAlloc->ReadWriteFlag == 0)) {
-      AgesaEventAlloc->WriteRecordPtr += 1;
-      AgesaEventAlloc->ReadRecordPtr += 1;
-      if (AgesaEventAlloc->WriteRecordPtr == TOTAL_EVENT_LOG_BUFFERS) {
-        AgesaEventAlloc->WriteRecordPtr = 0;
-        AgesaEventAlloc->ReadRecordPtr  = 0;
-      }
-    } else {
-      AgesaEventAlloc->WriteRecordPtr += 1;
-      if (AgesaEventAlloc->WriteRecordPtr == TOTAL_EVENT_LOG_BUFFERS) {
-        AgesaEventAlloc->WriteRecordPtr = 0;
-      }
-      AgesaEventAlloc->ReadWriteFlag = 0;
+  if ((AgesaEventAlloc->WriteRecordPtr == AgesaEventAlloc->ReadRecordPtr) &&
+             (AgesaEventAlloc->ReadWriteFlag == 0)) {
+    AgesaEventAlloc->WriteRecordPtr += 1;
+    AgesaEventAlloc->ReadRecordPtr += 1;
+    if (AgesaEventAlloc->WriteRecordPtr == TOTAL_EVENT_LOG_BUFFERS) {
+      AgesaEventAlloc->WriteRecordPtr = 0;
+      AgesaEventAlloc->ReadRecordPtr  = 0;
     }
-    AgesaEventAlloc->Count = AgesaEventAlloc->Count + 1;
-
-    if (AgesaEventAlloc->Count <= TOTAL_EVENT_LOG_BUFFERS) {
-      AgesaEventAlloc->AgesaEventStruct[Index].Count = Index;
+  } else {
+    AgesaEventAlloc->WriteRecordPtr += 1;
+    if (AgesaEventAlloc->WriteRecordPtr == TOTAL_EVENT_LOG_BUFFERS) {
+      AgesaEventAlloc->WriteRecordPtr = 0;
     }
+    AgesaEventAlloc->ReadWriteFlag = 0;
+  }
+  AgesaEventAlloc->Count = AgesaEventAlloc->Count + 1;
+
+  if (AgesaEventAlloc->Count <= TOTAL_EVENT_LOG_BUFFERS) {
+    AgesaEventAlloc->AgesaEventStruct[Index].Count = Index;
   }
 }
 
@@ -300,35 +298,33 @@ GetEventLog (
   IN       AMD_CONFIG_PARAMS *StdHeader
   )
 {
-  IEM_SKIP_CODE (IEM_EVENT_LOG) {
-    UINT16 Index;
-    AGESA_STRUCT_BUFFER *AgesaEventAlloc;
+  UINT16 Index;
+  AGESA_STRUCT_BUFFER *AgesaEventAlloc;
 
-    AgesaEventAlloc = NULL;
+  AgesaEventAlloc = NULL;
 
-    GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
-    ASSERT (AgesaEventAlloc != NULL);
+  GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
+  ASSERT (AgesaEventAlloc != NULL);
 
-    if ((AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) &&
-        (AgesaEventAlloc->ReadWriteFlag == 1)) {
-      // EventInfo == zero, means no more data.
-      LibAmdMemFill (EventRecord, 0, sizeof (AGESA_EVENT), StdHeader);
+  if ((AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) &&
+      (AgesaEventAlloc->ReadWriteFlag == 1)) {
+    // EventInfo == zero, means no more data.
+    LibAmdMemFill (EventRecord, 0, sizeof (AGESA_EVENT), StdHeader);
+  } else {
+    Index = AgesaEventAlloc->ReadRecordPtr;
+    EventRecord->EventClass = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventClass;
+    EventRecord->EventInfo  = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventInfo;
+    EventRecord->DataParam1 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam1;
+    EventRecord->DataParam2 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam2;
+    EventRecord->DataParam3 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam3;
+    EventRecord->DataParam4 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam4;
+    if (AgesaEventAlloc->ReadRecordPtr == (TOTAL_EVENT_LOG_BUFFERS - 1)) {
+      AgesaEventAlloc->ReadRecordPtr = 0;
     } else {
-      Index = AgesaEventAlloc->ReadRecordPtr;
-      EventRecord->EventClass = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventClass;
-      EventRecord->EventInfo  = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.EventInfo;
-      EventRecord->DataParam1 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam1;
-      EventRecord->DataParam2 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam2;
-      EventRecord->DataParam3 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam3;
-      EventRecord->DataParam4 = AgesaEventAlloc->AgesaEventStruct[Index].AgesaEvent.DataParam4;
-      if (AgesaEventAlloc->ReadRecordPtr == (TOTAL_EVENT_LOG_BUFFERS - 1)) {
-        AgesaEventAlloc->ReadRecordPtr = 0;
-      } else {
-        AgesaEventAlloc->ReadRecordPtr = AgesaEventAlloc->ReadRecordPtr + 1;
-      }
-      if (AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) {
-        AgesaEventAlloc->ReadWriteFlag = 1;
-      }
+      AgesaEventAlloc->ReadRecordPtr = AgesaEventAlloc->ReadRecordPtr + 1;
+    }
+    if (AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) {
+      AgesaEventAlloc->ReadWriteFlag = 1;
     }
   }
   return (AGESA_SUCCESS);
@@ -358,48 +354,41 @@ PeekEventLog (
   IN       AMD_CONFIG_PARAMS *StdHeader
   )
 {
-  BOOLEAN Status;
+  UINT16 ActualIndex;
+  UINT16 UnreadEntries;
+  AGESA_STRUCT_BUFFER *AgesaEventAlloc;
 
-  Status = FALSE;
+  AgesaEventAlloc = NULL;
 
-  IEM_SKIP_CODE (IEM_EVENT_LOG) {
-    UINT16 ActualIndex;
-    UINT16 UnreadEntries;
-    AGESA_STRUCT_BUFFER *AgesaEventAlloc;
+  GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
+  ASSERT (AgesaEventAlloc != NULL);
 
-    AgesaEventAlloc = NULL;
-
-    GetEventLogHeapPointer (&AgesaEventAlloc, StdHeader);
-    ASSERT (AgesaEventAlloc != NULL);
-
-    if ((AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) &&
-        (AgesaEventAlloc->ReadWriteFlag == 1)) {
-      // EventInfo == zero, means no more data.
-      return FALSE;
-    }
-    if (AgesaEventAlloc->ReadRecordPtr < AgesaEventAlloc->WriteRecordPtr) {
-      UnreadEntries = AgesaEventAlloc->WriteRecordPtr - AgesaEventAlloc->ReadRecordPtr;
-    } else {
-      UnreadEntries = TOTAL_EVENT_LOG_BUFFERS - (AgesaEventAlloc->ReadRecordPtr - AgesaEventAlloc->WriteRecordPtr);
-    }
-    if (Index >= UnreadEntries) {
-      return FALSE;
-    }
-    ActualIndex = Index + AgesaEventAlloc->ReadRecordPtr;
-    if (ActualIndex >= TOTAL_EVENT_LOG_BUFFERS) {
-      ActualIndex -= TOTAL_EVENT_LOG_BUFFERS;
-    }
-
-    EventRecord->EventClass = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.EventClass;
-    EventRecord->EventInfo  = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.EventInfo;
-    EventRecord->DataParam1 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam1;
-    EventRecord->DataParam2 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam2;
-    EventRecord->DataParam3 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam3;
-    EventRecord->DataParam4 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam4;
-
-    Status = TRUE;
+  if ((AgesaEventAlloc->ReadRecordPtr == AgesaEventAlloc->WriteRecordPtr) &&
+      (AgesaEventAlloc->ReadWriteFlag == 1)) {
+    // EventInfo == zero, means no more data.
+    return FALSE;
   }
-  return Status;
+  if (AgesaEventAlloc->ReadRecordPtr < AgesaEventAlloc->WriteRecordPtr) {
+    UnreadEntries = AgesaEventAlloc->WriteRecordPtr - AgesaEventAlloc->ReadRecordPtr;
+  } else {
+    UnreadEntries = TOTAL_EVENT_LOG_BUFFERS - (AgesaEventAlloc->ReadRecordPtr - AgesaEventAlloc->WriteRecordPtr);
+  }
+  if (Index >= UnreadEntries) {
+    return FALSE;
+  }
+  ActualIndex = Index + AgesaEventAlloc->ReadRecordPtr;
+  if (ActualIndex >= TOTAL_EVENT_LOG_BUFFERS) {
+    ActualIndex -= TOTAL_EVENT_LOG_BUFFERS;
+  }
+
+  EventRecord->EventClass = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.EventClass;
+  EventRecord->EventInfo  = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.EventInfo;
+  EventRecord->DataParam1 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam1;
+  EventRecord->DataParam2 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam2;
+  EventRecord->DataParam3 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam3;
+  EventRecord->DataParam4 = AgesaEventAlloc->AgesaEventStruct[ActualIndex].AgesaEvent.DataParam4;
+
+  return TRUE;
 }
 
 

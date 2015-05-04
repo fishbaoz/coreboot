@@ -9,7 +9,7 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project: AGESA
  * @e sub-project: (Mem/NB/CZ)
- * @e \$Revision: 312808 $ @e \$Date: 2015-02-11 19:22:11 +0800 (Wed, 11 Feb 2015) $
+ * @e \$Revision: 312811 $ @e \$Date: 2015-02-11 05:40:53 -0600 (Wed, 11 Feb 2015) $
  *
  **/
 /*****************************************************************************
@@ -126,6 +126,36 @@ RDATA_GROUP (G3_DXE)
  *----------------------------------------------------------------------------
  */
 extern BUILD_OPT_CFG UserOptions;
+
+/* -----------------------------------------------------------------------------*/
+/**
+ *
+ *      This function programs DDR mode to DDR3 for all DCTs
+ *
+ *
+ *     @param[in,out]   *NBPtr   - Pointer to the MEM_NB_BLOCK
+ *
+ */
+
+VOID
+MemNSetDdrModeD3CZ (
+  IN OUT   MEM_NB_BLOCK *NBPtr
+  )
+{
+  UINT8   Dct;
+
+  // Set DramType and disable unused DCTs
+  for (Dct = 0; Dct < MAX_DCTS_PER_NODE_CZ; Dct++) {
+    MemNSwitchDCTNb (NBPtr, Dct);
+
+    MemNSetBitFieldNb (NBPtr, BFDramType, DRAM_TYPE_DDR3_CZ);
+  }
+
+  // After disable unused DCTs, change the number of DCTs to 2 for DDR3 mode
+  NBPtr->DctCount = MAX_D3_DCTS_PER_NODE_CZ;
+  // Program bit fields before memory init
+  MemNSetBitFieldNb (NBPtr, BFEnSplitMctDatBuffers, 1);
+}
 
 /* -----------------------------------------------------------------------------*/
 /**
@@ -665,7 +695,11 @@ MemNFixupUmaInfoCZ (
 
   UmaInfoPtr = (UMA_INFO *) OptParam;
 
-  UmaInfoPtr->MemType = NBPtr->ChannelPtr->TechType;  // Both Channels the same type
+  if (NBPtr->DctCount == MAX_D3_DCTS_PER_NODE_CZ) {
+    UmaInfoPtr->MemType = DDR3_TECHNOLOGY;
+  } else {
+    UmaInfoPtr->MemType = GDDR5_TECHNOLOGY;
+  }
 
   for (Range = 0; Range < 4; Range++) {
     Limit = MemNGetBitFieldNb (NBPtr, BFDctLimitReg0 + Range);
@@ -675,9 +709,12 @@ MemNFixupUmaInfoCZ (
     if (UmaInfoPtr->UmaBase < Limit) {
       if (IntlvEn != 0) {
         // Interleave is enabled
-        if (NBPtr->DctCount == 2) {
+        if (NBPtr->DctCount == MAX_D3_DCTS_PER_NODE_CZ) {
           UmaInfoPtr->UmaAttributes = UMA_ATTRIBUTE_INTERLEAVE | UMA_ATTRIBUTE_ON_DCT0 | UMA_ATTRIBUTE_ON_DCT1;
           IDS_HDT_CONSOLE (MEM_FLOW, "\t\tUMA is in interleaved region of DCT0 and DCT1\n");
+        } else {
+          UmaInfoPtr->UmaAttributes = UMA_ATTRIBUTE_INTERLEAVE | UMA_ATTRIBUTE_ON_DCT0 | UMA_ATTRIBUTE_ON_DCT1 | UMA_ATTRIBUTE_ON_DCT2 | UMA_ATTRIBUTE_ON_DCT3;
+          IDS_HDT_CONSOLE (MEM_FLOW, "\t\tUMA is in interleaved region of DCT0, DCT1, DCT2 and DCT3\n");
         }
       } else {
         // No interleave, select DCT that UMA is on
