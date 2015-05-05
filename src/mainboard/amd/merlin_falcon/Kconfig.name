@@ -1,0 +1,2 @@
+config BOARD_AMD_MERLIN_FALCON
+	bool "Merlin Falcon"

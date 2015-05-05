@@ -1,0 +1,2 @@
+config BOARD_AMD_OLIVEHILL_PLUS
+	bool "Olive Hill plus Open Source"
