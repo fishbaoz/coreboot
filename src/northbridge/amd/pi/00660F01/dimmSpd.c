@@ -20,6 +20,7 @@
 #include <device/pci_def.h>
 #include <device/device.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* warning: Porting.h includes an open #pragma pack(1) */
 #include "Porting.h"
@@ -27,12 +28,28 @@
 #include "amdlib.h"
 #include "chip.h"
 #include "northbridge/amd/pi/dimmSpd.h"
+#if IS_ENABLED(CONFIG_BOARD_AMD_BETTONG)
+#include "board_rev.h"
+#endif
 
 AGESA_STATUS AmdMemoryReadSPD (UINT32 unused1, UINT32 unused2, AGESA_READ_SPD_PARAMS *info)
 {
 	int spdAddress;
 	ROMSTAGE_CONST struct device *dev = dev_find_slot(0, PCI_DEVFN(0x18, 2));
-	ROMSTAGE_CONST struct northbridge_amd_pi_00660F01_config *config = dev->chip_info;
+	struct northbridge_amd_pi_00660F01_config *config, user_config;
+	memcpy(&user_config, dev->chip_info, sizeof(user_config));
+
+#if IS_ENABLED(CONFIG_BOARD_AMD_BETTONG)
+	char boardid = get_board_id();
+	if (boardid == 'F') {
+		user_config.spdAddrLookup[0][0][0] = 0xA0;
+		user_config.spdAddrLookup[0][0][1] = 0xA2;
+		user_config.spdAddrLookup[0][1][0] = 0xA4;
+		user_config.spdAddrLookup[0][1][1] = 0xAC;
+	}
+#endif
+
+	config = &user_config;
 
 	if ((dev == 0) || (config == 0))
 		return AGESA_ERROR;

@@ -26,6 +26,10 @@
 #include <heapManager.h>
 #include <northbridge/amd/pi/agesawrapper.h>
 #include <northbridge/amd/pi/BiosCallOuts.h>
+#if IS_ENABLED(CONFIG_BOARD_AMD_BETTONG)
+#include <PlatformMemoryConfiguration.h>
+#include "board_rev.h"
+#endif
 
 VOID FchInitS3LateRestore (IN FCH_DATA_BLOCK *FchDataPtr);
 VOID FchInitS3EarlyRestore (IN FCH_DATA_BLOCK *FchDataPtr);
@@ -136,6 +140,37 @@ AGESA_STATUS agesawrapper_amdinitpost(void)
 	AmdCreateStruct (&AmdParamStruct);
 	PostParams = (AMD_POST_PARAMS *)AmdParamStruct.NewStructPtr;
 
+#if IS_ENABLED(CONFIG_BOARD_AMD_BETTONG)
+	PSO_ENTRY DDR4PlatformMemoryConfiguration[] = {
+		DRAM_TECHNOLOGY(ANY_SOCKET, DDR4_TECHNOLOGY),
+		NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, ANY_CHANNEL, 2),
+		NUMBER_OF_CHANNELS_SUPPORTED (ANY_SOCKET, 2),
+		MOTHER_BOARD_LAYERS (LAYERS_6),
+		MEMCLK_DIS_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+		CKE_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+		ODT_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+		CS_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+		PSO_END
+	};
+
+	PSO_ENTRY DDR3PlatformMemoryConfiguration[] = {
+		DRAM_TECHNOLOGY(ANY_SOCKET, DDR3_TECHNOLOGY),
+		NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, ANY_CHANNEL, 2),
+		NUMBER_OF_CHANNELS_SUPPORTED (ANY_SOCKET, 2),
+		MOTHER_BOARD_LAYERS (LAYERS_6),
+		MEMCLK_DIS_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+		CKE_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+		ODT_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+		CS_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+		PSO_END
+	};
+
+	char boardid = get_board_id();
+	if (boardid == 'F')
+		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR4PlatformMemoryConfiguration;
+	else
+		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR3PlatformMemoryConfiguration;
+#endif
 	// Do not use IS_ENABLED here.  CONFIG_GFXUMA should always have a value.  Allow
 	// the compiler to flag the error if CONFIG_GFXUMA is not set.
 	PostParams->MemConfig.UmaMode = CONFIG_GFXUMA ? UMA_AUTO : UMA_NONE;
