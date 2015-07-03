@@ -19,9 +19,11 @@
 
 romstage-y += BiosCallOuts.c
 romstage-y += PlatformGnbPcie.c
+romstage-y += board_rev.c
 
 ramstage-y += BiosCallOuts.c
 ramstage-y += PlatformGnbPcie.c
 ifeq ($(CONFIG_HUDSON_IMC_FWM), y)
 ramstage-y += fchec.c
 endif
+ramstage-y += board_rev.c
