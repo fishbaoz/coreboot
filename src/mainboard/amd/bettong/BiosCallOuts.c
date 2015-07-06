@@ -31,6 +31,7 @@
 #include "hudson.h"
 #include <stdlib.h>
 #include "BiosCallOuts.h"
+#include "board_rev.h"
 
 static AGESA_STATUS Fch_Oem_config(UINT32 Func, UINT32 FchData, VOID *ConfigPtr);
 
@@ -89,6 +90,11 @@ AGESA_STATUS Fch_Oem_config(UINT32 Func, UINT32 FchData, VOID *ConfigPtr)
 		FchParams_env->Usb.Xhci1Enable = FALSE;
 
 		/* sata configuration */
+		/* SD configuration */
+		/* Rev F has an on-board eMMC, which only support SD 2.0 */
+		if (get_board_id() == 'F') {
+			FchParams_env->Sd.SdConfig = SdVer2;
+		}
 	}
 	printk(BIOS_DEBUG, "Done\n");
 
