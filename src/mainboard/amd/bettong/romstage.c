@@ -19,6 +19,7 @@
 
 #include <console/console.h>
 #include <arch/acpi.h>
+#include <arch/io.h>
 #include <arch/stages.h>
 #include <cpu/x86/lapic.h>
 #include <cpu/x86/bist.h>
@@ -80,6 +81,10 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 		post_code(0x61);
 		prepare_for_resume();
+	}
+	if (s3resume || acpi_is_wakeup_s4()) {
+		outb(0xEE, 0xCD6);
+		outb(0x8, 0xCD7);
 	}
 
 	post_code(0x50);
