@@ -68,6 +68,9 @@ DefinitionBlock (
 
 			/* Describe the AMD Fusion Controller Hub Southbridge */
 			#include <southbridge/amd/pi/hudson/acpi/fch.asl>
+			#include "acpi/i2c.asl"
+			#include "acpi/gpio.asl"
+			#include "acpi/uart.asl"
 		}
 
 		/* Describe PCI INT[A-H] for the Southbridge */
