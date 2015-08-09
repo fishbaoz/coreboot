@@ -1997,7 +1997,7 @@ FCH_MISC_REGF0                   EQU     0F0h
 //  FCH PMIO Base (FCH_PMIO_BASE)
 //    offset : 0x0300
 //
-#define FCH_PMIOx10_Power_Reset_Config          0xFED80310ul         //Power Reset Config
+#define FCH_PMIOx10_Power_Reset_Config          0xFED80310ul         //Power Reset Config 
 #define FCH_PMIOx10_Power_Reset_Config_ToggleAllPwrGoodOnCf9   (1 << 1)
 
 #define FCH_PMIOx74_AcpiConfig          0xFED80374ul         // AcpiConfig
