@@ -120,16 +120,12 @@ Method(_CRS, 0) {
 	CreateDWordField(CRES, ^MMIO._LEN, MM1L)
 
 	/*
-	 * Declare memory between TOM1 and 4GB as available
+	 * Declare memory between TOM1 and 0xFED40000 as available
 	 * for PCI MMIO.
-	 * Use ShiftLeft to avoid 64bit constant (for XP).
-	 * This will work even if the OS does 32bit arithmetic, as
-	 * 32bit (0x00000000 - TOM1) will wrap and give the same
-	 * result as 64bit (0x100000000 - TOM1).
+	 * TODO: change the hardcode value.
 	 */
 	Store(TOM1, MM1B)
-	ShiftLeft(0x10000000, 4, Local0)
-	Subtract(Local0, TOM1, Local0)
+	Subtract(0xFED40000, TOM1, Local0)
 	Store(Local0, MM1L)
 
 	Return(CRES) /* note to change the Name buffer */
