@@ -149,10 +149,11 @@ searchtool()
 			fi
 		fi
 	fi
-	if [ "$(echo $1 | cut -b -3)" = "sha" ]; then
+	if [ "$(echo $1 | sed -e 's,\(.*\)sum$,sum,')" = "sum" ]; then
 		if [ $UNAME = "FreeBSD" ]; then
-			if [ -x "$(which sha1 2>/dev/null)" ]; then
-				echo sha1
+			sumcmd=$(echo $1 | sed -e 's,sum,,')
+			if [ -x "$(which $sumcmd 2>/dev/null)" ]; then
+				echo $sumcmd
 				return
 			fi
 		fi
@@ -585,6 +586,7 @@ PATCH=$(searchtool patch) || exit $?
 MAKE=$(searchtool make) || exit $?
 SHA1SUM=$(searchtool sha1sum)
 SHA512SUM=$(searchtool sha512sum)
+MD5SUM=$(searchtool md5sum)
 CHECKSUM=$SHA1SUM
 
 searchtool m4 > /dev/null
