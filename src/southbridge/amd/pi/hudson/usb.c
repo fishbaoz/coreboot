@@ -49,6 +49,8 @@ static const unsigned short pci_device_ids[] = {
 	PCI_DEVICE_ID_ATI_SB900_USB_20_5,
 	PCI_DEVICE_ID_AMD_CZ_USB_0,
 	PCI_DEVICE_ID_AMD_CZ_USB_1,
+	0x7914,
+	0x7908,
 	0
 };
 
