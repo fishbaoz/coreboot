@@ -83,6 +83,6 @@ DefinitionBlock (
 
 	/* Define the General Purpose Events for the platform */
 	#include "acpi/gpe.asl"
-	#include "acpi/CrbDev.asl"
+	//#include "acpi/CrbDev.asl"
 }
 /* End of ASL file */
