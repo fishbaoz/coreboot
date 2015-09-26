@@ -56,11 +56,13 @@ static bool validate_descriptor_node(const struct flashmap_descriptor *node,
 	assert(node);
 
 	ENTRY search_key = {node->name, NULL};
-	if (hsearch(search_key, FIND)) {
+	fprintf(stderr, "%s,%d\n", __func__, __LINE__);
+	if (0) {//hsearch(search_key, FIND)) {
 		ERROR("Multiple sections with name '%s'\n", node->name);
 		return false;
 	}
-	if (!hsearch(search_key, ENTER))
+	fprintf(stderr, "%s,%d\n", __func__, __LINE__);
+	if (0) //!hsearch(search_key, ENTER))
 		assert(false);
 
 	if (node->offset_known) {
@@ -294,20 +296,21 @@ struct flashmap_descriptor *fmd_create(FILE *stream)
 {
 	assert(stream);
 
-	yyin = stream;
+	//yyin = stream;
 
 	struct flashmap_descriptor *ret = NULL;
 	if (yyparse() == 0)
 		ret = res;
 
-	yylex_destroy();
-	yyin = NULL;
+	//yylex_destroy();
+	//yyin = NULL;
 	res = NULL;
 
+	fprintf(stderr, "%s,%d\n", __func__, __LINE__);
 	if (ret) {
 		// This hash table is used to store the declared name of each
 		// section and ensure that each is globally unique.
-		if (!hcreate(fmd_count_nodes(ret))) {
+		if (0) {//!hcreate(fmd_count_nodes(ret))) {
 			perror("E: While initializing hashtable");
 			fmd_cleanup(ret);
 			return NULL;
@@ -317,14 +320,15 @@ struct flashmap_descriptor *fmd_create(FILE *stream)
 		// a size field as required by this function, the parser
 		// warrants that it does because the grammar requires it.
 		if (!validate_and_complete_info(ret)) {
-			hdestroy();
+			//hdestroy();
 			fmd_cleanup(ret);
 			return NULL;
 		}
 
-		hdestroy();
+		//hdestroy();
 	}
 
+	fprintf(stderr, "%s,%d\n", __func__, __LINE__);
 	return ret;
 }
 

@@ -41,7 +41,7 @@ rmodobj += common.o
 rmodobj += elfheaders.o
 rmodobj += xdr.o
 
-TOOLCFLAGS ?= -std=c99 -Werror -Wall -Wextra
+TOOLCFLAGS ?= -std=c99 -Wall -Wextra
 TOOLCFLAGS += -Wcast-qual -Wmissing-prototypes -Wredundant-decls -Wshadow
 TOOLCFLAGS += -Wstrict-prototypes -Wwrite-strings
 TOOLCPPFLAGS ?= -D_DEFAULT_SOURCE # memccpy() from string.h

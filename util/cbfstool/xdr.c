@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <stdint.h>
 #include "common.h"
 

@@ -394,7 +394,7 @@ int cbfs_copy_instance(struct cbfs_image *image, size_t copy_offset,
 	struct cbfs_file *src_entry, *dst_entry;
 	struct cbfs_header *copy_header;
 	size_t align, entry_offset;
-	ssize_t last_entry_size;
+	size_t last_entry_size;
 
 	size_t cbfs_offset, cbfs_end;
 	size_t copy_end = copy_offset + copy_size;
