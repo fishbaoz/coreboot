@@ -29,6 +29,7 @@ find src util -name .svn -type d -prune -o \
 	-name \*.txt -prune -o \
 	-name \*.exe -prune -o \
 	-name \*.o -prune -o \
+	-name cscope.\* -prune -o \
 	-name microcode-\*.h -prune -o \
 	-name \*.?_shipped -prune -o \
 	-name \*.[18] -prune -o \
@@ -36,8 +37,9 @@ find src util -name .svn -type d -prune -o \
 	-name kconfig -type d -prune -o \
 	-name romcc -type d -prune -o \
 	-name SPClient\* -type d -prune -o \
-	-name crossgcc -type d -prune -o \
+	-name crossgcc\* -type d -prune -o \
 	-name vendorcode -type d -prune -o \
+	-name pspdirectory -type d -prune -o \
 	-type f -exec \
 		grep -l "[[:space:]][[:space:]]*$" {} + | \
 	sed -e "s,^.*$,File & has lines ending with whitespace.,"
