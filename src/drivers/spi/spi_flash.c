@@ -141,6 +141,26 @@ static int spi_flash_cmd_read_array(struct spi_slave *spi, u8 *cmd,
 	return len != 0;
 }
 
+int spi_flash_cmd_read_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	spi_flash_cmd_read_slow(flash, 0, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
+int spi_flash_cmd_write_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	flash->write(flash, 0, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
 int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 		size_t len, void *data)
 {
@@ -216,7 +236,7 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		spi_flash_addr(offset, cmd);
 		offset += erase_size;
 
-#if CONFIG_DEBUG_SPI_FLASH
+#if 1 //CONFIG_DEBUG_SPI_FLASH
 		printk(BIOS_SPEW, "SF: erase %2x %2x %2x %2x (%x)\n", cmd[0], cmd[1],
 		      cmd[2], cmd[3], offset);
 #endif

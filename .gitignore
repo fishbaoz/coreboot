@@ -1,6 +1,5 @@
 .config
 .config.old
-.coreboot-version
 .xcompile
 .ccwrap
 build/
@@ -10,6 +9,7 @@ payloads/external/GRUB2/grub2/
 payloads/external/SeaBIOS/seabios/
 util/crossgcc/acpica-unix-*/
 util/crossgcc/binutils-*/
+util/crossgcc/build-*/
 util/crossgcc/build-*binutils/
 util/crossgcc/build-*expat/
 util/crossgcc/build-*gcc/
@@ -33,8 +33,13 @@ util/crossgcc/w32api-*/
 util/crossgcc/xgcc/
 util/crossgcc/xgcc-*/
 util/crossgcc/xgcc
+util/crossgcc-test
+util/crossgcc/*.src/
 site-local
+3rdparty-o
 
+.svn
+src/vendorcode/amd/agesa/f1*-*/
 *.\#
 *.bin
 *.debug
@@ -42,6 +47,7 @@ site-local
 *.o
 *.out
 *.swp
+*.inf
 
 # Development friendly files
 tags

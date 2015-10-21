@@ -76,4 +76,8 @@ AGESA_STATUS OemInitResume(AMD_RESUME_PARAMS *ResumeParams);
 AGESA_STATUS OemS3LateRestore(AMD_S3LATE_PARAMS *S3LateParams);
 AGESA_STATUS OemS3Save(void *vS3SaveParams);
 
+AGESA_STATUS oem_auth(void);
+AGESA_STATUS oem_init_auth(void);
+
+
 #endif /* _AGESAWRAPPER_H_ */

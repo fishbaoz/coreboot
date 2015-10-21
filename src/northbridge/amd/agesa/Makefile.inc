@@ -33,4 +33,6 @@ ramstage-y += def_callouts.c agesawrapper.c eventlog.c
 romstage-y += oem_s3.c
 ramstage-y += oem_s3.c
 
+ramstage-y += oem_auth.c
+
 endif

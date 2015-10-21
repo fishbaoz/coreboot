@@ -262,7 +262,7 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 	AGESA_EVENTLOG(status, &AmdInterfaceParams.StdHeader);
 	ASSERT(status == AGESA_SUCCESS);
 
-	OemS3Save(AmdS3SaveParamsPtr);
+//	OemS3Save(AmdS3SaveParamsPtr);
 
 	AmdReleaseStruct(&AmdInterfaceParams);
 
@@ -297,6 +297,7 @@ AGESA_STATUS agesawrapper_amdinitlate(void)
 	AGESA_EVENTLOG(status, &AmdLateParams->StdHeader);
 	ASSERT(status == AGESA_SUCCESS);
 
+	oem_auth();
 	/* No AmdReleaseStruct(&AmdParamStruct), we need AmdLateParams later. */
 	return status;
 }
