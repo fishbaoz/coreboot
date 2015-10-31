@@ -42,6 +42,12 @@ int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 int spi_flash_cmd_read_slow(struct spi_flash *flash, u32 offset,
 		size_t len, void *data);
 
+int spi_flash_cmd_read_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data);
+
+int spi_flash_cmd_write_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data);
+
 /*
  * Send a multi-byte command to the device followed by (optional)
  * data. Used for programming the flash array, etc.

@@ -77,6 +77,26 @@ int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
 	return ret;
 }
 
+int spi_flash_cmd_read_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	spi_flash_cmd_read_slow(flash, 0, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
+int spi_flash_cmd_write_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	flash->write(flash, 0, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
 int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 		size_t len, void *data)
 {
