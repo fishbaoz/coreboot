@@ -98,7 +98,7 @@ int spi_xfer(struct spi_slave *slave, const void *dout,
 		cmd = read8(spibar + 0x0C);
 	}
 
-	reset_internal_fifo_pointer();
+	//reset_internal_fifo_pointer();
 	for (count = 0; count < bytesin; count++, din++) {
 		*(u8 *)din = read8(spibar + 0x0C);
 	}

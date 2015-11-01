@@ -661,6 +661,8 @@ UINT32 agesawrapper_amdS3Save(VOID)
 	printk(BIOS_DEBUG, "NvStorageSize=%x, NvStorage=%x\n",
 	       (unsigned int)AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
 	       (unsigned int)AmdS3SaveParamsPtr->S3DataBlock.NvStorage);
+
+	oem_auth();
 #if 0
 	Status = OemAgesaSaveS3Info (
 		S3DataType,
