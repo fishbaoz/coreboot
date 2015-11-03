@@ -21,6 +21,7 @@
 #include <spi_flash.h>
 #include <string.h>
 #include <device/pci.h>
+#include <cbfs.h>
 #include <agesawrapper.h>
 #include <AGESA.h>
 
@@ -42,7 +43,7 @@ u8 otpdata[OTP_LEN];
   5. build coreboot.rom, which is the final image.
  */
 
-#define VALIDATE_OTP_MAC_ADDRESS 0
+#define VALIDATE_OTP_MAC_ADDRESS 1
 #define WRITE_OTP 0
 
 //echo  1 |  sha512sum | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/0x\1,/g' | sed -e 's/,$/};/g' | sed -e 's/^0x/sha512_auth[OTP_LEN]={0x/g'
@@ -50,6 +51,11 @@ u8 otpdata[OTP_LEN];
 // echo  1 |  sha512sum  | grep -o "[0-9a-f]*" |  sed -e 's/\([0-9a-f]\{2\}\)/\1 /g'
 // dpcmd --raw-instruction "B1|02 00 00 00      |C1"
 #define BOARD_NUM 1
+
+#if (BOARD_NUM==0xFFFFFFFF)	/* otp data is in CBFS */
+//u8 sha512_auth[OTP_LEN+0x10];
+u8 *sha512_auth;
+#endif
 
 #if (BOARD_NUM==1)
 /* used */
@@ -99,6 +105,13 @@ static AGESA_STATUS oem_validate_auth(void)
 	struct spi_flash *flash;
 	u32 i;
 
+	#if WRITE_OTP
+	printk(BIOS_DEBUG, "data in BIOS:\n ");
+	for (i=0; i<OTP_LEN; i++) {
+		printk(BIOS_DEBUG, " %02X", sha512_auth[i]);
+	}
+	#endif
+
 	spi_init();
 	flash = spi_flash_probe(0, 0, 0, 0);
 	if (!flash)
@@ -107,6 +120,10 @@ static AGESA_STATUS oem_validate_auth(void)
 	spi_claim_bus(flash->spi);
 
 	spi_flash_cmd_read_otp(flash, 0, OTP_LEN, otpdata);
+
+	#if WRITE_OTP
+	printk(BIOS_DEBUG, "data in OTP:\n ");
+	#endif
 	for (i=0; i<OTP_LEN; i++) {
 		#if WRITE_OTP
 		printk(BIOS_DEBUG, " %02X", otpdata[i]);
@@ -148,8 +165,9 @@ static AGESA_STATUS oem_write_auth(void)
 			printk(BIOS_DEBUG, "\nOTP is not empty\n");
 			/* print data left */
 			i ++;
-			while (i < OTP_LEN) printk(BIOS_DEBUG, " %02X", otpdata[i]);
+			while (i < OTP_LEN) printk(BIOS_DEBUG, " %02X", otpdata[i++]);
 			for (;;); /* Hang */
+			break;
 		}
 	}
 	printk(BIOS_DEBUG, "\n");
@@ -172,7 +190,11 @@ void read_mac()
 {
 	device_t dev;
 	u32 ioaddr;
-	u8 mac_valid[8] = {0x00,0x1b,0x21,0xb3,0xa9,0x63,0,0};
+	#if (BOARD_NUM==0xFFFFFFFF)
+	u8 *mac_valid=sha512_auth + 0x40;
+	#else
+	u8 mac_valid[8] = {0x00,0x1b,0x21,0xb3,0xa9,0x63,0xFF,0xFF};
+	#endif
 	u32 mac_hi, mac_lo, *mac_ptr = mac_valid;
 	dev = dev_find_device(0x8086, 0x10D3, 0);
 
@@ -181,7 +203,7 @@ void read_mac()
 	outl(0x5400, ioaddr);
 	mac_lo = inl(ioaddr + 4);
 	outl(0x5404, ioaddr);
-	mac_hi = inl(ioaddr + 4) & 0xFFFF;
+	mac_hi = (inl(ioaddr + 4) & 0xFFFF) | 0xFFFF0000;
 	#if SHOW_MESSAGE
 	printk(BIOS_DEBUG, "mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
 	       mac_valid[0], mac_valid[1], mac_valid[2], mac_valid[3], mac_valid[4], mac_valid[5]);
@@ -198,6 +220,12 @@ void read_mac()
 
 AGESA_STATUS oem_auth(void)
 {
+	/* Get data from CBFS */
+	#if (BOARD_NUM==0xFFFFFFFF)
+	sha512_auth = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, "olivehill/validation",
+				   CBFS_TYPE_RAW, NULL);
+	#endif
+
 #if VALIDATE_OTP_MAC_ADDRESS
 #if WRITE_OTP
 	oem_write_auth();

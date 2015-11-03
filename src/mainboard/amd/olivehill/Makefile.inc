@@ -29,3 +29,25 @@ ramstage-y += PlatformGnbPcie.c
 
 
 ramstage-y += oem_auth.c
+
+BOARDNUM=1
+MACADDRESS=00-1b-21-b3-a9-63
+
+ENCRIPTION=$(shell echo  boardnum$(BOARDNUM) |  sha512sum  | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/\1 /g')
+ENCRIPTION+=$(shell echo $(MACADDRESS) | sed -e 's/-/ /g')
+
+#Extract valiation.bin from final image
+#./build/cbfstool build/coreboot.rom  extract -n olivehill/validation -f validation_read.bin
+$(obj)/validation.bin :$(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
+	echo "    VALIDATION $@"
+	for c in $(ENCRIPTION) ; do \
+		printf %d 0x$$c | LC_ALL=C awk '{printf ("%c", $$1);}'; \
+	done >> $@.tmp
+	LC_ALL=C awk 'BEGIN {for (i=0;i<8;i++){printf ("%c", 255);}}' >> $@.tmp
+	echo $(BOARDNUM) | LC_ALL=C awk '{printf ("%c%c", $$1 % 256, int($$1/256) % 256);}' >> $@.tmp
+	mv $@.tmp $@
+
+cbfs-files-y += olivehill/validation
+olivehill/validation-file := $(obj)/validation.bin
+olivehill/validation-position := 0xFFC0F200
+olivehill/validation-type := raw

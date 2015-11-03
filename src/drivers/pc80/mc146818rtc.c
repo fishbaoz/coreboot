@@ -321,7 +321,7 @@ void rtc_check_update_cmos_date(u8 has_century)
 
 	/* TODO: If century is 0xFF, 100% that the cmos is cleared.
 	 * Other than that, so far rtc_year is the only entry to check if the date is valid. */
-	if (century > 0x99 || year > 0x99) {	/* Invalid date */
+//	if (century > 0x99 || year > 0x99) {	/* Invalid date */
 		rtc_update_cmos_date(has_century);
-	}
+//	}
 }
