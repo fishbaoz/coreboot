@@ -27,6 +27,23 @@
 #define OTP_LEN 0x40
 u8 otpdata[OTP_LEN];
 
+/*
+  Skip OTP validation.
+  1. Set VALIDATE_OTP = 0.
+
+  Skip MAC validation.
+  1. Set VALIDATE_MAC_ADDRESS = 0.
+ */
+#define SHOW_MESSAGE 0
+/*
+  Write OTP number.
+  1. Set BOARD_NUM as a new number which is not marked as used.
+  2. Set WRITE_OTP as 1.
+  3. build coreboot.rom and run. "write OTP ok" means successful.
+  4. Set WRITE_OTP as 0.
+  5. build coreboot.rom, which is the final image.
+ */
+
 #define VALIDATE_OTP 1
 #define WRITE_OTP 0
 
@@ -37,6 +54,7 @@ u8 otpdata[OTP_LEN];
 #define BOARD_NUM 1
 
 #if (BOARD_NUM==1)
+/* used */
 u8 sha512_auth[OTP_LEN]={0xec,0xac,0x2a,0x9a,0x34,0x05,0x7d,0xd4,0x47,0xf8,0xa5,0x4b,0x0e,0xe6,0xb6,0xaf,0x63,0x4d,0xa4,0x61,0x22,0x19,0x2d,0x0a,0x6d,0x53,0x58,0x55,0x9e,0x9b,0xc1,0xa9,0x38,0x98,0x9c,0x68,0x13,0xf0,0x92,0x5e,0xca,0xb0,0x27,0xca,0x65,0xe5,0x11,0x72,0x69,0x30,0x5c,0xc2,0x16,0xe4,0xc8,0x37,0x9d,0x03,0x35,0xf5,0x62,0x43,0x35,0x68};
 #endif
 
@@ -92,10 +110,19 @@ static AGESA_STATUS oem_validate_auth(void)
 
 	spi_flash_cmd_read_otp(flash, 0, OTP_LEN, otpdata);
 	for (i=0; i<OTP_LEN; i++) {
+		#if WRITE_OTP
 		printk(BIOS_DEBUG, " %02X", otpdata[i]);
-		if (otpdata[i] != sha512_auth[i])
+		#endif
+		if (otpdata[i] != sha512_auth[i]) {
+			#if WRITE_OTP
+			printk(BIOS_DEBUG, "([%x should be %02X])\n", i, sha512_auth[i]);
+			#endif
 			for (;;); /* Hang */
+		}
 	}
+	#if WRITE_OTP
+	printk(BIOS_DEBUG, "\n");
+	#endif
 
 	spi_release_bus(flash->spi);
 	return 0;
@@ -105,6 +132,7 @@ static AGESA_STATUS oem_validate_auth(void)
 static AGESA_STATUS oem_write_auth(void)
 {
 	struct spi_flash *flash;
+	u32 i;
 
 	spi_init();
 	flash = spi_flash_probe(0, 0, 0, 0);
@@ -114,11 +142,26 @@ static AGESA_STATUS oem_write_auth(void)
 	flash->spi->rw = SPI_WRITE_FLAG;
 	spi_claim_bus(flash->spi);
 
-//	flash->erase(flash, pos, size);
-//	flash->write(flash, pos, sizeof(len), &len);
-//	flash->write(flash, pos + sizeof(len), len, buf);
+	/* read first */
+	spi_flash_cmd_read_otp(flash, 0, OTP_LEN, otpdata);
+	for (i=0; i<OTP_LEN; i++) {
+		printk(BIOS_DEBUG, " %02X", otpdata[i]);
+		if (otpdata[i] != 0xFF) {
+			printk(BIOS_DEBUG, "\nOTP is not empty\n");
+			/* print data left */
+			i ++;
+			while (i < OTP_LEN) printk(BIOS_DEBUG, " %02X", otpdata[i]);
+			for (;;); /* Hang */
+		}
+	}
+	printk(BIOS_DEBUG, "\n");
+
 	spi_flash_cmd_write_otp(flash, 0, OTP_LEN, sha512_auth);
-	//spi_flash_cmd_read_otp(flash, 0, 0x10, NULL);
+	printk(BIOS_DEBUG, "wrote\n");
+
+	spi_flash_cmd(flash->spi, 0x2F, NULL, 0); /* locked */
+	printk(BIOS_DEBUG, "locked\n");
+
 	flash->spi->rw = SPI_WRITE_FLAG;
 
 	spi_release_bus(flash->spi);
@@ -143,11 +186,17 @@ void read_mac()
 	mac_lo = inl(ioaddr + 4);
 	outl(0x5404, ioaddr);
 	mac_hi = inl(ioaddr + 4) & 0xFFFF;
+	#if SHOW_MESSAGE
 	printk(BIOS_DEBUG, "mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
 	       mac_valid[0], mac_valid[1], mac_valid[2], mac_valid[3], mac_valid[4], mac_valid[5]);
+	#endif
 	if ((mac_lo != mac_ptr[0]) || (mac_hi != mac_ptr[1]))
 		for (;;);
-	/* nvram */
+	#if SHOW_MESSAGE
+	printk(BIOS_DEBUG, "mac validation ok\n");
+	#endif
+
+	/* TODO:nvram */
 }
 #endif
 
@@ -157,14 +206,20 @@ AGESA_STATUS oem_auth(void)
 #if WRITE_OTP
 	oem_write_auth();
 	oem_validate_auth();
+	printk(BIOS_DEBUG, "write OTP ok\n");
 #else
 	oem_validate_auth();
 #endif
-#endif
+
 #if VALIDATE_MAC_ADDRESS
 	read_mac();
 #endif
 
+#if WRITE_OTP
+	for (;;);
+#endif
+
+#endif	/* VALIDATE_OTP */
 	return 0;
 }
 
