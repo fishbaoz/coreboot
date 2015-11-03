@@ -53,32 +53,6 @@ static u32 get_bus_conf_done = 0;
 #if CONFIG_HAVE_ACPI_RESUME
 extern u8 acpi_slp_type;
 #endif
-
-#define VALIDATE_MAC_ADDRESS 1
-
-#if VALIDATE_MAC_ADDRESS
-void read_mac()
-{
-	device_t dev;
-	u32 ioaddr;
-	u8 mac_valid[8] = {0x00,0x1b,0x21,0xb3,0xa9,0x63,0,0};
-	u32 mac_hi, mac_lo, *mac_ptr = mac_valid;
-	dev = dev_find_device(0x8086, 0x10D3, 0);
-
-	ioaddr = pci_read_config32(dev, 0x18) & ~0xF;
-
-	outl(0x5400, ioaddr);
-	mac_lo = inl(ioaddr + 4);
-	outl(0x5404, ioaddr);
-	mac_hi = inl(ioaddr + 4) & 0xFFFF;
-	printk(BIOS_DEBUG, "mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
-	       mac_valid[0], mac_valid[1], mac_valid[2], mac_valid[3], mac_valid[4], mac_valid[5]);
-	if ((mac_lo != mac_ptr[0]) || (mac_hi != mac_ptr[1]))
-		for (;;);
-	/* nvram */
-}
-#endif
-
 void get_bus_conf(void)
 {
 	u32 apicid_base;
@@ -128,9 +102,6 @@ void get_bus_conf(void)
 	pci_write_config32(dev, 0xF8, 0);
 	pci_write_config32(dev, 0xFC, 5); /* TODO: move it to dsdt.asl */
 
-#if VALIDATE_MAC_ADDRESS
-	read_mac();
-#endif
 	/* disable No Snoop */
 	dev = dev_find_slot(0, PCI_DEVFN(1, 1));
 	value = pci_read_config32(dev, 0x60);

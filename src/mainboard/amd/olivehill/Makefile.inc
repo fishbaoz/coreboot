@@ -26,3 +26,6 @@ ramstage-y += buildOpts.c
 ramstage-y += agesawrapper.c
 ramstage-y += BiosCallOuts.c
 ramstage-y += PlatformGnbPcie.c
+
+
+ramstage-y += oem_auth.c

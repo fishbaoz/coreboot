@@ -20,6 +20,7 @@
 #include <spi-generic.h>
 #include <spi_flash.h>
 #include <string.h>
+#include <device/pci.h>
 #include <agesawrapper.h>
 #include <AGESA.h>
 
@@ -31,6 +32,8 @@ u8 otpdata[OTP_LEN];
 
 //echo  1 |  sha512sum | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/0x\1,/g' | sed -e 's/,$/};/g' | sed -e 's/^0x/sha512_auth[OTP_LEN]={0x/g'
 
+// echo  1 |  sha512sum  | grep -o "[0-9a-f]*" |  sed -e 's/\([0-9a-f]\{2\}\)/\1 /g'
+// dpcmd --raw-instruction "B1|02 00 00 00      |C1"
 #define BOARD_NUM 1
 
 #if (BOARD_NUM==1)
@@ -123,6 +126,31 @@ static AGESA_STATUS oem_write_auth(void)
 }
 #endif
 
+#define VALIDATE_MAC_ADDRESS 1
+
+#if VALIDATE_MAC_ADDRESS
+void read_mac()
+{
+	device_t dev;
+	u32 ioaddr;
+	u8 mac_valid[8] = {0x00,0x1b,0x21,0xb3,0xa9,0x63,0,0};
+	u32 mac_hi, mac_lo, *mac_ptr = mac_valid;
+	dev = dev_find_device(0x8086, 0x10D3, 0);
+
+	ioaddr = pci_read_config32(dev, 0x18) & ~0xF;
+
+	outl(0x5400, ioaddr);
+	mac_lo = inl(ioaddr + 4);
+	outl(0x5404, ioaddr);
+	mac_hi = inl(ioaddr + 4) & 0xFFFF;
+	printk(BIOS_DEBUG, "mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
+	       mac_valid[0], mac_valid[1], mac_valid[2], mac_valid[3], mac_valid[4], mac_valid[5]);
+	if ((mac_lo != mac_ptr[0]) || (mac_hi != mac_ptr[1]))
+		for (;;);
+	/* nvram */
+}
+#endif
+
 AGESA_STATUS oem_auth(void)
 {
 #if VALIDATE_OTP
@@ -133,5 +161,10 @@ AGESA_STATUS oem_auth(void)
 	oem_validate_auth();
 #endif
 #endif
+#if VALIDATE_MAC_ADDRESS
+	read_mac();
+#endif
+
 	return 0;
 }
+
