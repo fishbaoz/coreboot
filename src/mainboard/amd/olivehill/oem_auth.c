@@ -28,11 +28,9 @@
 u8 otpdata[OTP_LEN];
 
 /*
-  Skip OTP validation.
-  1. Set VALIDATE_OTP = 0.
+  Skip validation.
+  1. Set VALIDATE_OTP_MAC_ADDRESS = 0.
 
-  Skip MAC validation.
-  1. Set VALIDATE_MAC_ADDRESS = 0.
  */
 #define SHOW_MESSAGE 0
 /*
@@ -44,7 +42,7 @@ u8 otpdata[OTP_LEN];
   5. build coreboot.rom, which is the final image.
  */
 
-#define VALIDATE_OTP 1
+#define VALIDATE_OTP_MAC_ADDRESS 0
 #define WRITE_OTP 0
 
 //echo  1 |  sha512sum | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/0x\1,/g' | sed -e 's/,$/};/g' | sed -e 's/^0x/sha512_auth[OTP_LEN]={0x/g'
@@ -169,9 +167,7 @@ static AGESA_STATUS oem_write_auth(void)
 }
 #endif
 
-#define VALIDATE_MAC_ADDRESS 1
-
-#if VALIDATE_MAC_ADDRESS
+#if VALIDATE_OTP_MAC_ADDRESS
 void read_mac()
 {
 	device_t dev;
@@ -202,7 +198,7 @@ void read_mac()
 
 AGESA_STATUS oem_auth(void)
 {
-#if VALIDATE_OTP
+#if VALIDATE_OTP_MAC_ADDRESS
 #if WRITE_OTP
 	oem_write_auth();
 	oem_validate_auth();
@@ -211,15 +207,13 @@ AGESA_STATUS oem_auth(void)
 	oem_validate_auth();
 #endif
 
-#if VALIDATE_MAC_ADDRESS
 	read_mac();
-#endif
 
 #if WRITE_OTP
 	for (;;);
 #endif
 
-#endif	/* VALIDATE_OTP */
+#endif	/* VALIDATE_OTP_MAC_ADDRESS */
 	return 0;
 }
 
