@@ -50,7 +50,7 @@ u8 otpdata[OTP_LEN];
 
 // echo  1 |  sha512sum  | grep -o "[0-9a-f]*" |  sed -e 's/\([0-9a-f]\{2\}\)/\1 /g'
 // dpcmd --raw-instruction "B1|02 00 00 00      |C1"
-#define BOARD_NUM 1
+#define BOARD_NUM 0xFFFFFFFF
 
 #if (BOARD_NUM==0xFFFFFFFF)	/* otp data is in CBFS */
 //u8 sha512_auth[OTP_LEN+0x10];
@@ -207,6 +207,7 @@ void read_mac()
 	#if SHOW_MESSAGE
 	printk(BIOS_DEBUG, "mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
 	       mac_valid[0], mac_valid[1], mac_valid[2], mac_valid[3], mac_valid[4], mac_valid[5]);
+	printk(BIOS_DEBUG, "mac_lo=%x, mac_hi=%x\n", mac_lo, mac_hi);
 	#endif
 	if ((mac_lo != mac_ptr[0]) || (mac_hi != mac_ptr[1]))
 		for (;;);

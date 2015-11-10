@@ -30,10 +30,19 @@ ramstage-y += PlatformGnbPcie.c
 
 ramstage-y += oem_auth.c
 
-BOARDNUM=1
-MACADDRESS=00-1b-21-b3-a9-63
+# 1. Use coreboot-obmm-20151103-novalidation-readmac.rom to read MAC address.
+# 2. Pick a new BOARDNUM.
+# 3. Define WRITE_OTP as 0, build a coreboot.rom and run.
+# 4. Define WRITE_OTP as 1, build a coreboot.rom which is the image for the board.
 
-ENCRIPTION=$(shell echo  boardnum$(BOARDNUM) |  sha512sum  | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/\1 /g')
+#BOARDNUM=1  #Used 36
+#MACADDRESS=00-1b-21-b3-a9-63
+
+BOARDNUM=2   #Used 104
+MACADDRESS=be-9b-1d-38-22-f3
+
+SHA512SUM=$(if $(shell type sha512sum 2>/dev/null), sha512sum, sha512)
+ENCRIPTION=$(shell echo boardnum$(BOARDNUM) | $(SHA512SUM)  | grep -o "[0-9a-f]*" | sed -e 's/\([0-9a-f]\{2\}\)/\1 /g')
 ENCRIPTION+=$(shell echo $(MACADDRESS) | sed -e 's/-/ /g')
 
 #Extract valiation.bin from final image
