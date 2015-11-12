@@ -146,7 +146,7 @@ endif
 ifneq ($(HUDSON_FWM_INSIDE_CBFS), 1)
 $(warning ##### WARNING: CONFIG_HUDSON_FWM_POSITION ($(HUDSON_FWM_POSITION)) is outside of CBFS area ($(CBFS_BASE_ADDRESS) to 4294967295) ##### )
 endif
-cbfs-files-y += fch/fwm
+#cbfs-files-y += fch/fwm
 fch/fwm-file := $(obj)/coreboot_hudson_romsig.bin
 fch/fwm-position := $(HUDSON_FWM_POSITION)
 fch/fwm-size := $(ROMSIZE_SIG)
@@ -154,7 +154,7 @@ fch/fwm-type := raw
 endif
 
 ifeq ($(CONFIG_HUDSON_XHCI_FWM), y)
-cbfs-files-y += fch/xhci
+#cbfs-files-y += fch/xhci
 fch/xhci-file := $(call strip_quotes, $(CONFIG_HUDSON_XHCI_FWM_FILE))
 fch/xhci-position := $(HUDSON_XHCI_POSITION)
 fch/xhci-type := raw
@@ -162,7 +162,7 @@ fch/xhci-required := Hudson XHCI firmware (available in coreboot/3rdparty/blobs 
 endif
 
 ifeq ($(CONFIG_HUDSON_IMC_FWM), y)
-cbfs-files-y += fch/imc
+#cbfs-files-y += fch/imc
 fch/imc-file := $(call strip_quotes, $(CONFIG_HUDSON_IMC_FWM_FILE))
 fch/imc-position := $(HUDSON_IMC_POSITION)
 fch/imc-type := raw
@@ -170,7 +170,7 @@ fch/imc-required := Hudson IMC Firmware (available in coreboot/3rdparty/blobs if
 endif
 
 ifeq ($(CONFIG_HUDSON_GEC_FWM), y)
-cbfs-files-y += fch/gec
+#cbfs-files-y += fch/gec
 fch/gec-file := $(call strip_quotes, $(CONFIG_HUDSON_GEC_FWM_FILE))
 fch/gec-position := $(HUDSON_GEC_POSITION)
 fch/gec-type := raw
@@ -305,6 +305,14 @@ define output_hex
 echo $(1) | LC_ALL=C awk '{printf ("%c%c%c%c", $$1 % 256, int($$1/256) % 256, int($$1/65536) % 256, int($$1/16777216));}'
 endef
 
+$(obj)/amdfw.rom: $(CONFIG_HUDSON_XHCI_FWM_FILE) $(CONFIG_HUDSON_IMC_FWM_FILE) $(CONFIG_HUDSON_GEC_FWM_FILE) \
+			$(CONFIG_
+
+cbfs-files-y += apu/amdfw
+apu/amdfw-file := $(obj)/amdfw.rom
+apu/amdfw-position := 0xFF820000 #$(HUDSON_PSP_DIRECTORY_POSITION)
+apu/amdfw-type := raw
+
 $(obj)/coreboot_psp_directory.bin: $(obj)/config.h $(FLETCHER) $(RTM_FILE)
 	echo "    PSPDir     $@"
 	for fwm in 0 $(AMDPUBKEY_SIZE) $(AMDPUBKEY_POS) 0; do \
@@ -353,81 +361,81 @@ endif
 	done > $@_head.tmp
 	cat $@_head.tmp $@_tail.tmp > $@.tmp
 	$(FLETCHER) < $@.tmp > $@
-	rm $@_head.tmp $@_tail.tmp $@.tmp
+#	rm $@_head.tmp $@_tail.tmp $@.tmp
 
 $(obj)/coreboot_psp_directory_combine_pubkey.bin: $(obj)/coreboot_psp_directory.bin
 	cat  $(obj)/coreboot_psp_directory.bin > $@
 	ls -ln $(obj)/coreboot_psp_directory.bin | LC_ALL=C awk '{for (i=0; i<256-$$5; i++) {printf "%c", 255}}' >> $@
 	cat  $(top)/$(FIRMWARE_LOCATE)/AmdPubKey$(FIRMWARE_TYPE).bin >> $@
 
-cbfs-files-y += apu/pspdir
+#cbfs-files-y += apu/pspdir
 apu/pspdir-file := $(obj)/coreboot_psp_directory_combine_pubkey.bin
 apu/pspdir-position := $(HUDSON_PSP_DIRECTORY_POSITION)
 apu/pspdir-type := raw
 
 # 5
-cbfs-files-y += apu/pubsignedkey
+#cbfs-files-y += apu/pubsignedkey
 apu/pubsignedkey-file := $(CONFIG_PUBSIGNEDKEY_FILE)
 apu/pubsignedkey-position := $(PUBSIGNEDKEY_POS)
 apu/pubsignedkey-type := raw
 
 # 1
-cbfs-files-y += apu/pspbtldr
+#cbfs-files-y += apu/pspbtldr
 apu/pspbtldr-file := $(CONFIG_PSPBTLDR_FILE)
 apu/pspbtldr-position := $(PSPBTLDR_POS)
 apu/pspbtldr-type := raw
 
 #3
-cbfs-files-y += apu/psprcvr
+#cbfs-files-y += apu/psprcvr
 apu/psprcvr-file := $(CONFIG_PSPRCVR_FILE)
 apu/psprcvr-position := $(PSPRCVR_POS)
 apu/psprcvr-type := raw
 
 # 2
-cbfs-files-y += apu/pspsecureos
+#cbfs-files-y += apu/pspsecureos
 apu/pspsecureos-file := $(CONFIG_PSPSCUREOS_FILE)
 apu/pspsecureos-position := $(PSPSECUREOS_POS)
 apu/pspsecureos-type := raw
 
 # 4
-cbfs-files-y += apu/pspnvram
+#cbfs-files-y += apu/pspnvram
 apu/pspnvram-file := $(CONFIG_PSPNVRAM_FILE)
 apu/pspnvram-position := $(PSPNVRAM_POS)
 apu/pspnvram-type := raw
 
 #8
-cbfs-files-y += apu/smufwm
+#cbfs-files-y += apu/smufwm
 apu/smufwm-file := $(CONFIG_SMUFWM_FILE)
 apu/smufwm-position := $(SMUFWM_POS)
 apu/smufwm-type := raw
 
 #95
-cbfs-files-y += apu/smuscs
+#cbfs-files-y += apu/smuscs
 apu/smuscs-file := $(CONFIG_SMUSCS_FILE)
 apu/smuscs-position := $(SMUSCS_POS)
 apu/smuscs-type := raw
 
 #9
-cbfs-files-y += apu/pspsecuredebug
+#cbfs-files-y += apu/pspsecuredebug
 apu/pspsecuredebug-file := $(CONFIG_PSPSECUREDEBUG_FILE)
 apu/pspsecuredebug-position := $(PSPSECUREDEBUG_POS)
 apu/pspsecuredebug-type := raw
 
 #12
-cbfs-files-y += apu/psptrustlets
+#cbfs-files-y += apu/psptrustlets
 apu/psptrustlets-file := $(CONFIG_PSPTRUSTLETS_FILE)
 apu/psptrustlets-position := $(PSPTRUSTLETS_POS)
 apu/psptrustlets-type := raw
 
 #13
-cbfs-files-y += apu/trustletkey
+#cbfs-files-y += apu/trustletkey
 apu/trustletkey-file := $(CONFIG_TRUSTLETKEY_FILE)
 apu/trustletkey-position := $(TRUSTLETKEY_POS)
 apu/trustletkey-type := raw
 
 #18
 ifeq ($(CONFIG_CPU_AMD_PI_00660F01), y)
-cbfs-files-y += apu/smufirmware2
+#cbfs-files-y += apu/smufirmware2
 apu/smufirmware2-file := $(CONFIG_SMUFIRMWARE2_FILE)
 apu/smufirmware2-position := $(SMUFIRMWARE2_POS)
 apu/smufirmware2-type := raw

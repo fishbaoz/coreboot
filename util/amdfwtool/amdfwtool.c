@@ -25,6 +25,7 @@
 #include <getopt.h>
 
 #define MAX_PSP_DIRECTORY_SIZE 512
+#define ALIGN(val, by) (((val) + (by)-1)&~((by)-1))
 
 typedef unsigned int uint32_t;
 typedef unsigned char uint8_t;
@@ -62,6 +63,7 @@ uint32_t fletcher32 (const uint16_t *pptr, int length)
 	c0 = 0xFFFF;
 	c1 = 0xFFFF;
 
+	printf("%x,%x, len=%x\n", pptr[0], pptr[1], length);
 	for (index = 0; index < length; index++) {
 		/*
 		* Ignore the contents of the checksum field.
@@ -98,52 +100,110 @@ typedef enum _amd_fw_type {
 	AMD_PSP_FUSE_CHAIN = 11,
 	AMD_FW_PSP_SMUSCS = 95,
 
-	AMD_FW_XHCI,
 	AMD_FW_IMC,
 	AMD_FW_GEC,
-
+	AMD_FW_XHCI,
 } amd_fw_type;
 
 typedef struct _amd_fw_entry {
 	amd_fw_type type;
 	char *filename;
+	uint32_t offset;	/* TODO: delete */
 } amd_fw_entry;
 
+amd_fw_entry amd_psp_fw_table[] = {
+	{ /*.offset = 0xff870100,*/ .type = AMD_FW_PSP_PUBKEY },
+	{ /*.offset = 0xff870780,*/ .type = AMD_FW_PSP_BOOTLOADER },
+	{ /*.offset = 0xff8a83a0,*/ .type = AMD_FW_PSP_SMU_FIRMWARE },
+	{ /*.offset = 0xff876d80,*/ .type = AMD_FW_PSP_RECOVERY },
+	{ /*.offset = 0xff8703c0,*/ .type = AMD_FW_PSP_RTM_PUBKEY },
+	{ /*.offset = 0xff87c2a0,*/ .type = AMD_FW_PSP_SECURED_OS },
+	{ /*.offset = 0xff898320,*/ .type = AMD_FW_PSP_NVRAM },
+	{ /*.offset = 0xff8bbfc0,*/ .type = AMD_FW_PSP_SECURED_DEBUG },
+	{ /*.offset = 0xff8bc380,*/ .type = AMD_FW_PSP_TRUSTLETS },
+	{ /*.offset = 0xff8d2b20,*/ .type = AMD_FW_PSP_TRUSTLETKEY },
+	{ /*.offset = 0xff8d2ee0,*/ .type = AMD_FW_PSP_SMU_FIRMWARE2 },
+	{ /*.offset = 0xff8bb360,*/ .type = AMD_FW_PSP_SMUSCS },
+	{ /*.offset = 0x0,       */ .type = AMD_PSP_FUSE_CHAIN },
+};
 amd_fw_entry amd_fw_table[] = {
-	{ .type = AMD_FW_PSP_PUBKEY },
-	{ .type = AMD_FW_PSP_BOOTLOADER },
-	{ .type = AMD_FW_PSP_SMU_FIRMWARE },
-	{ .type = AMD_FW_PSP_RECOVERY },
-	{ .type = AMD_FW_PSP_RTM_PUBKEY },
-	{ .type = AMD_FW_PSP_SECURED_OS },
-	{ .type = AMD_FW_PSP_NVRAM },
-	{ .type = AMD_FW_PSP_SECURED_DEBUG },
-	{ .type = AMD_FW_PSP_TRUSTLETS },
-	{ .type = AMD_FW_PSP_TRUSTLETKEY },
-	{ .type = AMD_FW_PSP_SMU_FIRMWARE2 },
-	{ .type = AMD_PSP_FUSE_CHAIN },
-	{ .type = AMD_FW_PSP_SMUSCS },
-
-	{ .type = AMD_FW_XHCI },
-	{ .type = AMD_FW_IMC },
-	{ .type = AMD_FW_GEC },
+	{ /*.offset = 0xff821060, */ .type = AMD_FW_XHCI },
+	{ /*.offset = 0xff840000, */ .type = AMD_FW_IMC },
+	{ /*.offset = 0,          */ .type = AMD_FW_GEC },
 };
 
-uint32_t integerate_one(uint32_t pos, uint32_t *psp_entry, amd_fw_entry *table)
+//uint32_t integerate_one(uint32_t pos, uint32_t *psp_entry, amd_fw_entry *table)
+void fill_psp_head(uint32_t *pspdir, int count)
+{
+	pspdir[0] = 1347637284;//'PSP$';
+	pspdir[2] = count;		/* size */
+	pspdir[3] = 0;
+	pspdir[1] = fletcher32((uint16_t *)&pspdir[1], (count *16 + 16)/2 - 2);
+}
+uint32_t integerate_one_fw(void *base, uint32_t pos, uint32_t *romsig, int i)
+{
+	int fd;
+	struct stat fd_stat;
+	printf("integrate %x, %s, pos=%x\n", amd_fw_table[i].type, amd_fw_table[i].filename, pos);
+
+	if (amd_fw_table[i].filename != NULL) {
+		fd = open (amd_fw_table[i].filename, O_RDONLY);
+		fstat(fd, &fd_stat);
+
+		//pos = amd_fw_table[i].offset - 0xFF800000; /* TODO: delete */
+		//printf("amd_fw_table[i].offset=%x, pos=%x\n", amd_fw_table[i].offset, pos);
+
+		switch (amd_fw_table[i].type) {
+		case AMD_FW_IMC:
+			romsig[1] = pos + 0xFF800000;
+			break;
+		case AMD_FW_GEC:
+			romsig[2] = pos + 0xFF800000;
+			break;
+		case AMD_FW_XHCI:
+			romsig[3] = pos + 0xFF800000;
+			break;
+		default:
+			/* Error */
+			break;
+		}
+		read (fd, base+pos, fd_stat.st_size);
+
+		pos += fd_stat.st_size;
+		pos = ALIGN(pos, 0x100);
+		close (fd);
+	}
+
+	return pos;
+}
+
+uint32_t integerate_one_psp(void *base, uint32_t pos, uint32_t *pspdir, int i)
 {
 	int fd;
 	struct stat fd_stat;
 
-	fd = open (table->filename, O_RDONLY);
-	fstat(fd, &fd_stat);
-	psp_entry[0] = table->type;
-	psp_entry[1] = fd_stat.st_size;
-	psp_entry[2] = pos + 0xFF800000;
-	psp_entry[3] = 0;
+//	printf("integrate %x, %s, ", amd_psp_fw_table[i].type, amd_psp_fw_table[i].filename);
+	pspdir[4+4*i+0] = amd_psp_fw_table[i].type;
 
-	pos += fd_stat.st_size;
-	close (fd);
+	if (amd_psp_fw_table[i].type == AMD_PSP_FUSE_CHAIN) {
+		pspdir[4+4*i+1] = 0xFFFFFFFF;
+		pspdir[4+4*i+2] = 1;
+		pspdir[4+4*i+3] = 0;
+	} else if (amd_psp_fw_table[i].filename != NULL) {
+		fd = open (amd_psp_fw_table[i].filename, O_RDONLY);
+		fstat(fd, &fd_stat);
+		pspdir[4+4*i+1] = fd_stat.st_size;
+		//pos = amd_psp_fw_table[i].offset - 0xFF800000; /* TODO: delete */
+		//printf("pos=%x\n", pos);
+		pspdir[4+4*i+2] = pos + 0xFF800000;
+		pspdir[4+4*i+3] = 0;
 
+		read (fd, base+pos, fd_stat.st_size);
+
+		pos += fd_stat.st_size;
+		pos = ALIGN(pos, 0x100);
+		close (fd);
+	}
 	return pos;
 }
 
@@ -171,22 +231,27 @@ static struct option long_options[] = {
 	{NULL,           0,                 0,  0  }
 };
 
-void register_fw_filename(amd_fw_entry *table, amd_fw_type type, char filename[])
+void register_fw_filename(amd_fw_type type, char filename[])
 {
 	int i;
 
+	for (i = 0; i < sizeof(amd_psp_fw_table)/sizeof(amd_fw_entry); i++) {
+		if (amd_psp_fw_table[i].type == type) {
+			amd_psp_fw_table[i].filename = filename;
+			printf("[%d]=%s\n", type, filename);
+		}
+	}
 	for (i = 0; i < sizeof(amd_fw_table)/sizeof(amd_fw_entry); i++) {
 		if (amd_fw_table[i].type == type) {
 			amd_fw_table[i].filename = filename;
 			printf("[%d]=%s\n", type, filename);
 		}
 	}
-
 }
 
 int main(int argc, char **argv)
 {
-	int c;
+	int c, i;
 	uint32_t checksum = 0xFFFFFFFF;
 	struct stat filestat = {};
 	int retcode = EINVAL;
@@ -201,6 +266,7 @@ int main(int argc, char **argv)
 	int targetfd;
 
 	rom = malloc(CONFIG_ROM_SIZE);
+	memset (rom, 0xFF, CONFIG_ROM_SIZE);
 	if (!rom) {
 		//ERROR("Couldn't allocate memory for microcode update entries.\n");
 		return 1;
@@ -218,7 +284,7 @@ int main(int argc, char **argv)
 	pspdir[2] = 0;		/* size */
 	pspdir[3] = 0;
 
-	current = 0x70100; /* TODO 0x70400 */
+	current = 0x20100; /* TODO 0x70400 */
 	entry = &pspdir[4];
 
 	//current = integerate_one(current, pspdir, entryb,
@@ -233,49 +299,49 @@ int main(int argc, char **argv)
 
 		switch (c) {
 		case 'x':
-			register_fw_filename(amd_fw_table, AMD_FW_XHCI, optarg);
+			register_fw_filename(AMD_FW_XHCI, optarg);
 			break;
 		case 'i':
-			register_fw_filename(amd_fw_table, AMD_FW_IMC, optarg);
+			register_fw_filename(AMD_FW_IMC, optarg);
 			break;
 		case 'g':
-			register_fw_filename(amd_fw_table, AMD_FW_GEC, optarg);
+			register_fw_filename(AMD_FW_GEC, optarg);
 			break;
 		case 'p':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_PUBKEY, optarg);
+			register_fw_filename(AMD_FW_PSP_PUBKEY, optarg);
 			break;
 		case 'b':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_BOOTLOADER, optarg);
+			register_fw_filename(AMD_FW_PSP_BOOTLOADER, optarg);
 			break;
 		case 's':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_SMU_FIRMWARE, optarg);
+			register_fw_filename(AMD_FW_PSP_SMU_FIRMWARE, optarg);
 			break;
 		case 'r':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_RECOVERY, optarg);
+			register_fw_filename(AMD_FW_PSP_RECOVERY, optarg);
 			break;
 		case 'k':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_RTM_PUBKEY, optarg);
+			register_fw_filename(AMD_FW_PSP_RTM_PUBKEY, optarg);
 			break;
 		case 'o':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_SECURED_OS, optarg);
+			register_fw_filename(AMD_FW_PSP_SECURED_OS, optarg);
 			break;
 		case 'n':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_NVRAM, optarg);
+			register_fw_filename(AMD_FW_PSP_NVRAM, optarg);
 			break;
 		case 'd':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_SECURED_DEBUG, optarg);
+			register_fw_filename(AMD_FW_PSP_SECURED_DEBUG, optarg);
 			break;
 		case 't':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_TRUSTLETS, optarg);
+			register_fw_filename(AMD_FW_PSP_TRUSTLETS, optarg);
 			break;
 		case 'u':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_TRUSTLETKEY, optarg);
+			register_fw_filename(AMD_FW_PSP_TRUSTLETKEY, optarg);
 			break;
 		case 'w':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_SMU_FIRMWARE2, optarg);
+			register_fw_filename(AMD_FW_PSP_SMU_FIRMWARE2, optarg);
 			break;
 		case 'm':
-			register_fw_filename(amd_fw_table, AMD_FW_PSP_SMUSCS, optarg);
+			register_fw_filename(AMD_FW_PSP_SMUSCS, optarg);
 			break;
 
 //		case 'h':
@@ -289,7 +355,22 @@ int main(int argc, char **argv)
 		}
 	}
 
-	current = integerate_one(current, entry, &amd_fw_table[0]);
+	for (i=0; i< sizeof(amd_fw_table) / sizeof(amd_fw_entry); i ++) {
+		current = integerate_one_fw(rom, current, amd_romsig, i);
+		entry += 32;
+	}
+
+	current = ALIGN(current, 0x10000);
+	//current = 0x70000;	/* TODO: Delete */
+	pspdir = rom + current;
+	amd_romsig[4] = current + 0xFF800000;
+	current += 0x400;
+	for (i=0; i< sizeof(amd_psp_fw_table) / sizeof(amd_fw_entry); i ++) {
+		current = integerate_one_psp(rom, current, pspdir, i);
+		entry += 32;
+	}
+
+	fill_psp_head(pspdir, i);
 #if 0
 	uint16_t buffer[MAX_PSP_DIRECTORY_SIZE / sizeof(uint16_t)];
 
@@ -325,8 +406,8 @@ int main(int argc, char **argv)
 	}
 #endif
 	targetfd = open("amdfw.rom", O_RDWR | O_CREAT, 0666);
-//	write(targetfd, romsig, pos-romsig);
-	write(targetfd, rom, CONFIG_ROM_SIZE);
+	write(targetfd, amd_romsig, current - 0x20000);
+//	write(targetfd, rom, CONFIG_ROM_SIZE);
 	close(targetfd);
 	free(rom);
 	return 0;
