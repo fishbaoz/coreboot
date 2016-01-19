@@ -33,6 +33,10 @@
 #include <cpu/amd/agesa/s3_resume.h>
 #include "cbmem.h"
 
+#include "superio/smsc/sio1036/sio1036_early_init.c"
+
+#define SERIAL_DEV PNP_DEV(0x4E, SIO1036_SP1)
+
 
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
@@ -56,7 +60,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 	if (!cpu_init_detectedx && boot_cpu()) {
 		post_code(0x30);
-
+		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 		post_code(0x31);
 		console_init();
 	}
@@ -90,6 +94,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		post_code(0x41);
 		agesawrapper_amdinitenv();
 		/* TODO: Disable cache is not ok. */
+		cbmem_initialize_empty();
 		disable_cache_as_ram();
 	} else { /* S3 detect */
 		printk(BIOS_INFO, "S3 detected\n");

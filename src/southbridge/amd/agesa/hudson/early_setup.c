@@ -87,6 +87,13 @@ void hudson_lpc_port80(void)
 	byte = pci_read_config8(dev, 0x4a);
 	byte |= 1 << 5; /* enable port 80 */
 	pci_write_config8(dev, 0x4a, byte);
+
+	byte = pci_read_config8(dev, 0x48);
+	byte |= 3; /* enable port 80 */
+	pci_write_config8(dev, 0x48, byte);
+	byte = pci_read_config8(dev, 0x44);
+	byte |= 1 << 6;
+	pci_write_config8(dev, 0x44, byte);
 }
 
 int s3_save_nvram_early(u32 dword, int size, int  nvram_pos)

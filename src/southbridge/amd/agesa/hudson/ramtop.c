@@ -45,14 +45,16 @@ unsigned long get_top_of_ram(void)
 {
 	uint32_t xdata = 0;
 	int xnvram_pos = 0xf8, xi;
-	if (acpi_get_sleep_type() != 3)
-		return 0;
+//	if (acpi_get_sleep_type() != 3)
+//		return 0;
+//	printk(BIOS_DEBUG, "xdata 0=%x\n", xdata);
 	for (xi = 0; xi<4; xi++) {
 		outb(xnvram_pos, BIOSRAM_INDEX);
 		xdata &= ~(0xff << (xi * 8));
 		xdata |= inb(BIOSRAM_DATA) << (xi *8);
 		xnvram_pos++;
 	}
+	xdata = 0xc0000000;
 	return (unsigned long) xdata;
 }
 

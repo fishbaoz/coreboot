@@ -29,7 +29,7 @@ void cbmem_run_init_hooks(int is_recovery)
 	if (_cbmem_init_hooks_size == 0)
 		return;
 
-	while (init_hook_ptr !=  einit_hook_ptr) {
+	while (init_hook_ptr != einit_hook_ptr) {
 		(*init_hook_ptr)(is_recovery);
 		init_hook_ptr++;
 	}
