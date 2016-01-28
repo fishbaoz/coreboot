@@ -140,6 +140,7 @@ struct lb_mainboard {
 #define LB_TAG_VERSION		0x0004
 #define LB_TAG_EXTRA_VERSION	0x0005
 #define LB_TAG_BUILD		0x0006
+#define LB_TAG_BUILD_BY		0x000e
 #define LB_TAG_COMPILE_TIME	0x0007
 #define LB_TAG_COMPILE_BY	0x0008
 #define LB_TAG_COMPILE_HOST	0x0009

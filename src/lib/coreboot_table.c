@@ -362,6 +362,7 @@ static void lb_strings(struct lb_header *header)
 		{ LB_TAG_VERSION,        coreboot_version,        },
 		{ LB_TAG_EXTRA_VERSION,  coreboot_extra_version,  },
 		{ LB_TAG_BUILD,          coreboot_build,          },
+		{ LB_TAG_BUILD_BY,       coreboot_build_by,       },
 		{ LB_TAG_COMPILE_TIME,   coreboot_compile_time,   },
 	};
 	unsigned int i;

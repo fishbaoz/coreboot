@@ -14,6 +14,9 @@
 #ifndef COREBOOT_BUILD
 #error  COREBOOT_BUILD not defined
 #endif
+#ifndef COREBOOT_BUILD_BY
+#error  COREBOOT_BUILD_BY not defined
+#endif
 
 #ifndef COREBOOT_COMPILE_TIME
 #error  COREBOOT_COMPILE_TIME not defined
@@ -29,6 +32,7 @@ const char mainboard_part_number[] = CONFIG_MAINBOARD_PART_NUMBER;
 const char coreboot_version[] = COREBOOT_VERSION;
 const char coreboot_extra_version[] = COREBOOT_EXTRA_VERSION;
 const char coreboot_build[] = COREBOOT_BUILD;
+const char coreboot_build_by[] = COREBOOT_BUILD_BY;
 const unsigned int coreboot_version_timestamp = COREBOOT_VERSION_TIMESTAMP;
 
 const char coreboot_compile_time[]   = COREBOOT_COMPILE_TIME;

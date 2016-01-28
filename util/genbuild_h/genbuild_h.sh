@@ -17,6 +17,8 @@
 DATE=""
 GITREV=""
 TIMESOURCE=""
+BUILDBY=Unknown
+USERMAIL=Unknown
 
 export LANG=C
 export LC_ALL=C
@@ -28,6 +30,8 @@ if [ -e "${top}/.git" -a -x "$(command -v git)" ]; then
 	GITREV=$(LANG= git log -1 --format=format:%h)
 	TIMESOURCE=git
 	DATE=$(git log --pretty=format:%ct -1)
+	BUILDBY=$(git config user.name)
+	USERMAIL=$(git config user.email)
 else
 	GITREV=Unknown
 	TIMESOURCE="date"
@@ -61,6 +65,7 @@ printf "#define COREBOOT_BUILD_YEAR_BCD 0x$(our_date "$DATE" +%y)\n"
 printf "#define COREBOOT_BUILD_MONTH_BCD 0x$(our_date "$DATE" +%m)\n"
 printf "#define COREBOOT_BUILD_DAY_BCD 0x$(our_date "$DATE" +%d)\n"
 printf "#define COREBOOT_BUILD_WEEKDAY_BCD 0x$(our_date "$DATE" +%w)\n"
+printf "#define COREBOOT_BUILD_BY \"%s <%s>\"\n" "$BUILDBY" "$USERMAIL"
 printf "#define COREBOOT_DMI_DATE \"$(our_date "$DATE" +%m/%d/%Y)\"\n"
 printf "\n"
 printf "#define COREBOOT_COMPILE_TIME \"$(our_date "$DATE" +%T)\"\n"

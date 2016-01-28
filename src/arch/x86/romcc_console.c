@@ -69,6 +69,8 @@ void console_init(void)
 		COREBOOT_EXTRA_VERSION
 		" "
 		COREBOOT_BUILD
+		" "
+		COREBOOT_BUILD_BY
 		" romstage starting...\n";
 
 	console_hw_init();
