@@ -112,3 +112,6 @@ documentation/skconfig.tex
 documentation/socketfkconfig.tex
 
 doxygen/*
+
+.svn
+f15cz-svn*

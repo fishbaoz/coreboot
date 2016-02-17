@@ -1,7 +1,7 @@
 #
 # This file is part of the coreboot project.
 #
-# Copyright (C) 2011 - 2012 Advanced Micro Devices, Inc.
+# Copyright (C) 2015 Advanced Micro Devices, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,16 +13,15 @@
 # GNU General Public License for more details.
 #
 
-ifeq ($(CONFIG_NORTHBRIDGE_AMD_PI),y)
+romstage-y += fixme.c
+ramstage-y += fixme.c
+ramstage-y += chip_name.c
+ramstage-y += model_15_init.c
 
-subdirs-$(CONFIG_NORTHBRIDGE_AMD_PI_00630F01) += 00630F01
-subdirs-$(CONFIG_NORTHBRIDGE_AMD_PI_00730F01) += 00730F01
-subdirs-$(CONFIG_NORTHBRIDGE_AMD_PI_00660F01) += 00660F01
-subdirs-$(CONFIG_NORTHBRIDGE_AMD_PI_00670F01) += 00670F01
-
-romstage-y += agesawrapper.c
-romstage-y += def_callouts.c
-ramstage-y += agesawrapper.c
-ramstage-y += def_callouts.c
-
-endif
+subdirs-y += ../../mtrr
+subdirs-y += ../../../x86/tsc
+subdirs-y += ../../../x86/lapic
+subdirs-y += ../../../x86/cache
+subdirs-y += ../../../x86/mtrr
+subdirs-y += ../../../x86/pae
+subdirs-y += ../../../x86/smm
