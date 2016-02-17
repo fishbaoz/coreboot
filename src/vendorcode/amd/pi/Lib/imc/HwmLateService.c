@@ -142,9 +142,9 @@ FchECfancontrolservice (
   LocalCfgPtr = (FCH_DATA_BLOCK *) FchDataPtr;
   StdHeader = LocalCfgPtr->StdHeader;
 
-  if (!IsImcEnabled (StdHeader)) {
-    return;                                                    //IMC is not enabled
-  }
+//  if (!IsImcEnabled (StdHeader)) {
+//    return;                                                    //IMC is not enabled
+//  }
 
   CurPoint = &LocalCfgPtr->Imc.EcStruct.MsgFun81Zone0MsgReg0 + MaxZone[0] * (MaxRegister[0] - MSG_REG0 + 1);
 

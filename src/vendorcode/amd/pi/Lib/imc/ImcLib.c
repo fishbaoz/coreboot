@@ -140,7 +140,7 @@ WaitForEcLDN9MailboxCmdAck (
       break;
     }
 
-    FchStall (5, StdHeader);                            /// Wait for 1ms
+//    FchStall (5, StdHeader);                            /// Wait for 1ms
   }
 }
 
