@@ -1152,7 +1152,7 @@ u32 map_oprom_vendev(u32 vendev)
 {
 	u32 new_vendev;
 	new_vendev =
-		((0x10029870 <= vendev) && (vendev <= 0x1002987F)) ? 0x10029870 : vendev;
+		((0x100298e0 <= vendev) && (vendev <= 0x100298eF)) ? 0x10029870 : vendev;
 
 	if (vendev != new_vendev)
 		printk(BIOS_NOTICE, "Mapping PCI device %8x to %8x\n", vendev, new_vendev);
