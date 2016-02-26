@@ -15,11 +15,12 @@
 
 /*
  *  ROMSIG At ROMBASE + 0x20000:
+ *  0            4               8                C
  *  +------------+---------------+----------------+------------+
  *  | 0x55AA55AA |EC ROM Address |GEC ROM Address |USB3 ROM    |
  *  +------------+---------------+----------------+------------+
- *  | PSPDIR ADDR|PSP2DIR ADDR   |
- *  +------------+---------------+
+ *  | PSPDIR ADDR|PSPDIR ADDR    |<-- Field 0x14 could be either
+ *  +------------+---------------+   2nd PSP directory or PSP COMBO directory
  *  EC ROM should be 64K aligned.
  *
  *  PSP directory (Where "PSPDIR ADDR" points)
@@ -41,13 +42,13 @@
  *  |                                                          |
  *  +------------+---------------+----------------+------------+
  *
- *  PSP2 directory
+ *  PSP Combo directory
  *  +------------+---------------+----------------+------------+
- *  | 'PSP2'     | Fletcher      |    Count       | Reserved   |
+ *  | 'PSP2'     | Fletcher      |    Count       |Look up mode|
  *  +------------+---------------+----------------+------------+
- *  |     1      | PSP ID        |   PSPDIR ADDR  |            | 2nd PSP directory
+ *  | ID-Sel     | PSP ID        |   PSPDIR ADDR  |            | 2nd PSP directory
  *  +------------+---------------+----------------+------------+
- *  |     2      | PSP ID        |   PSPDIR ADDR  |            | 3rd PSP directory
+ *  | ID-Sel     | PSP ID        |   PSPDIR ADDR  |            | 3rd PSP directory
  *  +------------+---------------+----------------+------------+
  *  |                                                          |
  *  |        Other PSP                                         |
@@ -81,6 +82,13 @@
   kinds of APU.
 */
 #define PSP2 1
+#if PSP2
+/* Use PSP combo directory or not.
+ * Currently we dont have to squeeze 3 PSP directories into 1 image. So
+ * we skip the combo directory.
+ */
+   #define PSP_COMBO 0
+#endif
 
 typedef unsigned int uint32_t;
 typedef unsigned char uint8_t;
@@ -158,6 +166,7 @@ typedef enum _amd_fw_type {
 	AMD_FW_IMC,
 	AMD_FW_GEC,
 	AMD_FW_XHCI,
+	AMD_FW_INVALID,
 } amd_fw_type;
 
 typedef struct _amd_fw_entry {
@@ -179,6 +188,7 @@ amd_fw_entry amd_psp_fw_table[] = {
 	{ .type = AMD_FW_PSP_SMU_FIRMWARE2 },
 	{ .type = AMD_FW_PSP_SMUSCS },
 	{ .type = AMD_PSP_FUSE_CHAIN },
+	{ .type = AMD_FW_INVALID },
 };
 
 #if PSP2
@@ -196,6 +206,7 @@ amd_fw_entry amd_psp2_fw_table[] = {
 	{ .type = AMD_FW_PSP_SMU_FIRMWARE2 },
 	{ .type = AMD_FW_PSP_SMUSCS },
 	{ .type = AMD_PSP_FUSE_CHAIN },
+	{ .type = AMD_FW_INVALID },
 };
 #endif
 
@@ -203,6 +214,7 @@ amd_fw_entry amd_fw_table[] = {
 	{ .type = AMD_FW_XHCI },
 	{ .type = AMD_FW_IMC },
 	{ .type = AMD_FW_GEC },
+	{ .type = AMD_FW_INVALID },
 };
 
 void fill_psp_head(uint32_t *pspdir, int count)
@@ -213,70 +225,75 @@ void fill_psp_head(uint32_t *pspdir, int count)
 	pspdir[1] = fletcher32((uint16_t *)&pspdir[1], (count *16 + 16)/2 - 2);
 }
 
-uint32_t integerate_one_fw(void *base, uint32_t pos, uint32_t *romsig, int i)
+uint32_t integrate_firmwares(void *base, uint32_t pos, uint32_t *romsig, amd_fw_entry *fw_table)
 {
 	int fd;
 	struct stat fd_stat;
+	int i;
 
-	if (amd_fw_table[i].filename != NULL) {
-		fd = open (amd_fw_table[i].filename, O_RDONLY);
-		fstat(fd, &fd_stat);
+	for (i = 0; fw_table[i].type != AMD_FW_INVALID; i ++) {
+		if (amd_fw_table[i].filename != NULL) {
+			fd = open (amd_fw_table[i].filename, O_RDONLY);
+			fstat(fd, &fd_stat);
 
-		switch (amd_fw_table[i].type) {
-		case AMD_FW_IMC:
-			pos = ALIGN(pos, 0x10000);
-			romsig[1] = pos + ROM_BASE_ADDRESS;
-			break;
-		case AMD_FW_GEC:
-			romsig[2] = pos + ROM_BASE_ADDRESS;
-			break;
-		case AMD_FW_XHCI:
-			romsig[3] = pos + ROM_BASE_ADDRESS;
-			break;
-		default:
-			/* Error */
-			break;
+			switch (amd_fw_table[i].type) {
+			case AMD_FW_IMC:
+				pos = ALIGN(pos, 0x10000);
+				romsig[1] = pos + ROM_BASE_ADDRESS;
+				break;
+			case AMD_FW_GEC:
+				romsig[2] = pos + ROM_BASE_ADDRESS;
+				break;
+			case AMD_FW_XHCI:
+				romsig[3] = pos + ROM_BASE_ADDRESS;
+				break;
+			default:
+				/* Error */
+				break;
+			}
+
+			read (fd, base+pos, fd_stat.st_size);
+
+			pos += fd_stat.st_size;
+			pos = ALIGN(pos, 0x100);
+			close (fd);
 		}
-
-		read (fd, base+pos, fd_stat.st_size);
-
-		pos += fd_stat.st_size;
-		pos = ALIGN(pos, 0x100);
-		close (fd);
 	}
-
 	return pos;
 }
 
-uint32_t integerate_one_psp(void *base, uint32_t pos, uint32_t *pspdir, int i)
+uint32_t integrate_psp_firmwares(void *base, uint32_t pos, uint32_t *pspdir, amd_fw_entry *fw_table)
 {
 	int fd;
 	struct stat fd_stat;
+	int i;
 
-	if (amd_psp_fw_table[i].type == AMD_PSP_FUSE_CHAIN) {
-		pspdir[4+4*i+0] = amd_psp_fw_table[i].type;
-		pspdir[4+4*i+1] = 0xFFFFFFFF;
-		pspdir[4+4*i+2] = 1;
-		pspdir[4+4*i+3] = 0;
-	} else if (amd_psp_fw_table[i].filename != NULL) {
-		pspdir[4+4*i+0] = amd_psp_fw_table[i].type;
+	for (i = 0; fw_table[i].type != AMD_FW_INVALID; i ++) {
+		if (amd_psp_fw_table[i].type == AMD_PSP_FUSE_CHAIN) {
+			pspdir[4+4*i+0] = fw_table[i].type;
+			pspdir[4+4*i+1] = 0xFFFFFFFF;
+			pspdir[4+4*i+2] = 1;
+			pspdir[4+4*i+3] = 0;
+		} else if (fw_table[i].filename != NULL) {
+			pspdir[4+4*i+0] = fw_table[i].type;
 
-		fd = open (amd_psp_fw_table[i].filename, O_RDONLY);
-		fstat(fd, &fd_stat);
-		pspdir[4+4*i+1] = fd_stat.st_size;
+			fd = open (fw_table[i].filename, O_RDONLY);
+			fstat(fd, &fd_stat);
+			pspdir[4+4*i+1] = fd_stat.st_size;
 
-		pspdir[4+4*i+2] = pos + ROM_BASE_ADDRESS;
-		pspdir[4+4*i+3] = 0;
+			pspdir[4+4*i+2] = pos + ROM_BASE_ADDRESS;
+			pspdir[4+4*i+3] = 0;
 
-		read (fd, base+pos, fd_stat.st_size);
+			read (fd, base+pos, fd_stat.st_size);
 
-		pos += fd_stat.st_size;
-		pos = ALIGN(pos, 0x100);
-		close (fd);
-	} else {
-		/* This APU doesn't have this firmware. */
+			pos += fd_stat.st_size;
+			pos = ALIGN(pos, 0x100);
+			close (fd);
+		} else {
+			/* This APU doesn't have this firmware. */
+		}
 	}
-
+	fill_psp_head(pspdir, i);
 	return pos;
 }
 
@@ -296,23 +313,23 @@ static struct option long_options[] = {
 	{"securedebug",  required_argument, 0, 'd' },
 	{"trustlets",    required_argument, 0, 't' },
 	{"trustletkey",  required_argument, 0, 'u' },
-	{"smufirmware2", required_argument, 0, 'w' },
+	{"smufirmwaretwo", required_argument, 0, 'w' },
 	{"smuscs",       required_argument, 0, 'm' },
 
 	/* TODO: PSP2 */
 #if PSP2
-	{"pubkey2",       required_argument, 0, 'P' },
-	{"bootloader2",   required_argument, 0, 'B' },
-	{"smufirmware2",  required_argument, 0, 'S' },
-	{"recovery2",     required_argument, 0, 'R' },
-	{"rtmpubkey2",    required_argument, 0, 'K' },
-	{"secureos2",     required_argument, 0, 'C' },
-	{"nvram2",        required_argument, 0, 'N' },
-	{"securedebug2",  required_argument, 0, 'D' },
-	{"trustlets2",    required_argument, 0, 'T' },
-	{"trustletkey2",  required_argument, 0, 'U' },
-	{"smufirmware2_2",required_argument, 0, 'W' },
-	{"smuscs2",       required_argument, 0, 'M' },
+	{"pubkeypsp2",       required_argument, 0, 'P' },
+	{"bootloaderpsp2",   required_argument, 0, 'B' },
+	{"smufirmwarepsp2",  required_argument, 0, 'S' },
+	{"recoverypsp2",     required_argument, 0, 'R' },
+	{"rtmpubkeypsp2",    required_argument, 0, 'K' },
+	{"secureospsp2",     required_argument, 0, 'C' },
+	{"nvrampsp2",        required_argument, 0, 'N' },
+	{"securedebugpsp2",  required_argument, 0, 'D' },
+	{"trustletspsp2",    required_argument, 0, 'T' },
+	{"trustletkeypsp2",  required_argument, 0, 'U' },
+	{"smufirmwaretwopsp2",required_argument, 0, 'W' },
+	{"smuscspsp2",       required_argument, 0, 'M' },
 #endif
 
 	{"output",       required_argument, 0, 'o' },
@@ -355,12 +372,15 @@ void register_fw_filename(amd_fw_type type, char filename[], int pspflag)
 
 int main(int argc, char **argv)
 {
-	int c, count, pspflag = 0;
+	int c, pspflag = 0;
 #if PSP2
 	int psp2flag = 0;
-	int psp2count;
 	uint32_t *psp2dir;
 #endif
+#if PSP_COMBO
+	int psp2count;
+#endif
+
 	void *rom = NULL;
 	uint32_t current;
 	uint32_t *amd_romsig, *pspdir;
@@ -511,9 +531,7 @@ int main(int argc, char **argv)
 	}
 
 	current = ALIGN(current, 0x100);
-	for (count = 0; count < sizeof(amd_fw_table) / sizeof(amd_fw_entry); count ++) {
-		current = integerate_one_fw(rom, current, amd_romsig, count);
-	}
+	current = integrate_firmwares(rom, current, amd_romsig, amd_fw_table);
 
 	if (pspflag == 1) {
 		current = ALIGN(current, 0x10000);
@@ -521,43 +539,41 @@ int main(int argc, char **argv)
 		amd_romsig[4] = current + ROM_BASE_ADDRESS;
 
 		current += 0x200;	/* Conservative size of pspdir */
-		for (count = 0; count < sizeof(amd_psp_fw_table) / sizeof(amd_fw_entry); count ++) {
-			current = integerate_one_psp(rom, current, pspdir, count);
-		}
-
-		fill_psp_head(pspdir, count);
+		current = integrate_psp_firmwares(rom, current, pspdir, amd_psp_fw_table);
+	}
 
 #if PSP2
-		if (psp2flag == 1) {
-			current = ALIGN(current, 0x10000); /* PSP2 dir */
-			psp2dir = rom + current;
-			amd_romsig[5] = current + ROM_BASE_ADDRESS;
-			current += 0x100;	/* Add conservative size of psp2dir. */
+	if (psp2flag == 1) {
+		current = ALIGN(current, 0x10000); /* PSP2 dir */
+		psp2dir = rom + current;
+		amd_romsig[5] = current + ROM_BASE_ADDRESS;
+		current += 0x100;	/* Add conservative size of psp2dir. */
 
-			/* TODO: remove the hardcode. */
-			psp2count = 1;		/* Start from 1. */
-			/* for (; psp2count <= PSP2COUNT; psp2count++, current=ALIGN(current, 0x100)) { */
-			psp2dir[psp2count*4 + 0] = psp2count;		/* PSP Number */
-			psp2dir[psp2count*4 + 1] = 0x10220B00; /* TODO: PSP ID. Documentation is needed. */
-			psp2dir[psp2count*4 + 2] = current + ROM_BASE_ADDRESS;
-			pspdir = rom + current;
-			psp2dir[psp2count*4 + 3] = 0;
+#if PSP_COMBO
+		/* TODO: remove the hardcode. */
+		psp2count = 1;		/* Start from 1. */
+		/* for (; psp2count <= PSP2COUNT; psp2count++, current=ALIGN(current, 0x100)) { */
+		/* Now the psp2dir is psp combo dir. */
+		psp2dir[psp2count*4 + 0] = 0; /* 0 -Compare PSP ID, 1 -Compare chip family ID */
+		psp2dir[psp2count*4 + 1] = 0x10220B00; /* TODO: PSP ID. Documentation is needed. */
+		psp2dir[psp2count*4 + 2] = current + ROM_BASE_ADDRESS;
+		pspdir = rom + current;
+		psp2dir[psp2count*4 + 3] = 0;
 
-			current += 0x200;	/* Add conservative size of pspdir. Start of PSP entries. */
-			for (count = 0; count < sizeof(amd_psp2_fw_table) / sizeof(amd_fw_entry); count ++) {
-				current = integerate_one_psp(rom, current, pspdir, count);
-			}
-			fill_psp_head(pspdir, count);
-			/* } */ /* End of loop */
+		current += 0x200;	/* Add conservative size of pspdir. Start of PSP entries. */
+		current = integrate_psp_firmwares(rom, current, pspdir, amd_psp2_fw_table);
+		/* } */ /* End of loop */
 
-			/* fill the PSP2 head */
-			psp2dir[0] = 0x50535032;  /* 'PSP2' */
-			psp2dir[2] = psp2count;		  /* Count */
-			psp2dir[3] = 0;
-			psp2dir[1] = fletcher32((uint16_t *)&psp2dir[1], (psp2count*16 + 16)/2 - 2);
-		}
+		/* fill the PSP combo head */
+		psp2dir[0] = 0x50535032;  /* 'PSP2' */
+		psp2dir[2] = psp2count;		  /* Count */
+		psp2dir[3] = 0;		/* 0-Dynamic look up through all entries, 1-PSP/chip ID match */
+		psp2dir[1] = fletcher32((uint16_t *)&psp2dir[1], (psp2count*16 + 16)/2 - 2);
+#else
+		current = integrate_psp_firmwares(rom, current, psp2dir, amd_psp2_fw_table);
 #endif
 	}
+#endif
 
 	targetfd = open(output, O_RDWR | O_CREAT | O_TRUNC, 0666);
 	write(targetfd, amd_romsig, current - AMD_ROMSIG_OFFSET);

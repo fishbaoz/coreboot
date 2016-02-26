@@ -25,6 +25,10 @@
 #include <northbridge/amd/pi/agesawrapper_call.h>
 #include <southbridge/amd/pi/hudson/hudson.h>
 
+#include <superio/fintek/common/early_serial.c>
+
+#define SERIAL_DEV PNP_DEV(0x4e, 1)
+
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
 	u32 val;
@@ -36,12 +40,19 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 	hudson_lpc_port80();
 
+	outb(0x4, 0xCD6);
+	outb(inb(0xCD7)|2, 0xCD7);
+
+	*(volatile unsigned int *)0xFED80E2A &= 0xC7;
+	*(volatile unsigned int *)0xFED80E40 &= 0x7F;
+
 	if (!cpu_init_detectedx && boot_cpu()) {
 		post_code(0x30);
 
 #if IS_ENABLED(CONFIG_HUDSON_UART)
 		configure_hudson_uart();
 #endif
+		fintek_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 		post_code(0x31);
 		console_init();
 	}

@@ -64,7 +64,7 @@ chip northbridge/amd/pi/00670F01/root_complex
 			device pci 18.5 on  end
 			register "spdAddrLookup" = "
 			{
-				{ {0xA0, 0xA4}, {0xA2, 0xA6}, }, // socket 0 - Channel 0 & 1 - 8-bit SPD addresses
+				{ {0xA4, 0x00}, {0x00, 0x00}, }, // socket 0 - Channel 0 & 1 - 8-bit SPD addresses
 				{ {0x00, 0x00}, {0x00, 0x00}, }, // socket 1 - Channel 0 & 1 - 8-bit SPD addresses
 			}"
 

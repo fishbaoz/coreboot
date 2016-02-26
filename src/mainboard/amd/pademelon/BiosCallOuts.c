@@ -138,7 +138,7 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 
 const PSO_ENTRY DDR4PlatformMemoryConfiguration[] = {
 	DRAM_TECHNOLOGY(ANY_SOCKET, DDR4_TECHNOLOGY),
-	NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, ANY_CHANNEL, 2),
+	NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, CHANNEL_A, 2),
 	NUMBER_OF_CHANNELS_SUPPORTED (ANY_SOCKET, 2),
 	MOTHER_BOARD_LAYERS (LAYERS_6),
 	MEMCLK_DIS_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
@@ -150,10 +150,6 @@ const PSO_ENTRY DDR4PlatformMemoryConfiguration[] = {
 
 void OemPostParams(AMD_POST_PARAMS *PostParams)
 {
-	#if 0
-	if (board_id() == 'F') {
-		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR4PlatformMemoryConfiguration;
-	}
-	#endif
+	PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR4PlatformMemoryConfiguration;
 }
 #endif

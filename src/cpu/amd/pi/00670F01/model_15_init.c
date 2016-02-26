@@ -38,14 +38,14 @@ void PSPProgBar3Msr(void *Buffer);
 
 void PSPProgBar3Msr(void *Buffer)
 {
-	//u32 Bar3Addr;
-	//u64 Tmp64;
+	u32 Bar3Addr;
+	u64 Tmp64;
 	/* TODO: Get Bar3 Addr */
-	//Bar3Addr = PspLibPciReadPspConfig (0x20);
-	//Tmp64 = Bar3Addr;
+	Bar3Addr = PspLibPciReadPspConfig (0x20);
+	Tmp64 = Bar3Addr;
 	//printk(BIOS_DEBUG, "Bar3=%llx\n", Tmp64);
-	//LibAmdMsrWrite (0xC00110A2, &Tmp64, NULL);
-	//LibAmdMsrRead (0xC00110A2, &Tmp64, NULL);
+	LibAmdMsrWrite (0xC00110A2, &Tmp64, NULL);
+	LibAmdMsrRead (0xC00110A2, &Tmp64, NULL);
 }
 
 static void model_15_init(device_t dev)

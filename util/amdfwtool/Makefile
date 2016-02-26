@@ -28,7 +28,7 @@
 HOSTCC ?= cc
 
 amdfwtool_exe : amdfwtool.c
-	$(HOSTCC) amdfwtool.c -o amdfwtool
+	$(HOSTCC) -Wall amdfwtool.c -o amdfwtool
 
 amdfwtool : amdfwtool_exe
 

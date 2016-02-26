@@ -95,14 +95,9 @@ Device(PBR8) {
 	} /* end _PRT */
 } /* end PBR8 */
 
-/* GFX 1 */
-Device(PBR9) {
-	Name(_ADR, 0x00030002)
-} /* end PBR8 */
-
-/* GFX 2 */
+/* GFX 0 */
 Device(PBRA) {
-	Name(_ADR, 0x00030003)
+	Name(_ADR, 0x00030001)
 	Name(_PRW, Package() {0x18, 4})
 	Method(_PRT,0) {
 		If(PMOD){ Return(APSA) }	/* APIC mode */
@@ -110,9 +105,15 @@ Device(PBRA) {
 	} /* end _PRT */
 } /* end PBR8 */
 
-/* GFX 3 */
+/* GFX 1 */
+Device(PBR9) {
+	Name(_ADR, 0x00030002)
+} /* end PBR8 */
+
+
+/* GFX 2 */
 Device(PBRB) {
-	Name(_ADR, 0x00030004)
+	Name(_ADR, 0x00030003)
 	Name(_PRW, Package() {0x18, 4})
 	Method(_PRT,0) {
 		If(PMOD){ Return(APSB) }	/* APIC mode */
@@ -120,12 +121,22 @@ Device(PBRB) {
 	} /* end _PRT */
 } /* end PBR8 */
 
-/* GFX 4 */
+/* GFX 3 */
 Device(PBRC) {
-	Name(_ADR, 0x00030005)
+	Name(_ADR, 0x00030004)
 	Name(_PRW, Package() {0x18, 4})
 	Method(_PRT,0) {
 		If(PMOD){ Return(APSC) }	/* APIC mode */
 		Return (PSC)			/* PIC Mode */
+	} /* end _PRT */
+} /* end PBR8 */
+
+/* GFX 4 */
+Device(PBRD) {
+	Name(_ADR, 0x00030005)
+	Name(_PRW, Package() {0x18, 4})
+	Method(_PRT,0) {
+		If(PMOD){ Return(APSD) }	/* APIC mode */
+		Return (PSD)			/* PIC Mode */
 	} /* end _PRT */
 } /* end PBR8 */
