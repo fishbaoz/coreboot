@@ -269,7 +269,7 @@ uint32_t integrate_psp_firmwares(void *base, uint32_t pos, uint32_t *pspdir, amd
 	int i;
 
 	for (i = 0; fw_table[i].type != AMD_FW_INVALID; i ++) {
-		if (amd_psp_fw_table[i].type == AMD_PSP_FUSE_CHAIN) {
+		if (fw_table[i].type == AMD_PSP_FUSE_CHAIN) {
 			pspdir[4+4*i+0] = fw_table[i].type;
 			pspdir[4+4*i+1] = 0xFFFFFFFF;
 			pspdir[4+4*i+2] = 1;
