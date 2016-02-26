@@ -232,11 +232,11 @@ uint32_t integrate_firmwares(void *base, uint32_t pos, uint32_t *romsig, amd_fw_
 	int i;
 
 	for (i = 0; fw_table[i].type != AMD_FW_INVALID; i ++) {
-		if (amd_fw_table[i].filename != NULL) {
-			fd = open (amd_fw_table[i].filename, O_RDONLY);
+		if (fw_table[i].filename != NULL) {
+			fd = open (fw_table[i].filename, O_RDONLY);
 			fstat(fd, &fd_stat);
 
-			switch (amd_fw_table[i].type) {
+			switch (fw_table[i].type) {
 			case AMD_FW_IMC:
 				pos = ALIGN(pos, 0x10000);
 				romsig[1] = pos + ROM_BASE_ADDRESS;
@@ -554,11 +554,11 @@ int main(int argc, char **argv)
 		psp2count = 1;		/* Start from 1. */
 		/* for (; psp2count <= PSP2COUNT; psp2count++, current=ALIGN(current, 0x100)) { */
 		/* Now the psp2dir is psp combo dir. */
-		psp2dir[psp2count*4 + 0] = 0; /* 0 -Compare PSP ID, 1 -Compare chip family ID */
-		psp2dir[psp2count*4 + 1] = 0x10220B00; /* TODO: PSP ID. Documentation is needed. */
-		psp2dir[psp2count*4 + 2] = current + ROM_BASE_ADDRESS;
+		psp2dir[psp2count*4 + 0 + 4] = 0; /* 0 -Compare PSP ID, 1 -Compare chip family ID */
+		psp2dir[psp2count*4 + 1 + 4] = 0x10220B00; /* TODO: PSP ID. Documentation is needed. */
+		psp2dir[psp2count*4 + 2 + 4] = current + ROM_BASE_ADDRESS;
 		pspdir = rom + current;
-		psp2dir[psp2count*4 + 3] = 0;
+		psp2dir[psp2count*4 + 3 + 4] = 0;
 
 		current += 0x200;	/* Add conservative size of pspdir. Start of PSP entries. */
 		current = integrate_psp_firmwares(rom, current, pspdir, amd_psp2_fw_table);
@@ -567,8 +567,12 @@ int main(int argc, char **argv)
 		/* fill the PSP combo head */
 		psp2dir[0] = 0x50535032;  /* 'PSP2' */
 		psp2dir[2] = psp2count;		  /* Count */
-		psp2dir[3] = 0;		/* 0-Dynamic look up through all entries, 1-PSP/chip ID match */
-		psp2dir[1] = fletcher32((uint16_t *)&psp2dir[1], (psp2count*16 + 16)/2 - 2);
+		psp2dir[3] = 1;		/* 0-Dynamic look up through all entries, 1-PSP/chip ID match */
+		psp2dir[4] = 0;		/* reserved 4 dwords. */
+		psp2dir[5] = 0;
+		psp2dir[6] = 0;
+		psp2dir[7] = 0;
+		psp2dir[1] = fletcher32((uint16_t *)&psp2dir[1], (psp2count*16 + 32)/2 - 2);
 #else
 		current = integrate_psp_firmwares(rom, current, psp2dir, amd_psp2_fw_table);
 #endif
