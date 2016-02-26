@@ -9,37 +9,63 @@
  * @xrefitem bom "File Content Label" "Release Content"
  * @e project:     AGESA
  * @e sub-project: FCH
- * @e \$Revision: 311507 $   @e \$Date: 2015-01-22 06:57:51 +0800 (Thu, 22 Jan 2015) $
+ * @e \$Revision: 334779 $   @e \$Date: 2016-01-20 01:40:35 -0600 (Wed, 20 Jan 2016) $
  *
  */
- /*****************************************************************************
- *
- * Copyright (c) 2008 - 2015, Advanced Micro Devices, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Advanced Micro Devices, Inc. nor the names of
- *       its contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ADVANCED MICRO DEVICES, INC. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ***************************************************************************/
+/*;********************************************************************************
+;
+; Copyright 2008 - 2016 ADVANCED MICRO DEVICES, INC.  All Rights Reserved.
+;
+; AMD is granting you permission to use this software (the Materials)
+; pursuant to the terms and conditions of your Software License Agreement
+; with AMD.  This header does *NOT* give you permission to use the Materials
+; or any rights under AMD's intellectual property.  Your use of any portion
+; of these Materials shall constitute your acceptance of those terms and
+; conditions.  If you do not agree to the terms and conditions of the Software
+; License Agreement, please do not use any portion of these Materials.
+;
+; CONFIDENTIALITY:  The Materials and all other information, identified as
+; confidential and provided to you by AMD shall be kept confidential in
+; accordance with the terms and conditions of the Software License Agreement.
+;
+; LIMITATION OF LIABILITY: THE MATERIALS AND ANY OTHER RELATED INFORMATION
+; PROVIDED TO YOU BY AMD ARE PROVIDED "AS IS" WITHOUT ANY EXPRESS OR IMPLIED
+; WARRANTY OF ANY KIND, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+; MERCHANTABILITY, NONINFRINGEMENT, TITLE, FITNESS FOR ANY PARTICULAR PURPOSE,
+; OR WARRANTIES ARISING FROM CONDUCT, COURSE OF DEALING, OR USAGE OF TRADE.
+; IN NO EVENT SHALL AMD OR ITS LICENSORS BE LIABLE FOR ANY DAMAGES WHATSOEVER
+; (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, BUSINESS
+; INTERRUPTION, OR LOSS OF INFORMATION) ARISING OUT OF AMD'S NEGLIGENCE,
+; GROSS NEGLIGENCE, THE USE OF OR INABILITY TO USE THE MATERIALS OR ANY OTHER
+; RELATED INFORMATION PROVIDED TO YOU BY AMD, EVEN IF AMD HAS BEEN ADVISED OF
+; THE POSSIBILITY OF SUCH DAMAGES.  BECAUSE SOME JURISDICTIONS PROHIBIT THE
+; EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES,
+; THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+;
+; AMD does not assume any responsibility for any errors which may appear in
+; the Materials or any other related information provided to you by AMD, or
+; result from use of the Materials or any related information.
+;
+; You agree that you will not reverse engineer or decompile the Materials.
+;
+; NO SUPPORT OBLIGATION: AMD is not obligated to furnish, support, or make any
+; further information, software, technical information, know-how, or show-how
+; available to you.  Additionally, AMD retains the right to modify the
+; Materials at any time, without notice, and is not obligated to provide such
+; modified Materials to you.
+;
+; U.S. GOVERNMENT RESTRICTED RIGHTS: The Materials are provided with
+; "RESTRICTED RIGHTS." Use, duplication, or disclosure by the Government is
+; subject to the restrictions as set forth in FAR 52.227-14 and
+; DFAR252.227-7013, et seq., or its successor.  Use of the Materials by the
+; Government constitutes acknowledgement of AMD's proprietary rights in them.
+;
+; EXPORT ASSURANCE:  You agree and certify that neither the Materials, nor any
+; direct product thereof will be exported directly or indirectly, into any
+; country prohibited by the United States Export Administration Act and the
+; regulations thereunder, without the required authorization from the U.S.
+; government nor will be used for any purpose prohibited by the same.
+;*********************************************************************************/
 #ifndef _FCH_COMMON_CFG_H_
 #define _FCH_COMMON_CFG_H_
 
@@ -98,7 +124,9 @@ typedef struct {
   UINT32                XHCI_PMx08_xHCI_Firmware_Addr_1_Ram;       ///< XHCI_PMx08_xHCI_Firmware_Addr_1_Ram
   UINT8                 SataDevSlpPort0S5Pin;                      ///< SataDevSlpPort0S5Pin - Reserved
   UINT8                 SataDevSlpPort1S5Pin;                      ///< SataDevSlpPort1S5Pin - Reserved
-  UINT16                Dummy16;                                   ///< Dummy16 - Reserved
+  UINT16                FchFlag16;                                 ///< Dummy16 - Reserved
+  UINT32                FchFlag32;                                 ///< Dummy32 - Reserved
+                                                                   ///    @li <b>0</b> - Carrizo
   UINT32                SdMmioBase;                                ///< Sd Mmio Base - Reserved
   UINT32                EhciMmioBase;                              ///< Ehci Mmio Base - Reserved
   UINT32                XhciMmioBase;                              ///< Xhci Mmio Base - Reserved
@@ -525,6 +553,7 @@ typedef struct {
 //  UINT8                 SataDevSlpPort1S5Pin;           /// SataDevSlpPort1S5Pin - Reserved
   UINT8                 SataDbgTX_DRV_STR ;           /// TX_DRV_STR - Reserved
   UINT8                 SataDbgTX_DE_EMPH_STR ;           /// TX_DE_EMPH_STR - Reserved
+  BOOLEAN               SataLongTrace[2];                /// Long Trace - Reserved
   UINT32                TempMmio;                       /// TempMmio - Reserved
 } FCH_SATA;
 
@@ -545,6 +574,8 @@ typedef struct {
 #define Fun_87                        0x87
 #define Fun_88                        0x88
 #define Fun_89                        0x89
+#define Fun_8B                        0x8B
+#define Fun_8C                        0x8C
 #define Fun_90                        0x90
 #define MSG_IMC_TO_SYS                0x81
 #define MSG_REG0                      0x82
@@ -789,9 +820,37 @@ typedef struct _FCH_EC {
   UINT8                 MsgFun89Zone3MsgReg9;           ///<Ct DWORD bit 31-24
   UINT8                 MsgFun89Zone3MsgRegA;           ///<Mode bit 0-7
 //
-// FLAG for Fun83/85/89 support
+//EC LDN9 function 8C Startup PWM channel 0
 //
-  UINT16                IMCFUNSupportBitMap;            ///< Bit0=81FunZone0 support(1=On;0=Off); bit1-3=81FunZone1-Zone3;Bit4-7=83FunZone0-Zone3;Bit8-11=85FunZone0-Zone3;Bit11-15=89FunZone0-Zone3;
+  UINT8                 MsgFun8CZone0MsgReg0;           ///<Reture 0xFA stands for success
+  UINT8                 MsgFun8CZone0MsgReg1;           ///<Bit 2-0 Thermal zone number
+  UINT8                 MsgFun8CZone0MsgReg2;           ///<Startup PWM flags; bit0: enable/disable current zone, bit1/2/3: 1 if values in reg3/4/5 are valid.
+  UINT8                 MsgFun8CZone0MsgReg3;           ///<Startup PWM (effective range 1~100)
+//
+//EC LDN9 function 8C Startup PWM channel 1
+//
+  UINT8                 MsgFun8CZone1MsgReg0;           ///<Reture 0xFA stands for success
+  UINT8                 MsgFun8CZone1MsgReg1;           ///<Bit 2-0 Thermal zone number
+  UINT8                 MsgFun8CZone1MsgReg2;           ///<Startup PWM flags; bit0: enable/disable current zone, bit1/2/3: 1 if values in reg3/4/5 are valid.
+  UINT8                 MsgFun8CZone1MsgReg3;           ///<Startup PWM (effective range 1~100)
+//
+//EC LDN9 function 8C Startup PWM channel 2
+//
+  UINT8                 MsgFun8CZone2MsgReg0;           ///<Reture 0xFA stands for success
+  UINT8                 MsgFun8CZone2MsgReg1;           ///<Bit 2-0 Thermal zone number
+  UINT8                 MsgFun8CZone2MsgReg2;           ///<Startup PWM flags; bit0: enable/disable current zone, bit1/2/3: 1 if values in reg3/4/5 are valid.
+  UINT8                 MsgFun8CZone2MsgReg3;           ///<Startup PWM (effective range 1~100)
+//
+//EC LDN9 function 8C Startup PWM channel 3
+//
+  UINT8                 MsgFun8CZone3MsgReg0;           ///<Reture 0xFA stands for success
+  UINT8                 MsgFun8CZone3MsgReg1;           ///<Bit 2-0 Thermal zone number
+  UINT8                 MsgFun8CZone3MsgReg2;           ///<Startup PWM flags; bit0: enable/disable current zone, bit1/2/3: 1 if values in reg3/4/5 are valid.
+  UINT8                 MsgFun8CZone3MsgReg3;           ///<Startup PWM (effective range 1~100)
+//
+// FLAG for Fun83/85/89/8C support
+//
+  UINT32                IMCFUNSupportBitMap;            ///< Bit0=81FunZone0 support(1=On;0=Off); bit1-3=81FunZone1-Zone3;Bit4-7=83FunZone0-Zone3;Bit8-11=85FunZone0-Zone3;Bit11-15=89FunZone0-Zone3;
 } FCH_EC;
 
 ///
@@ -1284,8 +1343,56 @@ typedef struct {
   BOOLEAN               UsbBatteryChargeEnable;         ///< USB Battery Charge Enable
   BOOLEAN               ReduceUSB3PortToLastTwo;        ///< Reduce USB3.0 ports to last 2
   UINT8                 USB30PortInit;                  ///< USB 3.0 Port Init
+  UINT8                 USB30RxLfpsDetTh;               ///< USB 3.0 Rx Lfps Detect Threshhold
 } FCH_USB;
 
+//++++++++++++++++++++++++++++++++++ Promontory param structure
+///PTXhciStructure
+typedef struct {
+  UINT8         PTXhciGen1;                     ///< PTXhciGen1
+  UINT8         PTXhciGen2;                     ///< PTXhciGen2
+  UINT8         PTAOAC;                         ///< PTAOAC
+  UINT8         PTHW_LPM ;                      ///< PTHW_LPM
+  UINT8         PTDbC;                          ///< PTDbC
+  UINT8         PTXHC_PME;                       ///< PTXHC_PME
+  UINT8         PTSystemSpreadSpectrum;         ///< PTSystemSpreadSpectrum
+} PT_USB;
+///PTSataStructure
+typedef struct {
+  UINT8         PTSataPortEnable;               ///< PTSataEnable
+  UINT8         PTSataMode;                     ///< PTSataMode
+  UINT8         PTSataAggresiveDevSlpP0;        ///< PTSataAggresiveDevSlpP0
+  UINT8         PTSataAggresiveDevSlpP1;        ///< PTSataAggresiveDevSlpP1
+  UINT8         PTSataAggrLinkPmCap;            ///< PTSataAggrLinkPmCap
+  UINT8         PTSataPscCap;                   ///< PTSataPscCap
+  UINT8         PTSataSscCap;                   ///< PTSataSscCap
+  UINT8         PTSataMsiCapability;            ///< PTSataPscCap
+  UINT8         PTSataPortMdPort0;              ///< PTSataPortMdPort0
+  UINT8         PTSataPortMdPort1;              ///< PTSataPortMdPort1
+  UINT8         PTSataHotPlug;                  ///< PTSataHotPlug
+} PT_SATA;
+///PTPcieStructure
+typedef struct {
+  UINT8         PromontoryPCIeEnable;                   ///< PCIeEnable
+  UINT8         PromontoryPCIeASPM;                     ///< PCIeASPM
+} PT_PCIE;
+///PTAddressStructure
+typedef struct {
+  UINT8         GppNumber;                             ///< GppNumber
+  UINT32        XhciID;                                ///< XhciDIDVID
+  UINT32        SataID;                                ///< SataDIDVID
+  UINT32        GpioID;                                ///< GpioDIDVID
+  UINT64        FwVersion;                                ///< FwVersion
+} PT_ADDR;
+///PTDataStructure
+typedef struct _FCH_PT {
+  PT_USB       PromontoryUSB;                     ///<PTXhciStructure
+  PT_SATA      PromontorySATA;                    ///<PTSataStructure
+  PT_PCIE      PromontoryPCIE;                    ///<PTPcieStructure
+  PT_ADDR      PromontoryAddr;                    ///<PTAddressStructure
+} FCH_PT;
+
+//-------------------------------------------- Promontory param structure
 
 /// Private: FCH_DATA_BLOCK_RESET
 typedef struct _FCH_RESET_DATA_BLOCK {
@@ -1323,15 +1430,16 @@ typedef struct _FCH_RESET_DATA_BLOCK {
   BOOLEAN               QeEnabled;                      /// Quad Mode Enabled
   BOOLEAN               FchOscout1ClkContinous;         ///< FCH OSCOUT1_CLK Continous
   UINT8                 LpcClockDriveStrength;          ///< Lpc Clock Drive Strength
-  const VOID*           EarlyOemGpioTable;              /// Pointer of Early OEM GPIO table
+  FCH_PT                Promontory;                     ///< Promontory structure
+  VOID*                 EarlyOemGpioTable;              /// Pointer of Early OEM GPIO table
 //  VOID*                 OemSpiDeviceTable;              /// Pointer of OEM Spi Device table
 } FCH_RESET_DATA_BLOCK;
 
 
 /// Private: FCH_DATA_BLOCK
 typedef struct _FCH_DATA_BLOCK {
-  AMD_CONFIG_PARAMS     *StdHeader;                     ///< Header structure
   FCH_RUNTIME           FchRunTime;                     ///< FCH Run Time Parameters
+  AMD_CONFIG_PARAMS     *StdHeader;                     ///< Header structure
 
   FCH_ACPI              HwAcpi;                         ///< ACPI structure
   FCH_AB                Ab;                             ///< AB structure
@@ -1352,6 +1460,7 @@ typedef struct _FCH_DATA_BLOCK {
   FCH_IMC               Imc;                            ///< IMC structure
   FCH_MISC              Misc;                           ///< MISC structure
   FCH_IOMUX             IoMux;                          ///< MISC structure
+  FCH_PT                Promontory;                     ///< Promontory structure
   VOID*                 PostOemGpioTable;              /// Pointer of Post OEM GPIO table
 } FCH_DATA_BLOCK;
 

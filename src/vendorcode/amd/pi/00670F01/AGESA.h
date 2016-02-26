@@ -759,6 +759,7 @@ typedef enum {
 #define EXT_DISPLAY_PATH_CAPS_DP_FIXED_VS_EN             0x02         ///< BIT[1] VBIOS will always output fixed voltage swing during DP link training
 #define EXT_DISPLAY_PATH_CAPS_HDMI20_PI3EQX1204          0x04         ///< BIT[2] HDMI 2.0 connector
 #define EXT_DISPLAY_PATH_CAPS_HDMI20_TISN65DP159RSBT     0x08         ///< BIT[3] HDMI 2.0 connector
+#define EXT_DISPLAY_PATH_CAPS_HDMI20_PARADE_PS175        0x0C         ///< BIT[3:2] DP -> HDMI recoverter chip
 
 /// DP receiver definitions with fixed voltage swing
 typedef enum {
@@ -1243,7 +1244,8 @@ typedef enum {
 /// UMA Version
 typedef enum {
   UMA_LEGACY = 0,              ///< UMA Legacy Version
-  UMA_NON_LEGACY = 1           ///< UMA Non Legacy Version
+  UMA_NON_LEGACY = 1,          ///< UMA Non Legacy Version
+  UMA_HSFB = 2                 ///< UMA HSFB Version
 } UMA_VERSION;
 
 /// UMA Mode
@@ -1267,6 +1269,14 @@ typedef enum {
   PMU_TRAIN_1D_2D = 2,             ///< PMU 1D and 2D Training
   PMU_TRAIN_AUTO = 3               ///< Auto - PMU Training depend on configuration
 } PMU_TRAIN_MODE;
+
+/// BankSwapOnly Mode
+typedef enum {
+  BANK_SWAP_ONLY_DISABLED = 0,      ///< Disable Bank Swap Only
+  BANK_SWAP_ONLY_ENABLED = 1,       ///< Enable Bank Swap Only
+  BANK_SWAP_ONLY_AUTO = 2           ///< Auto - BankSwapOnly depending on family specific configuration
+} BANK_SWAP_ONLY_MODE;
+
 
 ///  The possible DRAM prefetch mode settings.
 typedef enum  {
@@ -1379,7 +1389,7 @@ typedef struct _SPD_DEF_STRUCT {
   IN UINT8   PageAddress;  ///< Indicates the 256 Byte EE Page the data belongs to
                            ///<      0 = Lower Page
                            ///<      1 = Upper Page (DDR4 Only)
-  IN UINT8 Data[256];      ///< Buffer for 256 Bytes of SPD data from DIMM
+  IN UINT8 Data[512];      ///< Buffer for 256 Bytes of SPD data from DIMM
 } SPD_DEF_STRUCT;
 
 //-----------------------------------------------------------------------------
@@ -2304,7 +2314,7 @@ typedef union {
 #define MEM_ERROR_HEAP_ALLOCATE_FOR_RECEIVED_DATA     0x04051F00ul    ///< Heap allocation error for RECEIVED_DATA during parallel training
 #define MEM_ERROR_HEAP_ALLOCATE_FOR_S3_SPECIAL_CASE_REGISTERS     0x04061F00ul   ///< Heap allocation error for S3 "SPECIAL_CASE_REGISTER"
 #define MEM_ERROR_HEAP_ALLOCATE_FOR_TRAINING_DATA     0x04071F00ul    ///< Heap allocation error for Training Data
-#define MEM_ERROR_HEAP_ALLOCATE_FOR_IDENTIFY_DIMM_MEM_NB_BLOCK    0x04081F00ul   ///< Heap allocation error for  DIMM Identify "MEM_NB_BLOCK
+#define MEM_ERROR_HEAP_ALLOCATE_FOR_IDENTIFY_DIMM_MEM_NB_BLOCK    0x04081F00ul   ///< Heap allocation error for  DIMM Identify "MEM_NB_BLOCK"
 #define MEM_ERROR_NO_CONSTRUCTOR_FOR_IDENTIFY_DIMM    0x04022300ul    ///< No Constructor for DIMM Identify
 #define MEM_ERROR_VDDIO_UNSUPPORTED                   0x04022500ul    ///< VDDIO of the dimms on the board is not supported
 #define MEM_ERROR_VDDPVDDR_UNSUPPORTED                0x04032500ul    ///< VDDP/VDDR value indicated by the platform BIOS is not supported
@@ -3316,7 +3326,7 @@ typedef struct {
   OUT UINT16                    Speed;                  ///< Identifies the speed of the device, in megahertz (MHz).
   OUT UINT64                    ManufacturerIdCode;     ///< Manufacturer ID code.
   OUT CHAR8                     SerialNumber[9];        ///< Serial Number.
-  OUT CHAR8                     PartNumber[19];         ///< Part Number.
+  OUT CHAR8                     PartNumber[21];         ///< Part Number.
   OUT UINT8                     Attributes;             ///< Bits 7-4: Reserved, Bits 3-0: rank.
   OUT UINT32                    ExtSize;                ///< Extended Size.
   OUT UINT16                    ConfigSpeed;            ///< Configured memory clock speed
@@ -3341,7 +3351,7 @@ typedef struct {
   OUT UINT16                    Speed;                  ///< Identifies the speed of the device, in megahertz (MHz).
   OUT UINT64                    ManufacturerIdCode;     ///< Manufacturer ID code.
   OUT UINT8                     SerialNumber[4];        ///< Serial Number.
-  OUT UINT8                     PartNumber[18];         ///< Part Number.
+  OUT UINT8                     PartNumber[21];         ///< Part Number.
   OUT UINT8                     Attributes;             ///< Bits 7-4: Reserved, Bits 3-0: rank.
   OUT UINT32                    ExtSize;                ///< Extended Size.
   OUT UINT16                    ConfigSpeed;            ///< Configured memory clock speed
