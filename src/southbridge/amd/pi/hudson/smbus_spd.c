@@ -113,6 +113,8 @@ static int readspd (int iobase, int SmbusSlaveAddress, char *buffer, int count)
 	}
 
 	/* read the remaining bytes using auto-increment for speed */
+	/* TODO: A dummy write to the slave address of 6E is made to switch
+	   the page address to 1, prior to the SPD reading commands */
 	for (index = 1; index < count; index++)
 	{
 		error = readSmbusByte (iobase, SmbusSlaveAddress, &buffer [index]);
