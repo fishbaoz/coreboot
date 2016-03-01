@@ -127,7 +127,7 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 
 	if (spdAddress == 0)
 		return AGESA_ERROR;
-	int err = hudson_readSpd(spdAddress, (void *) info->Buffer, 128);
+	int err = hudson_readSpd(spdAddress, (void *) info->Buffer, 256);
 	if (err)
 		return AGESA_ERROR;
 #endif
