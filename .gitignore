@@ -119,4 +119,6 @@ doxygen/*
 util/crossgcc/xgcc-*/
 
 src/vendorcode/amd/agesa/f1*-*/
+src/vendorcode/amd/pi/*-*/
+src/vendorcode/amd/agesa/f15cz/
 .svn

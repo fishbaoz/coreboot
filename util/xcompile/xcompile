@@ -61,7 +61,9 @@ program_exists() {
 }
 
 
-if [ "$("${XGCCPATH}/iasl" 2>/dev/null | grep -c ACPI)" -gt 0 ]; then
+if [ "$("${XGCCPATH}/iasl-50a" 2>/dev/null | grep -c ACPI)" -gt 0 ]; then
+	IASL=${XGCCPATH}iasl-50a
+elif [ "$("${XGCCPATH}/iasl" 2>/dev/null | grep -c ACPI)" -gt 0 ]; then
 	IASL=${XGCCPATH}iasl
 elif [ "$(iasl 2>/dev/null | grep -c ACPI)" -gt 0 ]; then
 	IASL=iasl

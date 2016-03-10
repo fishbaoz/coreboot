@@ -174,7 +174,7 @@ $(foreach arch,$(sort $(foreach stage,\
 # If iasl doesn't match the current coreboot version, fail the test
 # TODO: Figure out if iasl is even needed for the build.
 $(if $(shell if [ -n "$(IASL)" ]; then \
-	$(IASL) -v 2>&1 | grep -q "coreboot toolchain" || \
+	$(IASL) -v 2>&1 | grep -q "20140114" || \
 	echo not-coreboot; else echo not-coreboot; fi), \
 	$(eval COMPILERFAIL:=1)$(eval IASLFAIL:=1)\
 	$(warning The coreboot toolchain version of iasl \
@@ -215,7 +215,7 @@ $(warning Note that this is NOT supported.  \
 	Using it means you're on your own.)
 $(warning )
 endif #($(CONFIG_ANY_TOOLCHAIN),y)
-#$(error Halting the build)
+$(error Halting the build)
 endif #($(COMPILERFAIL),1)
 
 endif #($(NOCOMPILE),1)

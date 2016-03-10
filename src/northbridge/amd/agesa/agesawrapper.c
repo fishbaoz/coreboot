@@ -258,7 +258,7 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 	AGESA_EVENTLOG(status, &AmdInterfaceParams.StdHeader);
 	ASSERT(status == AGESA_SUCCESS);
 
-	//oem_auth();
+	oem_auth();
 
 	//OemS3Save(AmdS3SaveParamsPtr);
 
