@@ -357,15 +357,15 @@ void cmos_check_update_date()
 	u8 year, century;
 
 	/* Assume hardware always supports RTC_CLK_ALTCENTURY. */
-	century = cmos_read(RTC_CLK_ALTCENTURY);
-	year = cmos_read(RTC_CLK_YEAR);
+//	century = cmos_read(RTC_CLK_ALTCENTURY);
+//	year = cmos_read(RTC_CLK_YEAR);
 
 	/*
 	 * TODO: If century is 0xFF, 100% that the cmos is cleared.
 	 * Other than that, so far rtc_year is the only entry to check
 	 * if the date is valid.
 	 */
-	if (century > 0x99 || year > 0x99) /* Invalid date */
+//	if (century > 0x99 || year > 0x99) /* Invalid date */
 		cmos_reset_date();
 }
 

@@ -46,7 +46,7 @@ AGESA_STATUS agesawrapper_amdinitreset(void)
 	AmdParamStruct.StdHeader.ImageBasePtr = 0;
 
 	AmdCreateStruct(&AmdParamStruct);
-	AmdResetParams.HtConfig.Depth = 0;
+//	AmdResetParams.HtConfig.Depth = 0;
 
 	status = AmdInitReset((AMD_RESET_PARAMS *) AmdParamStruct.NewStructPtr);
 	AGESA_EVENTLOG(status, &AmdParamStruct.StdHeader);
@@ -258,7 +258,9 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 	AGESA_EVENTLOG(status, &AmdInterfaceParams.StdHeader);
 	ASSERT(status == AGESA_SUCCESS);
 
-	OemS3Save(AmdS3SaveParamsPtr);
+	//oem_auth();
+
+	//OemS3Save(AmdS3SaveParamsPtr);
 
 	AmdReleaseStruct(&AmdInterfaceParams);
 

@@ -61,11 +61,11 @@
  *----------------------------------------------------------------------------------------
  */
 CONST FCH_INTERFACE ROMDATA FchInterfaceDefault = {
-  SdAmda,              // SdConfig
-  2,
-  IrRxTx0Tx1,          // IrConfig
+  SdDisable, //SdAmda,              // SdConfig
+  1,
+  IrDisable, //IrRxTx0Tx1,          // IrConfig
   TRUE,                // UmiGen2
-  SataAhci, //SataNativeIde, //simnow,            // SataClass
+  SataNativeIde, //simnow,            // SataClass
   TRUE,                // SataEnable
   TRUE,                // IdeEnable
   TRUE,                // SataIdeMode
@@ -153,7 +153,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_SATA
-    FALSE,                   // SataMsiEnable
+    TRUE,                   // SataMsiEnable
     0x00000000,              // SataIdeSsid
     0x00000000,              // SataRaidSsid
     0x00000000,              // SataRaid5Ssid
@@ -166,7 +166,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
       FALSE,                 // IdeEnable
       01,                    // SataClkMode
     },
-    SataAhci,           // SataClass
+    SataNativeIde, //SataAhci,           // SataClass
     1,                       // SataIdeMode
     0,                       // SataDisUnusedIdePChannel
     0,                       // SataDisUnusedIdeSChannel
@@ -257,7 +257,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_AZALIA
-    2,              // AzaliaEnable
+    1,              // AzaliaEnable
     TRUE,                   // AzaliaMsiEnable
     0x00000000,              // AzaliaSsid
     1,                       // AzaliaPinCfg
@@ -320,7 +320,7 @@ FCH_DATA_BLOCK   InitEnvCfgDefault = {
   },
 
   {                          // FCH_HPET
-    TRUE,                    // HpetEnable
+    FALSE, //TRUE,                    // HpetEnable
     TRUE,                    // HpetMsiDis
     0xFED00000               // HpetBase
   },

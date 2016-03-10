@@ -125,6 +125,7 @@ Name(CRES, ResourceTemplate() {
 	Memory32Fixed(READONLY, 0x000A0000, 0x00020000, VGAM)	/* VGA memory space */
 	Memory32Fixed(READONLY, 0x000C0000, 0x00020000, EMM1)	/* Assume C0000-E0000 empty */
 
+	Memory32Fixed(READONLY, 0xF00D8000, 0x00004000, BAOZ)	/* Assume C0000-E0000 empty */
 	/* memory space for PCI BARs below 4GB */
 	Memory32Fixed(ReadOnly, 0x00000000, 0x00000000, MMIO)
 }) /* End Name(_SB.PCI0.CRES) */

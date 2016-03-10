@@ -124,7 +124,7 @@ Device(SUPERIO_DEV) {
 		If (Local0) { Return (2) }
 		Else { Return (0) }
 	}
-
+#if 0
 	/* PM: Switch to D0 by setting IPD low  */
 	Method (_PS0) {
 		ENTER_CONFIG_MODE (PNP_NO_LDN_CHANGE)
@@ -138,7 +138,7 @@ Device(SUPERIO_DEV) {
 		  Store (One, IPD)
 		EXIT_CONFIG_MODE ()
 	}
-
+#endif
 #ifdef W83627DHG_SHOW_UARTA
 	#undef SUPERIO_UART_LDN
 	#undef SUPERIO_UART_DDN

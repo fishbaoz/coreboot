@@ -115,3 +115,8 @@ documentation/skconfig.tex
 documentation/socketfkconfig.tex
 
 doxygen/*
+
+util/crossgcc/xgcc-*/
+
+src/vendorcode/amd/agesa/f1*-*/
+.svn

@@ -53,6 +53,7 @@ static void lpc_init(device_t dev)
 	/* Disable the timeout mechanism on LPC */
 	byte = pci_read_config8(dev, 0x48);
 	byte &= ~(1 << 7);
+	byte |= 1 << 5;
 	pci_write_config8(dev, 0x48, byte);
 
 	/* Disable LPC MSI Capability */
@@ -69,6 +70,7 @@ static void lpc_init(device_t dev)
 	byte |= 1 << 0 | 1 << 3;
 	pci_write_config8(dev, 0xBB, byte);
 
+	pci_write_config32(dev, 0x60, 0xf00df00d);
 	cmos_check_update_date();
 
 	/* Initialize the real time clock.
@@ -111,6 +113,11 @@ static void hudson_lpc_read_resources(device_t dev)
 	res = new_resource(dev, 3); /* IOAPIC */
 	res->base = IO_APIC_ADDR;
 	res->size = 0x00001000;
+	res->flags = IORESOURCE_MEM | IORESOURCE_ASSIGNED | IORESOURCE_FIXED;
+
+	res = new_resource(dev, 3); /* IOAPIC */
+	res->base = 0xf00d8000;
+	res->size = 0x00004000;
 	res->flags = IORESOURCE_MEM | IORESOURCE_ASSIGNED | IORESOURCE_FIXED;
 
 	compact_resources(dev);

@@ -342,7 +342,7 @@ AmdInitPost (
   // of AGESA to be recognized by IsWarmReset()
   GetWarmResetFlag (&PostParams->StdHeader, &Request);
   Request.StateBits = Request.PostStage;
-  SetWarmResetFlag (&PostParams->StdHeader, &Request);
+//  SetWarmResetFlag (&PostParams->StdHeader, &Request);
 
   return  AmdInitPostStatus;
 }

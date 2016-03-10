@@ -51,7 +51,55 @@ chip northbridge/amd/agesa/family16kb/root_complex
 					end
 				end # SM
 				device pci 14.2 on  end # HDA	0x4383
-				device pci 14.3 on  end # LPC	0x439d
+				device pci 14.3 on   # LPC	0x439d
+						chip superio/winbond/w83627dhg
+							device pnp 4e.0 off #  Floppy
+								io 0x60 = 0x3f0
+								irq 0x70 = 6
+								drq 0x74 = 2
+							end
+							device pnp 4e.1 off #  Parallel Port
+								io 0x60 = 0x378
+								irq 0x70 = 7
+							end
+							device pnp 4e.2 on  #  Com1
+								io 0x60 = 0x3f8
+								irq 0x70 = 4
+							end
+							device pnp 4e.3 on  #  Com2
+								io 0x60 = 0x2f8
+								irq 0x70 = 3
+							end
+							## though UARTs are on the NUVOTON BMC, superio only used to support PS2 KB/MS##
+							device pnp 4e.5 on #  PS/2 keyboard & mouse
+								io 0x60 = 0x60
+								io 0x62 = 0x64
+								irq 0x70 = 0x01 #keyboard
+								irq 0x72 = 0x0C #mouse
+							end
+							device pnp 4e.6 off #  SPI
+							end
+							device pnp 4e.307 off #  GPIO6
+							end
+							device pnp 4e.8 off #  WDTO#, PLED
+							end
+							device pnp 4e.009 off #  GPIO2
+							end
+							device pnp 4e.109 off #  GPIO3
+							end
+							device pnp 4e.209 off #  GPIO4
+							end
+							device pnp 4e.309 off #  GPIO5
+							end
+							device pnp 4e.a off #  ACPI
+							end
+							device pnp 4e.b off # HWM
+								io 0x60 = 0x290
+							end
+							device pnp 4e.c off # PECI, SST
+							end
+					end
+				end
 				device pci 14.7 on  end # SD
 			end	#chip southbridge/amd/hudson
 

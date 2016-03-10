@@ -349,7 +349,7 @@ CFLAGS_common += -Wno-unused-but-set-variable
 endif
 
 ifeq ($(CONFIG_WARNINGS_ARE_ERRORS),y)
-CFLAGS_common += -Werror
+#CFLAGS_common += -Werror
 endif
 ifneq ($(GDB_DEBUG),)
 CFLAGS_common += -Og

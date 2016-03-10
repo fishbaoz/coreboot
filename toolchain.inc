@@ -215,7 +215,7 @@ $(warning Note that this is NOT supported.  \
 	Using it means you're on your own.)
 $(warning )
 endif #($(CONFIG_ANY_TOOLCHAIN),y)
-$(error Halting the build)
+#$(error Halting the build)
 endif #($(COMPILERFAIL),1)
 
 endif #($(NOCOMPILE),1)

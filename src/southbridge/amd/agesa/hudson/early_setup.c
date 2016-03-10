@@ -73,6 +73,7 @@ void hudson_pci_port80(void)
 void hudson_lpc_port80(void)
 {
 	u8 byte;
+	u32 dword;
 	device_t dev;
 
 	/* Enable LPC controller */
@@ -87,6 +88,30 @@ void hudson_lpc_port80(void)
 	byte = pci_read_config8(dev, 0x4a);
 	byte |= 1 << 5; /* enable port 80 */
 	pci_write_config8(dev, 0x4a, byte);
+
+	byte = pci_read_config8(dev, 0x48);
+	byte |= 3 << 0;		/* enable port 80 */
+	pci_write_config8(dev, 0x48, byte);
+
+	byte = pci_read_config8(dev, 0x48);
+	byte |= 3; /* enable port 80 */
+	pci_write_config8(dev, 0x48, byte);
+	byte = pci_read_config8(dev, 0x44);
+	byte |= 1 << 6;
+	pci_write_config8(dev, 0x44, byte);
+
+	/* Wide io */
+	dword = pci_read_config32(dev, 0x48);
+	dword |= 1 << 25;
+	pci_write_config32(dev, 0x48, dword);
+
+	dword = 0x600;
+	pci_write_config32(dev, 0x90, dword);
+
+	dword = pci_read_config32(dev, 0x74);
+	dword &= ~(1 << 3);
+	pci_write_config32(dev, 0x74, dword);
+
 }
 
 int s3_save_nvram_early(u32 dword, int size, int  nvram_pos)

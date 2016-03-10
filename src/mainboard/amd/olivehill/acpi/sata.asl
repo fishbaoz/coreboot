@@ -15,7 +15,7 @@
 
 /* No SATA functionality */
 
-#if 0
+#if 1
 /*
 Scope (_SB) {
 	Device(PCI0) {
