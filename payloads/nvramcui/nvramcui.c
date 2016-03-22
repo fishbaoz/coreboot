@@ -61,7 +61,10 @@ void render_form(FORM *form)
 int main()
 {
 	int ch, done;
-	
+#if 1 //IS_ENABLED(CONFIG_LP_USB)
+	usb_initialize();
+#endif
+
 	/* coreboot data structures */
 	lib_get_sysinfo();
 
@@ -73,7 +76,7 @@ int main()
 	}
 
 	/* prep CMOS layout into libcurses data structures */
-	
+
 	/* determine number of options, and maximum option name length */
 	int numopts=0;
 	int maxlength=0;
@@ -187,16 +190,18 @@ int main()
 	post_form(form);
 
 	done = 0;
+	render_form(form);
 	while(!done) {
-		render_form(form);
 		ch=getch();
 		if (ch == ERR) continue;
 		switch (ch) {
 		case KEY_DOWN:
 			form_driver(form, REQ_NEXT_FIELD);
+			render_form(form);
 			break;
 		case KEY_UP:
 			form_driver(form, REQ_PREV_FIELD);
+			render_form(form);
 			break;
 		case KEY_LEFT:
 			if (field_type(current_field(form)) == TYPE_ENUM) {
@@ -204,6 +209,7 @@ int main()
 			} else {
 				form_driver(form, REQ_LEFT_CHAR);
 			}
+			render_form(form);
 			break;
 		case KEY_RIGHT:
 			if (field_type(current_field(form)) == TYPE_ENUM) {
@@ -211,13 +217,16 @@ int main()
 			} else {
 				form_driver(form, REQ_RIGHT_CHAR);
 			}
+			render_form(form);
 			break;
 		case KEY_BACKSPACE:
 		case '\b':
 			form_driver(form, REQ_DEL_PREV);
+			render_form(form);
 			break;
 		case KEY_DC:
 			form_driver(form, REQ_DEL_CHAR);
+			render_form(form);
 			break;
 		case KEY_F(1):
 			done=1;

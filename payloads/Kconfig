@@ -77,5 +77,17 @@ config MEMTEST_SECONDARY_PAYLOAD
 	  Memtest86+ can be loaded as a secondary payload under SeaBIOS, GRUB,
 	  or any other payload that can load additional payloads.
 
+config NVRAMCUI_SECONDARY_PAYLOAD
+	bool "Load nvramcui as a secondary payload"
+	default n
+	depends on ARCH_X86
+	help
+	  nvramcui can be loaded as a secondary payload under SeaBIOS, GRUB,
+	  or any other payload that can load additional payloads.
+	  Currently nvramcui depends on PDncurses in libpayload, while coreinfo
+	  uses tinycurses. They seems to be exclusive.
+	  And please note the libpayload is not built automatically as coreinfo.
+
+
 endmenu # "Secondary Payloads"
 endmenu
