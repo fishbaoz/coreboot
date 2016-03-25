@@ -56,6 +56,7 @@ SHA512SUM=$(if $(shell type sha512sum 2>/dev/null), sha512sum, sha512)
 #MACADDRESS=00-1b-21-b3-a9-63
 #ENCRIPTION="ec ac 2a 9a 34 05 7d d4 47 f8 a5 4b 0e e6 b6 af 63 4d a4 61 22 19 2d 0a 6d 53 58 55 9e 9b c1 a9 38 98 9c 68 13 f0 92 5e ca b0 27 ca 65 e5 11 72 69 30 5c c2 16 e4 c8 37 9d 03 35 f5 62 43 35 68"
 
+# x6 cases
 BOARDNUM=$(shell printf %d 0xE2)
 MACADDRESS=00-90-27-e0-01-3e
 ENCRIPTION="20 16 03 24 23 22 59 99"
@@ -73,7 +74,15 @@ $(obj)/otp.bin : $(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
 	mv $@.tmp $@
 
 $(obj)/otp.sh: $(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
-	echo $(ENCRIPTION) | LC_ALL=C  awk '{i=1; while (i <= NF) {if ((i % 16)==1) printf("\"\ndpcmd --raw-instruction \"B1|06|02|00 00 %02d", i-1); printf(" %s", $$i); i++;} printf("\"\n");}' >> $@.tmp
+	echo $(ENCRIPTION) | LC_ALL=C  awk ' \
+		{i=1; printf("\n"); \
+		 while (i <= NF) { \
+			if ((i % 16)==1) printf("dpcmd --raw-instruction \"B1|06|02 00 00 %02d", i-1); \
+			printf(" %s", $$i); \
+			if ((i % 16)==0 || (i==NF)) printf("|04|C1\"\n"); \
+			i++; \
+		 } \
+		}' >> $@.tmp
 	mv $@.tmp $@
 
 $(obj)/validation.bin :$(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc $(obj)/otp.bin $(obj)/otp.sh
