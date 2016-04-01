@@ -65,8 +65,10 @@ SHA512SUM=$(if $(shell type sha512sum 2>/dev/null), sha512sum, sha512)
 #MACADDRESS=00-90-27-e0-01-45
 #BOARDNUM=$(shell printf %d 0x08) # SN: 2014080008  old tag
 #MACADDRESS=00-90-27-e0-01-46
-BOARDNUM=$(shell printf %d 0x19) # SN: 2014080019
-MACADDRESS=00-90-27-e0-01-47
+#BOARDNUM=$(shell printf %d 0x19) # SN: 2014080019
+#MACADDRESS=00-90-27-e0-01-47
+BOARDNUM=$(shell printf %d 0x7) # SN: 2014080019
+MACADDRESS=00-90-27-e0-01-48
 ENCRIPTION="20 16 03 24 23 22 59 99"
 
 #################################################
