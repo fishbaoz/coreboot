@@ -30,8 +30,8 @@ entries
 444          1       e       1        nmi
 445          1       e       1        iommu
 456          1       e       1        ECC_memory
-460          4       e       10       DP1_type
-464          4       e       10       DP2_type
+460          4       e       10       DP0_type
+464          4       e       10       DP1_type
 728        256       h       0        user_data
 984         16       h       0        check_sum
 # Reserve the extended AMD configuration registers
@@ -70,10 +70,11 @@ enumerations
 9     5     37.5%
 9     6     25.0%
 9     7     12.5%
-10    1     DP
-10    2     S-DVI
-10    3     D-DVI
-10    4     HDMI
+10    0     DP
+10    1     S-DVI
+10    2     D-DVI
+10    3     HDMI
+#10    4     CRT  # Can not have more that one CRT
 10    5     LVDS
 checksums
 

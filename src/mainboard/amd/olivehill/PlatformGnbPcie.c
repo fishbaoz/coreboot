@@ -18,6 +18,11 @@
 #include "Ids.h"
 #include "heapManager.h"
 #include "Filecode.h"
+#if CONFIG_USE_OPTION_TABLE
+#include <option.h>
+#include "option_table.h"
+#endif
+
 
 #include <northbridge/amd/agesa/agesawrapper.h>
 
@@ -123,6 +128,10 @@ static AGESA_STATUS OemInitEarly(AMD_EARLY_PARAMS * InitEarly)
 {
 	AGESA_STATUS            Status;
 	PCIe_COMPLEX_DESCRIPTOR *PcieComplexListPtr;
+ 	#if CONFIG_USE_OPTION_TABLE
+	PCIe_DDI_DESCRIPTOR     *PcieDdiDescriptor;
+	unsigned                DP_type=0;
+	#endif
 
 	ALLOCATE_HEAP_PARAMS AllocHeapParams;
 
@@ -132,6 +141,9 @@ static AGESA_STATUS OemInitEarly(AMD_EARLY_PARAMS * InitEarly)
 	/* Allocate buffer for PCIe_COMPLEX_DESCRIPTOR , PCIe_PORT_DESCRIPTOR and PCIe_DDI_DESCRIPTOR */
 	/*  */
 	AllocHeapParams.RequestedBufferSize = sizeof(PcieComplex);
+	#if CONFIG_USE_OPTION_TABLE
+	AllocHeapParams.RequestedBufferSize += sizeof(PCIe_DDI_DESCRIPTOR) * 3;
+	#endif
 
 	AllocHeapParams.BufferHandle = AMD_MEM_MISC_HANDLES_START;
 	AllocHeapParams.Persist = HEAP_LOCAL_CACHE;
@@ -140,6 +152,63 @@ static AGESA_STATUS OemInitEarly(AMD_EARLY_PARAMS * InitEarly)
 
 	PcieComplexListPtr  =  (PCIe_COMPLEX_DESCRIPTOR *) AllocHeapParams.BufferPtr;
 	LibAmdMemCopy  (PcieComplexListPtr, &PcieComplex, sizeof(PcieComplex), &InitEarly->StdHeader);
+
+	#if CONFIG_USE_OPTION_TABLE
+	PcieDdiDescriptor  =  (PCIe_DDI_DESCRIPTOR *) (AllocHeapParams.BufferPtr + sizeof(PcieComplex));
+	LibAmdMemCopy  (PcieDdiDescriptor, DdiList, sizeof(PCIe_DDI_DESCRIPTOR) * 3, &InitEarly->StdHeader);
+
+	if (get_option(&DP_type, "DP0_type") == CB_SUCCESS) {
+		switch(DP_type) {
+		case 0:			/* DP */
+			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeDP;
+			break;
+		case 1:			/* S-DVI */
+			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeSingleLinkDVI;
+			break;
+		case 2:			/* D-DVI */
+			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeDualLinkDVI;
+			break;
+		case 3:			/* HDMI */
+			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeHDMI;
+			break;
+		case 4:			/* CRT */
+//			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeCrt;
+			break;
+		case 5:			/* LVDS */
+			PcieDdiDescriptor[0].Ddi.ConnectorType = ConnectorTypeLvds;
+			break;
+		}
+	}
+
+	if (get_option(&DP_type, "DP1_type") == CB_SUCCESS) {
+		switch(DP_type) {
+		case 0:			/* DP */
+			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeDP;
+			break;
+		case 1:			/* S-DVI */
+			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeSingleLinkDVI;
+			break;
+		case 2:			/* D-DVI */
+			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeDualLinkDVI;
+			break;
+		case 3:			/* HDMI */
+			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeHDMI;
+			break;
+		case 4:			/* CRT */
+//			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeCrt;
+			break;
+		case 5:			/* LVDS */
+			PcieDdiDescriptor[1].Ddi.ConnectorType = ConnectorTypeLvds;
+			break;
+		}
+	}
+
+	/* Make sure the data are correct. */
+	//hexdump(DdiList, sizeof(PCIe_DDI_DESCRIPTOR) * 3);
+	//hexdump(PcieDdiDescriptor, sizeof(PCIe_DDI_DESCRIPTOR) * 3);
+	PcieComplexListPtr->DdiLinkList = PcieDdiDescriptor;
+	#endif
+
 	InitEarly->GnbConfig.PcieComplexList = PcieComplexListPtr;
 	return AGESA_SUCCESS;
 }

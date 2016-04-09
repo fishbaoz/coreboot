@@ -1,3 +1,4 @@
 baud_rate=115200
+#debug_level
+DP0_type=LVDS
 DP1_type=LVDS
-DP2_type=LVDS
