@@ -61,7 +61,11 @@ void render_form(FORM *form)
 int main()
 {
 	int ch, done;
-	
+
+#if 1
+	usb_initialize();
+#endif
+
 	/* coreboot data structures */
 	lib_get_sysinfo();
 
@@ -187,6 +191,7 @@ int main()
 	post_form(form);
 
 	done = 0;
+	render_form(form);
 	while(!done) {
 		render_form(form);
 		ch=getch();
@@ -194,9 +199,11 @@ int main()
 		switch (ch) {
 		case KEY_DOWN:
 			form_driver(form, REQ_NEXT_FIELD);
+			render_form(form);
 			break;
 		case KEY_UP:
 			form_driver(form, REQ_PREV_FIELD);
+			render_form(form);
 			break;
 		case KEY_LEFT:
 			if (field_type(current_field(form)) == TYPE_ENUM) {
@@ -204,6 +211,7 @@ int main()
 			} else {
 				form_driver(form, REQ_LEFT_CHAR);
 			}
+			render_form(form);
 			break;
 		case KEY_RIGHT:
 			if (field_type(current_field(form)) == TYPE_ENUM) {
@@ -211,19 +219,23 @@ int main()
 			} else {
 				form_driver(form, REQ_RIGHT_CHAR);
 			}
+			render_form(form);
 			break;
 		case KEY_BACKSPACE:
 		case '\b':
 			form_driver(form, REQ_DEL_PREV);
+			render_form(form);
 			break;
 		case KEY_DC:
 			form_driver(form, REQ_DEL_CHAR);
+			render_form(form);
 			break;
 		case KEY_F(1):
 			done=1;
 			break;
 		default:
 			form_driver(form, ch);
+			render_form(form);
 			break;
 		}
 	}
