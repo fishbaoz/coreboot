@@ -80,13 +80,13 @@ static const PCIe_DDI_DESCRIPTOR DdiList [] = {
 	{
 		0,
 		PCIE_ENGINE_DATA_INITIALIZER (PcieDdiEngine, 8, 11),
-		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeDP, Aux1, Hdp1)
+		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeLvds, Aux1, Hdp1)
 	},
 	/* DP1 to FCH */
 	{
 		0,
 		PCIE_ENGINE_DATA_INITIALIZER (PcieDdiEngine, 12, 15),
-		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeDP, Aux2, Hdp2)
+		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeLvds, Aux2, Hdp2)
 	},
 	/* DP2 to HDMI1/DP */
 	{
