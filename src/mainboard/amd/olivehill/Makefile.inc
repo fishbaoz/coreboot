@@ -20,3 +20,7 @@ romstage-y += PlatformGnbPcie.c
 ramstage-y += buildOpts.c
 ramstage-y += BiosCallOuts.c
 ramstage-y += PlatformGnbPcie.c
+
+cbfs-files-y += bootorder
+bootorder-file := bootorder
+bootorder-type := raw
