@@ -24,3 +24,14 @@ ramstage-y += PlatformGnbPcie.c
 cbfs-files-y += bootorder
 bootorder-file := bootorder
 bootorder-type := raw
+
+cbfs-files-y += etc/boot-menu-message
+etc/boot-menu-message-file := boot-menu-message
+etc/boot-menu-message-type := raw
+
+$(obj)/boot-menu-key:
+	LC_ALL=C awk 'BEGIN{printf("%c", 0x86);}' > $@
+
+cbfs-files-y += etc/boot-menu-key
+etc/boot-menu-key-file := $(obj)/boot-menu-key
+etc/boot-menu-key-type := raw
