@@ -32,8 +32,8 @@ static void agesawrapper_post_device(void *unused)
 #if CONFIG_AMD_SB_CIMX
 	sb_Late_Post();
 #endif
-	if (!acpi_s3_resume_allowed())
-		return;
+//	if (!acpi_s3_resume_allowed())
+//		return;
 
 	agesawrapper_amdS3Save();
 }

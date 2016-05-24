@@ -141,6 +141,38 @@ static int spi_flash_cmd_read_array(struct spi_slave *spi, u8 *cmd,
 	return len != 0;
 }
 
+int spi_flash_cmd_read_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	spi_flash_cmd_read_slow(flash, offset, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
+int spi_flash_cmd_write_otp(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	spi_flash_cmd(flash->spi, 0xB1, NULL, 0);
+	flash->write(flash, offset, len, data);
+	spi_flash_cmd(flash->spi, 0xC1, NULL, 0);
+
+	return len;
+}
+
+int spi_flash_cmd_read_uniqueid(struct spi_flash *flash, u32 offset,
+		size_t len, void *data)
+{
+	u8 cmd[5];
+
+	cmd[0] = 0x0B;		/* TODO: change to 0x4B */
+	cmd[4] = 0x00;
+
+	return spi_flash_cmd_read_array(flash->spi, cmd, sizeof(cmd),
+					offset, len, data);
+}
+
 int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 		size_t len, void *data)
 {
