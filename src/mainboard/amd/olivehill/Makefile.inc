@@ -57,6 +57,10 @@ SHA512SUM=$(if $(shell type sha512sum 2>/dev/null), sha512sum, sha512)
 BOARDNUM=$(shell printf %d 0x0C)
 MACADDRESS=FF-FF-FF-FF-FF-FF
 ENCRIPTION="00 00 00 00 00 00 00 00 00 00 00 0A 00 04 00 00 20 00 20 20 02 18 2D 0A 6D 53 58 55 9E 9B C1 A9 38 98 9C 68 13 F0 92 5E CA B0 27 CA 65 E5 11 72 69 30 5C C2 16 E4 C8 37 9D 03 35 F5 62 43 35 68"
+#ENCRIPTION = $(call strip_quotes, "5f 5f 46 4d 41 50 5f 5f")
+
+# End of Encription
+ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
 
 
 #################################################
@@ -68,7 +72,7 @@ $(obj)/otp.bin : $(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
 	for c in $(call strip_quotes,$(ENCRIPTION)) ; do \
 		printf %d 0x$$c | LC_ALL=C awk '{printf ("%c", $$1);}'; \
 	done >> $@.tmp
-	ls -l $@.tmp | LC_ALL=C awk '{for (i=$$5; i<64; i++) {printf "%c", 255}}' >> $@.tmp
+	ls -l $@.tmp | LC_ALL=C awk '{ if($$5<64){for (i=$$5; i<64; i++) {printf "%c", 255}}}' >> $@.tmp
 	mv $@.tmp $@
 
 $(obj)/otp.sh: $(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
