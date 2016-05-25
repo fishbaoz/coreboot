@@ -104,6 +104,7 @@ static AGESA_STATUS oem_validate_otp(void)
 	#if WRITE_OTP || SHOW_OTP
 	printk(BIOS_DEBUG, "data in OTP:\n ");
 	#endif
+	#if VAL_DATA_LEN == OTP_LEN
 	for (i=0; i<VAL_DATA_LEN; i++) {
 		#if WRITE_OTP || SHOW_OTP
 		printk(BIOS_DEBUG, " %02X", otpdata[i]);
@@ -118,6 +119,20 @@ static AGESA_STATUS oem_validate_otp(void)
 			#endif
 		}
 	}
+	#else
+	u64 *key;
+	for (key = (u64 *) sha512_auth; ; key ++) {
+		#if SHOW_OTP
+		printk(BIOS_DEBUG, "data in OTP:\n %02X %02X %02X %02X %02X %02X %02X %02X\n",
+		       ((u8 *)key)[0], ((u8 *)key)[1], ((u8 *)key)[2], ((u8 *)key)[3],
+		       ((u8 *)key)[4], ((u8 *)key)[5], ((u8 *)key)[6], ((u8 *)key)[7]);
+		#endif
+		if (*key == -1)
+			for (;;);
+		if (*key == *(u64*)otpdata)
+			break;
+	}
+	#endif
 	#if WRITE_OTP || SHOW_OTP
 	printk(BIOS_DEBUG, "\n");
 	#endif
