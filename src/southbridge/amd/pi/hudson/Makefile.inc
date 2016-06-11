@@ -50,6 +50,8 @@ romstage-y += imc.c
 ramstage-y += imc.c
 endif
 
+ramstage-$(CONFIG_SPI_FLASH) += spi.c
+
 ifeq ($(CONFIG_HUDSON_UART), y)
 romstage-y += uart.c
 ramstage-y += uart.c
