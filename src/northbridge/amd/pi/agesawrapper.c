@@ -326,6 +326,7 @@ AGESA_STATUS agesawrapper_amdinitlate(void)
 	       (unsigned int)AcpiAlib, (unsigned int)AcpiIvrs, __func__);
 
 	/* AmdReleaseStruct (&AmdParamStruct); */
+	oem_auth();
 	return Status;
 }
 #endif /* #ifndef __PRE_RAM__ */
@@ -536,7 +537,7 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 		agesawrapper_amdreadeventlog(AmdInterfaceParams.StdHeader.HeapStatus);
 		ASSERT(Status == AGESA_SUCCESS);
 	}
-
+#if 0
 	S3DataType = S3DataTypeNonVolatile;
 	printk(BIOS_DEBUG, "NvStorageSize=%x, NvStorage=%x\n",
 	       (unsigned int)AmdS3SaveParamsPtr->S3DataBlock.NvStorageSize,
@@ -560,6 +561,7 @@ AGESA_STATUS agesawrapper_amdS3Save(void)
 			AmdS3SaveParamsPtr->S3DataBlock.VolatileStorage);
 	}
 	OemAgesaSaveMtrr();
+#endif
 
 	AmdReleaseStruct (&AmdInterfaceParams);
 

@@ -60,7 +60,7 @@ ENCRIPTION="00 00 00 00 00 00 00 00 00 00 00 0A 00 04 00 00 20 00 20 20 02 18 2D
 #ENCRIPTION = $(call strip_quotes, "5f 5f 46 4d 41 50 5f 5f")
 
 # End of Encription
-ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
+#ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
 
 
 #################################################
