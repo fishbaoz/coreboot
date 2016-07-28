@@ -25,6 +25,13 @@
 #include <northbridge/amd/pi/agesawrapper_call.h>
 #include <southbridge/amd/pi/hudson/hudson.h>
 
+#define SIO1036_SERIAL_MINIBOARD 0
+
+#if SIO1036_SERIAL_MINIBOARD
+#include "superio/smsc/sio1036/sio1036_early_init.c"
+#define SERIAL_DEV PNP_DEV(0x4E, SIO1036_SP1)
+#endif
+
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
 	u32 val;
@@ -34,6 +41,12 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 	amd_initmmio();
 
+	/* TODO: */
+#if SIO1036_SERIAL_MINIBOARD
+	pci_devfn_t dev = PCI_DEV(0, 0x14, 3);
+	pci_write_config32(dev, 0x44, 0xff03ffd5);
+	pci_write_config32(dev, 0x48, 0x20ff1b);
+#endif
 	hudson_lpc_port80();
 
 	if (!cpu_init_detectedx && boot_cpu()) {
@@ -41,6 +54,9 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 #if IS_ENABLED(CONFIG_HUDSON_UART)
 		configure_hudson_uart();
+#endif
+#if SIO1036_SERIAL_MINIBOARD
+		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 #endif
 		post_code(0x31);
 		console_init();
