@@ -242,10 +242,10 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 	if (err)
 		return AGESA_ERROR;
 	#else
-	for (spdAddress=0; spdAddress<256; spdAddress++)
+	for (spdAddress=0; spdAddress<128; spdAddress++)
 		((UINT8*)info->Buffer)[spdAddress] = spd_buffer[spdAddress];
 	fill_crc16(info->Buffer);
-	for (spdAddress=0; spdAddress<256; spdAddress++) {
+	for (spdAddress=0; spdAddress<128; spdAddress++) {
 		printk(BIOS_DEBUG, "%02X ", ((UINT8*)info->Buffer)[spdAddress]);
 		if ((spdAddress%16) == 15)
 			printk(BIOS_DEBUG, "\n");

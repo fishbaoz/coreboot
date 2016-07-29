@@ -25,7 +25,7 @@
 #include <northbridge/amd/pi/agesawrapper_call.h>
 #include <southbridge/amd/pi/hudson/hudson.h>
 
-#define SIO1036_SERIAL_MINIBOARD 0
+#define SIO1036_SERIAL_MINIBOARD 1
 
 #if SIO1036_SERIAL_MINIBOARD
 #include "superio/smsc/sio1036/sio1036_early_init.c"
