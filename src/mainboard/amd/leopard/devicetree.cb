@@ -52,7 +52,22 @@ chip northbridge/amd/pi/00660F01/root_complex
 					end
 				end # SM
 				#device pci 14.2 on  end # HDA	0x4383
-				device pci 14.3 on  end # LPC	0x439d
+				device pci 14.3 on
+					chip superio/fintek/f81216h
+						register "conf_key_mode" = "0x77"
+						device pnp 4e.0 on			# COM1
+							io 0x60 = 0x3f8
+							irq 0x70 = 4
+						end
+						device pnp 4e.1 on			# COM2
+							io 0x60 = 0x2f8
+							irq 0x70 = 3
+						end
+						device pnp 4e.2 off end		# COM3
+						device pnp 4e.3 off end		# COM4
+						device pnp 4e.8 off end		# WDT
+					end # f81216h
+				end # LPC	0x439d
 				device pci 14.7 on  end # SD
 			end	#chip southbridge/amd/hudson
 

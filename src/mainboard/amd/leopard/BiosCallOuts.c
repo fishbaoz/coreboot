@@ -288,10 +288,14 @@ const PSO_ENTRY DDR3PlatformMemoryConfiguration[] = {
 void OemPostParams(AMD_POST_PARAMS *PostParams)
 {
 	/* NOTE: Put the dimm in DIMM0 when tested on bettong. */
-	if (board_id() == 'F') {
+	switch (board_id()) {
+	case 'F':
 		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR4PlatformMemoryConfiguration;
-	} else {
+		break;
+	case 'A':
+	default:
 		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR3PlatformMemoryConfiguration;
+		break;
 	}
 	PostParams->MemConfig.CfgIgnoreSpdChecksum = FALSE; /* TODO: not helping. */
 }

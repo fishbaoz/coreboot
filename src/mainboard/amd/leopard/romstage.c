@@ -25,11 +25,14 @@
 #include <northbridge/amd/pi/agesawrapper_call.h>
 #include <southbridge/amd/pi/hudson/hudson.h>
 
-#define SIO1036_SERIAL_MINIBOARD 1
+#define SIO1036_SERIAL_MINIBOARD 0
 
 #if SIO1036_SERIAL_MINIBOARD
 #include "superio/smsc/sio1036/sio1036_early_init.c"
 #define SERIAL_DEV PNP_DEV(0x4E, SIO1036_SP1)
+#else
+#include "superio/fintek/f81216h/f81216h.h"
+#define SERIAL_DEV PNP_DEV(0x4e, F81216H_SP1)
 #endif
 
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
@@ -57,6 +60,8 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 #endif
 #if SIO1036_SERIAL_MINIBOARD
 		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
+#else
+		f81216h_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE, MODE_7777);
 #endif
 		post_code(0x31);
 		console_init();
