@@ -312,6 +312,7 @@ CONFIG_AMD_PUBKEY_FILE="3rdparty/blobs/southbridge/amd/kern/PSP/AmdPubKeyCZ.bin"
 #
 # Super I/O
 #
+CONFIG_SUPERIO_FINTEK_F81216H=y
 
 #
 # Embedded Controllers
