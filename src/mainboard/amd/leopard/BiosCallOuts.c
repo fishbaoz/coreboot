@@ -224,36 +224,36 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 		return AGESA_ERROR;
 	if (info->DimmId >= ARRAY_SIZE(config->spdAddrLookup[0][0]))
 		return AGESA_ERROR;
-	#if 0
+
 	UINT8 spdAddrLookup_rev_F [2][2][4]= {
 		{ {0xA0, 0xA2}, {0xA4, 0xAC}, }, /* socket 0 - Channel 0 & 1 - 8-bit SPD addresses */
 		{ {0x00, 0x00}, {0x00, 0x00}, }, /* socket 1 - Channel 0 & 1 - 8-bit SPD addresses */
 	};
-	if (board_id() == 'F')
-		spdAddress = spdAddrLookup_rev_F
-			[info->SocketId] [info->MemChannelId] [info->DimmId];
-	else
-		spdAddress = config->spdAddrLookup
-			[info->SocketId] [info->MemChannelId] [info->DimmId];
+	if (board_id() == 'A') {
+		for (spdAddress = 0; spdAddress < 128; spdAddress++)
+			((UINT8 *)info->Buffer)[spdAddress] = spd_buffer[spdAddress];
+		fill_crc16(info->Buffer);
+		for (spdAddress = 0; spdAddress < 128; spdAddress++) {
+			printk(BIOS_DEBUG, "%02X ", ((UINT8 *)info->Buffer)[spdAddress]);
+			if ((spdAddress % 16) == 15)
+				printk(BIOS_DEBUG, "\n");
+		}
+	} else {
+		if (board_id() == 'F')
+			spdAddress = spdAddrLookup_rev_F
+				[info->SocketId][info->MemChannelId][info->DimmId];
+		else
+			spdAddress = config->spdAddrLookup
+				[info->SocketId][info->MemChannelId][info->DimmId];
 
-	if (spdAddress == 0)
-		return AGESA_ERROR;
-	int err = hudson_readSpd(spdAddress, (void *) info->Buffer, 128);
-	if (err)
-		return AGESA_ERROR;
-	#else
-	for (spdAddress=0; spdAddress<128; spdAddress++)
-		((UINT8*)info->Buffer)[spdAddress] = spd_buffer[spdAddress];
-	fill_crc16(info->Buffer);
-	for (spdAddress=0; spdAddress<128; spdAddress++) {
-		printk(BIOS_DEBUG, "%02X ", ((UINT8*)info->Buffer)[spdAddress]);
-		if ((spdAddress%16) == 15)
-			printk(BIOS_DEBUG, "\n");
+		if (spdAddress == 0)
+			return AGESA_ERROR;
+
+		int err = hudson_readSpd(spdAddress, (void *) info->Buffer, 128);
+
+		if (err)
+			return AGESA_ERROR;
 	}
-
-	return AGESA_SUCCESS;
-
-	#endif
 
 #endif
 	return AGESA_SUCCESS;
@@ -263,25 +263,25 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 
 const PSO_ENTRY DDR4PlatformMemoryConfiguration[] = {
 	DRAM_TECHNOLOGY(ANY_SOCKET, DDR4_TECHNOLOGY),
-	NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, ANY_CHANNEL, 1),
-	NUMBER_OF_CHANNELS_SUPPORTED (ANY_SOCKET, 2),
-	MOTHER_BOARD_LAYERS (LAYERS_6),
-	MEMCLK_DIS_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
-	CKE_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
-	ODT_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
-	CS_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+	NUMBER_OF_DIMMS_SUPPORTED(ANY_SOCKET, ANY_CHANNEL, 2),
+	NUMBER_OF_CHANNELS_SUPPORTED(ANY_SOCKET, 2),
+	MOTHER_BOARD_LAYERS(LAYERS_6),
+	MEMCLK_DIS_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+	CKE_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+	ODT_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+	CS_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
 	PSO_END
 };
 
 const PSO_ENTRY DDR3PlatformMemoryConfiguration[] = {
 	DRAM_TECHNOLOGY(ANY_SOCKET, DDR3_TECHNOLOGY),
-	NUMBER_OF_DIMMS_SUPPORTED (ANY_SOCKET, ANY_CHANNEL, 1),
-	NUMBER_OF_CHANNELS_SUPPORTED (ANY_SOCKET, 2),
-	MOTHER_BOARD_LAYERS (LAYERS_6),
-	MEMCLK_DIS_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
-	CKE_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
-	ODT_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
-	CS_TRI_MAP (ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+	NUMBER_OF_DIMMS_SUPPORTED(ANY_SOCKET, ANY_CHANNEL, 1),
+	NUMBER_OF_CHANNELS_SUPPORTED(ANY_SOCKET, 2),
+	MOTHER_BOARD_LAYERS(LAYERS_6),
+	MEMCLK_DIS_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
+	CKE_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+	ODT_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff),
+	CS_TRI_MAP(ANY_SOCKET, ANY_CHANNEL, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
 	PSO_END
 };
 
