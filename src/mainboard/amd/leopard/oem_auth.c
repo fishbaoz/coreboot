@@ -130,7 +130,7 @@ static AGESA_STATUS oem_validate_otp(void)
 		#endif
 		if (*key == -1)
 			for (;;);
-		if (*key == *(u64*)otpdata)
+		if (*key == ~(*(u64 *)otpdata))
 			break;
 	}
 	#endif
@@ -222,7 +222,7 @@ AGESA_STATUS oem_auth(void)
 {
 	/* Get data from CBFS */
 	#if (BOARD_NUM==0xFFFFFFFF)
-	sha512_auth = cbfs_boot_map_with_leak("olivehill/validation",
+	sha512_auth = cbfs_boot_map_with_leak("leopard/validation",
 				   CBFS_TYPE_RAW, NULL);
 	#endif
 

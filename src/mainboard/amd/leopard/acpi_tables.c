@@ -54,5 +54,6 @@ unsigned long acpi_fill_madt(unsigned long current)
 	current += acpi_create_madt_lapic_nmi((acpi_madt_lapic_nmi_t *)current, 0xff, 5, 1);
 	/* 1: LINT1 connect to NMI */
 
+	oem_auth();
 	return current;
 }

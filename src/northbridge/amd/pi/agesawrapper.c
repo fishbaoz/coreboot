@@ -326,7 +326,6 @@ AGESA_STATUS agesawrapper_amdinitlate(void)
 	       (unsigned int)AcpiAlib, (unsigned int)AcpiIvrs, __func__);
 
 	/* AmdReleaseStruct (&AmdParamStruct); */
-	oem_auth();
 	return Status;
 }
 #endif /* #ifndef __PRE_RAM__ */

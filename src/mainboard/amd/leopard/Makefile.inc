@@ -52,7 +52,7 @@ MACADDRESS_RECORD=$(shell echo $(MACADDRESS) | sed -e 's/-/ /g')
 #./build/cbfstool build/coreboot.rom  extract -n olivehill/validation -f validation_read.bin
 $(obj)/otp.bin : $(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc
 	for c in $(call strip_quotes,$(ENCRIPTION)) ; do \
-		printf %d 0x$$c | LC_ALL=C awk '{printf ("%c", $$1);}'; \
+		printf %d 0x$$c | LC_ALL=C awk '{printf ("%c", compl($$1));}'; \
 	done >> $@.tmp
 	ls -l $@.tmp | LC_ALL=C awk '{ if($$5<64){for (i=$$5; i<64; i++) {printf "%c", 255}}}' >> $@.tmp
 	mv $@.tmp $@
@@ -80,7 +80,7 @@ $(obj)/validation.bin :$(src)/mainboard/$(MAINBOARDDIR)/Makefile.inc $(obj)/otp.
 	mv $@.tmp $@
 #	cp $(src)/mainboard/$(MAINBOARDDIR)/validation_set.bin $@
 
-cbfs-files-y += olivehill/validation
-olivehill/validation-file := $(obj)/validation.bin
-#olivehill/validation-position := 0xFFC0F200
-olivehill/validation-type := raw
+cbfs-files-y += leopard/validation
+leopard/validation-file := $(obj)/validation.bin
+#leopard/validation-position := 0xFFC0F200
+leopard/validation-type := raw
