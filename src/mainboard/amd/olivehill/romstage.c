@@ -33,6 +33,9 @@
 #include <cpu/amd/agesa/s3_resume.h>
 #include "cbmem.h"
 
+#include "superio/smsc/sio1036/sio1036_early_init.c"
+#define SERIAL_DEV PNP_DEV(0x4E, SIO1036_SP1)
+
 
 void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 {
@@ -51,11 +54,13 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 	/* Set LPC decode enables. */
 	pci_devfn_t dev = PCI_DEV(0, 0x14, 3);
 	pci_write_config32(dev, 0x44, 0xff03ffd5);
+	pci_write_config32(dev, 0x48, 0x20ff1b);
 
 	hudson_lpc_port80();
 
 	if (!cpu_init_detectedx && boot_cpu()) {
 		post_code(0x30);
+		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 
 		post_code(0x31);
 		console_init();
