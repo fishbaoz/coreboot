@@ -166,6 +166,7 @@ static int timestamps_module_init(void)
 	u32 buff_cur = 0;
 	uint64_t prev_stamp;
 	uint64_t total_time;
+	int i;
 
 	/* Allocate a buffer big enough to contain all of the possible
 	 * entries plus the other information (number entries, total time). */
@@ -184,7 +185,7 @@ static int timestamps_module_init(void)
 	prev_stamp = base_time;
 
 	total_time = 0;
-	for (int i = 0; i < n_entries; i++) {
+	for (i = 0; i < n_entries; i++) {
 		uint64_t stamp;
 		const struct timestamp_entry *tse = &timestamps->entries[i];
 
