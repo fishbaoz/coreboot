@@ -104,9 +104,6 @@ AGESA_STATUS agesawrapper_amdinitpost(void)
 	PostParams = (AMD_POST_PARAMS *) AmdParamStruct.NewStructPtr;
 	if (OemHook->InitPost)
 		OemHook->InitPost(PostParams);
-	PostParams->MemConfig.UmaMode = CONFIG_GFXUMA ? UMA_AUTO : UMA_NONE;
-	PostParams->MemConfig.UmaSize = 0;
-	PostParams->MemConfig.BottomIo = (UINT16)(0xD0000000 >> 24);
 
 	status = AmdInitPost(PostParams);
 	AGESA_EVENTLOG(status, &PostParams->StdHeader);
