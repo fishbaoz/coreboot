@@ -585,6 +585,39 @@ static const struct pci_driver family15_northbridge __pci_driver = {
 	.device = PCI_DEVICE_ID_AMD_15H_MODEL_006F_NB_HT,
 };
 
+static void intgfx_dev_enable_resources(struct device *dev)
+{
+	extern device_t vga_pri;
+	if (vga_pri != dev) {
+		pci_write_config16(dev, PCI_COMMAND, 0);
+		dev->command = 0;
+	}
+	pci_dev_enable_resources(dev);
+}
+
+struct device_operations fam10_intgfx_pci_ops_dev = {
+	.read_resources   = pci_dev_read_resources,
+	.set_resources    = pci_dev_set_resources,
+	.enable_resources = intgfx_dev_enable_resources,
+	.init             = pci_dev_init,
+	.scan_bus         = 0,
+	.enable           = 0,
+//	.ops_pci          = &pci_dev_ops_pci,
+};
+
+static const struct pci_driver family10_intgfx_northbridge_9870 __pci_driver = {
+	.ops	= &fam10_intgfx_pci_ops_dev,
+	.vendor = 0x1002,
+	.device = 0x9870,
+};
+
+static const struct pci_driver family10_intgfx_northbridge_9874 __pci_driver = {
+	.ops	= &fam10_intgfx_pci_ops_dev,
+	.vendor = 0x1002,
+	.device = 0x9874,
+};
+
+
 static void fam15_finalize(void *chip_info)
 {
 	device_t dev;
