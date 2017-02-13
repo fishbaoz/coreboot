@@ -219,6 +219,7 @@ static void read_mac(void)
 
 AGESA_STATUS oem_auth(void)
 {
+	#if CONFIG_SPI_FLASH
 	/* Get data from CBFS */
 	#if (BOARD_NUM==0xFFFFFFFF)
 	sha512_auth = cbfs_boot_map_with_leak("olivehill/validation",
@@ -236,7 +237,7 @@ AGESA_STATUS oem_auth(void)
 #if (BOARD_NUM != 36)
 //	read_mac();
 #endif
-
+	#endif
 
 	return 0;
 }

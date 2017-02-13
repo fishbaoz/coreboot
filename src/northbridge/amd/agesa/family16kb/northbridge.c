@@ -603,12 +603,6 @@ static const struct pci_driver family16_northbridge __pci_driver = {
 	.device = PCI_DEVICE_ID_AMD_16H_MODEL_000F_NB_HT,
 };
 
-static const struct pci_driver family10_northbridge __pci_driver = {
-	.ops	= &northbridge_operations,
-	.vendor = PCI_VENDOR_ID_AMD,
-	.device = PCI_DEVICE_ID_AMD_10H_NB_HT,
-};
-
 static void intgfx_dev_enable_resources(struct device *dev)
 {
 	extern device_t vga_pri;
@@ -1198,8 +1192,8 @@ u32 map_oprom_vendev(u32 vendev)
 		break;
 	}
 
-	if (vendev != new_vendev)
-		printk(BIOS_NOTICE, "Mapping PCI device %8x to %8x\n", vendev, new_vendev);
+//	if (vendev != new_vendev)
+//		printk(BIOS_NOTICE, "Mapping PCI device %8x to %8x\n", vendev, new_vendev);
 
 	return new_vendev;
 }
