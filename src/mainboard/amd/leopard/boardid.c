@@ -31,7 +31,7 @@ uint8_t board_id(void)
 {
 	void *gpiommioaddr;
 	u8  value = 0;
-	u8  boardrev = 0;
+	u8  boardrev = 0x10;
 	char boardid;
 
 	gpiommioaddr = (void *)0xfed80000ul + 0x1500;

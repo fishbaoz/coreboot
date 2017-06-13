@@ -43,11 +43,11 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 
 	/* TODO: */
 #if SIO1036_SERIAL_MINIBOARD
-//	pci_devfn_t dev = PCI_DEV(0, 0x14, 3);
-//	pci_write_config32(dev, 0x44, 0xff03ffd5);
-//	pci_write_config32(dev, 0x48, 0x20ff1b);
+	pci_devfn_t dev = PCI_DEV(0, 0x14, 3);
+	pci_write_config32(dev, 0x44, 0xff03ffd5);
+	pci_write_config32(dev, 0x48, 0x20ff1b);
+	hudson_lpc_port80();
 #endif
-//	hudson_lpc_port80();
 
 	if (!cpu_init_detectedx && boot_cpu()) {
 //		post_code(0x30);
@@ -56,10 +56,12 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 //		configure_hudson_uart();
 #endif
 #if SIO1036_SERIAL_MINIBOARD
-//		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
+		sio1036_enable_serial(SERIAL_DEV, CONFIG_TTYS0_BASE);
 #endif
 //		post_code(0x31);
-//		console_init();
+#if SIO1036_SERIAL_MINIBOARD
+		console_init();
+#endif
 	}
 
 	/* Halt if there was a built in self test failure */

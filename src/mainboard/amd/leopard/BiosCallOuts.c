@@ -105,7 +105,7 @@ AGESA_STATUS Fch_Oem_config(UINT32 Func, UINT32 FchData, VOID *ConfigPtr)
 	return AGESA_SUCCESS;
 }
 
-#if 1
+#if 0
 /* Bettong UDIMM */
 const UINT8 spd_buffer[0x100] = {
 	0x23, 0x10, 0x0C, 0x02, 0x84, 0x19, 0x00, 0x08, 0x00, 0x40, 0x00, 0x03, 0x01, 0x0B, 0x80, 0x00,
@@ -127,15 +127,17 @@ const UINT8 spd_buffer[0x100] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 #else
+/* Leopard: 1 Rank. row address: 15:0(16bits), 8Gb
+ */
 const UINT8 spd_buffer[0x100] = {
 	0x92, 0x11, 0x0B, 0x03,
-	0x04,	/* 4:Bits 6 ~ 4: 000 = (8 banks), 001 = (16 banks), 010 = 5 (32 banks),011 = 6 (64 banks)*/
-		/* Bits 3 ~ 0:0000 = 256 Mb, 0001 = 512 Mb, 0010 = 1 Gb, 0011 = 2 Gb, 0100 = 4 Gb, 0101 = 8 Gb, 0110 = 16 Gb */
-	0x19,   /* 5: bit 5~3: 000 = 12, 001 = 13, 010 = 14, 011 = 15, 100 = 16
-		      Bit 2~0: 000 = 9, 001 = 10, 010 = 11, 011 = 12 */
+	0x05,	/* 4:Bits 6 ~ 4: 000 = (8 banks), 001 = (16 banks), 010 = 5 (32 banks),011 = 6 (64 banks)*/
+		/* Bits 3 ~ 0:0000 = 256 Mb, 0001 = 512 Mb, 0010 = 1 Gb, 0011 = 2 Gb, 0100 = 4 Gb, 0101 = 8 Gb, 0110 = 16 Gb */  /* capacity 4Gb->8Gb */
+	4<<3 | 1,   /* 5: bit 5~3: 000 = 12, 001 = 13, 010 = 14, 011 = 15, 100 = 16
+		       Bit 2~0: 000 = 9, 001 = 10, 010 = 11, 011 = 12 */  /* Row: 15->16 */
 	0x00,   /*  */
-	0x02 | 1 << 3, /*bit 5~3:000 = 1 Rank 001 = 2 Ranks 010 = 3 Ranks  011 = 4 Ranks,
-			 bit 2~0: 000 = 4 bits 001 = 8 bits 010 = 16 bits 011 = 32 bits */
+	0x02 | 0 << 3, /*bit 5~3:000 = 1 Rank 001 = 2 Ranks 010 = 3 Ranks  011 = 4 Ranks,
+			 bit 2~0: 000 = 4 bits 001 = 8 bits 010 = 16 bits 011 = 32 bits */   /* Rank: 2 -> 1 */
 	0x03,
 	0x52,	/* FTB: 0x51: 5 ps, 0x52: 2.5 ps, 0x11: 1ps */
 	0x01, 0x08,		/* MTB: */
@@ -207,6 +209,8 @@ static void fill_crc16 (UINT8 *spdBytes)
 }
 #endif
 
+#define LEOPARD 1
+
 static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 {
 #ifdef __PRE_RAM__
@@ -229,7 +233,7 @@ static AGESA_STATUS board_ReadSpd(UINT32 Func, UINTN Data, VOID *ConfigPtr)
 		{ {0xA0, 0xA2}, {0xA4, 0xAC}, }, /* socket 0 - Channel 0 & 1 - 8-bit SPD addresses */
 		{ {0x00, 0x00}, {0x00, 0x00}, }, /* socket 1 - Channel 0 & 1 - 8-bit SPD addresses */
 	};
-	if (board_id() == 'A') {
+	if (LEOPARD /* || board_id() == 'A' */) {
 		for (spdAddress = 0; spdAddress < 128; spdAddress++)
 			((UINT8 *)info->Buffer)[spdAddress] = spd_buffer[spdAddress];
 		fill_crc16(info->Buffer);
@@ -288,6 +292,9 @@ const PSO_ENTRY DDR3PlatformMemoryConfiguration[] = {
 void OemPostParams(AMD_POST_PARAMS *PostParams)
 {
 	/* NOTE: Put the dimm in DIMM0 when tested on bettong. */
+	#if LEOPARD
+	PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR3PlatformMemoryConfiguration;
+	#else
 	switch (board_id()) {
 	case 'F':
 		PostParams->MemConfig.PlatformMemoryConfiguration = (PSO_ENTRY *)DDR4PlatformMemoryConfiguration;
@@ -298,5 +305,6 @@ void OemPostParams(AMD_POST_PARAMS *PostParams)
 		break;
 	}
 	PostParams->MemConfig.CfgIgnoreSpdChecksum = FALSE; /* TODO: not helping. */
+	#endif
 }
 #endif
