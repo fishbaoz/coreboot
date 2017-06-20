@@ -73,7 +73,7 @@ u8 sha512_auth[VAL_DATA_LEN]={0xEC,0xAC,0x2A,0x9A,0x34,0x05,0x7D,0xD4,0x47,0xF8,
 #endif
 
 /* read unique id by sf100 */
-/* dpcmd --raw-instruction "4B 00 00 00 00" -raw-require-return 8 */
+/* dpcmd --raw-instruction "4B 00 00 00 00" --raw-require-return 8 */
 
 #define SHOW_OTP 0
 static AGESA_STATUS oem_validate_otp(void)
@@ -128,7 +128,7 @@ static AGESA_STATUS oem_validate_otp(void)
 		       ((u8 *)key)[0], ((u8 *)key)[1], ((u8 *)key)[2], ((u8 *)key)[3],
 		       ((u8 *)key)[4], ((u8 *)key)[5], ((u8 *)key)[6], ((u8 *)key)[7]);
 		#endif
-		if (*key == -1)
+		if (*key == -1 || *key == 0)
 			for (;;);
 		if (*key == ~(*(u64 *)otpdata))
 			break;

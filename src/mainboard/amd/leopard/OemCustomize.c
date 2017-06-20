@@ -42,8 +42,8 @@ static const PCIe_PORT_DESCRIPTOR PortList [] = {
 	/* Initialize Port descriptor (PCIe port, Lanes 3, PCI Device Number 2, ...) */
 	{
 		0,
-		PCIE_ENGINE_DATA_INITIALIZER (PcieUnusedEngine, 6, 6),
-		PCIE_PORT_DATA_INITIALIZER_V2 (PortDisabled, ChannelTypeExt6db, 2, 4,
+		PCIE_ENGINE_DATA_INITIALIZER (PciePortEngine, 6, 6),
+		PCIE_PORT_DATA_INITIALIZER_V2 (PortEnabled, ChannelTypeExt6db, 2, 4,
 				HotplugDisabled,
 				PcieGenMaxSupported,
 				PcieGenMaxSupported,
@@ -52,7 +52,7 @@ static const PCIe_PORT_DESCRIPTOR PortList [] = {
 	/* Initialize Port descriptor (PCIe port, Lanes 4-7, PCI Device Number 2, ...) */
 	{
 		0,
-		PCIE_ENGINE_DATA_INITIALIZER (PcieUnusedEngine, 5, 5),
+		PCIE_ENGINE_DATA_INITIALIZER (PciePortEngine, 5, 5),
 		PCIE_PORT_DATA_INITIALIZER_V2 (PortEnabled, ChannelTypeExt6db, 2, 3,
 				HotplugDisabled,
 				PcieGenMaxSupported,
@@ -62,7 +62,7 @@ static const PCIe_PORT_DESCRIPTOR PortList [] = {
 	/* Initialize Port descriptor (PCIe port, Lanes 4-5, PCI Device Number 2, ...) */
 	{
 		0,
-		PCIE_ENGINE_DATA_INITIALIZER (PciePortEngine, 4, 5),
+		PCIE_ENGINE_DATA_INITIALIZER (PciePortEngine, 4, 4),
 		PCIE_PORT_DATA_INITIALIZER_V2 (PortEnabled, ChannelTypeExt6db, 2, 2,
 				HotplugDisabled,
 				PcieGenMaxSupported,

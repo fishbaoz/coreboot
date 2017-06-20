@@ -28,7 +28,7 @@
  * readSmbusByteData - read a single SPD byte from any offset
  */
 
-static int readSmbusByteData (int iobase, int address, char *buffer, int offset)
+int readSmbusByteData (int iobase, int address, char *buffer, int offset)
 {
 	unsigned int status;
 	UINT64 limit;
@@ -57,13 +57,61 @@ static int readSmbusByteData (int iobase, int address, char *buffer, int offset)
 	return status;
 }
 
+UINT8 writeSmbusByteData(UINT16 iobase, UINT8 address, UINT8 buffer,
+					 int offset)
+{
+	//unsigned int status = -1;
+	//UINT64 time_limit;
+	unsigned int status;
+	UINT64 limit;
+
+
+	/* clear status register */
+	__outbyte(iobase + 0, 0xFF);
+	__outbyte(iobase + 1, 0x1F);
+
+	/* set offset, set slave address, set data and start writing */
+	__outbyte(iobase + 3, offset);
+	__outbyte(iobase + 4, address & (~1));
+	__outbyte(iobase + 5, buffer);
+	__outbyte(iobase + 2, 0x48);
+
+	/* time limit to avoid hanging for unexpected error status */
+	limit = __rdtsc() + 2000000000 / 10;//MAX_READ_TSC_COUNT;
+//	while (__rdtsc() <= time_limit) {
+//		status = __inbyte(iobase + SMBUS_STATUS_REG);
+//		if ((status & SMBUS_INTERRUPT_MASK) == 0)
+//			continue;	/* SMBusInterrupt not set, keep waiting */
+//		if ((status & HOSTBUSY_MASK) != 0)
+//			continue;	/* HostBusy set, keep waiting */
+//		break;
+//	}
+	for (;;)
+	{
+		status = __inbyte (iobase);
+		if (__rdtsc () > limit) break;
+		if ((status & 2) == 0) continue;               // SMBusInterrupt not set, keep waiting
+		if ((status & 1) == 1) continue;               // HostBusy set, keep waiting
+		break;
+	}
+
+//	if (status != STATUS__COMPLETED_SUCCESSFULLY)
+//		return AGESA_ERROR;
+
+//	return AGESA_SUCCESS;
+	if (status == 2) status = 0;                      // check for done with no errors
+	return status;
+
+}
+
+
 /*-----------------------------------------------------------------------------
  *
  * readSmbusByte - read a single SPD byte from the default offset
  *                 this function is faster function readSmbusByteData
  */
 
-static int readSmbusByte (int iobase, int address, char *buffer)
+int readSmbusByte (int iobase, int address, char *buffer)
 {
 	unsigned int status;
 	UINT64 limit;
@@ -86,6 +134,31 @@ static int readSmbusByte (int iobase, int address, char *buffer)
 	if (status == 2) status = 0;                      // check for done with no errors
 	return status;
 }
+
+int writeSmbusByte (int iobase, int address, char buffer)
+{
+	unsigned int status;
+	UINT64 limit;
+
+	__outbyte (iobase + 0, 0xFF);                // clear error status
+	__outbyte (iobase + 5, buffer);
+	__outbyte (iobase + 2, 0x44);                // read command
+
+	// time limit to avoid hanging for unexpected error status
+	limit = __rdtsc () + 2000000000 / 10;
+	for (;;) {
+		status = __inbyte (iobase);
+		if (__rdtsc () > limit) break;
+		if ((status & 2) == 0) continue;               // SMBusInterrupt not set, keep waiting
+		if ((status & 1) == 1) continue;               // HostBusy set, keep waiting
+		break;
+	}
+
+	//buffer [0] = __inbyte (iobase + 5);
+	if (status == 2) status = 0;                      // check for done with no errors
+	return status;
+}
+
 
 /*---------------------------------------------------------------------------
  *
@@ -139,6 +212,10 @@ static void setupFch (int ioBase)
 	writePmReg (0x2C, ioBase | 1);
 	__outbyte (ioBase + 0x0E, 66000000 / 400000 / 4); // set SMBus clock to 400 KHz
 }
+
+#define ADDR_Access     0x50  //DEV_ADDRESS_FOR_ADDRESS
+#define DATA_Access     0x8c  //DEV_ADDRESS_FOR_DATA
+
 
 int hudson_readSpd(int spdAddress, char *buf, size_t len)
 {

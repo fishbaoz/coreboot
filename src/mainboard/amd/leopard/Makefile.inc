@@ -16,6 +16,7 @@
 romstage-y += BiosCallOuts.c
 romstage-y += OemCustomize.c
 romstage-y += boardid.c
+romstage-y += anx.c
 
 ramstage-y += BiosCallOuts.c
 ramstage-y += OemCustomize.c
@@ -36,13 +37,17 @@ ramstage-y += oem_auth.c
 BOARDNUM=$(shell printf %d 0xBB)
 MACADDRESS=FF-FF-FF-FF-FF-FF
 #ENCRIPTION="00 00 00 00 00 00 00 00 00 00 00 0A 00 04 00 00 20 00 20 20 02 18 2D 0A 6D 53 58 55 9E 9B C1 A9 38 98 9C 68 13 F0 92 5E CA B0 27 CA 65 E5 11 72 69 30 5C C2 16 E4 C8 37 9D 03 35 F5 62 43 35 68"
-ENCRIPTION="FE EF FB BF F7 7F DF FD FF FF FF FF 42 46 31 30 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
+#ENCRIPTION="FE EF FB BF F7 7F DF FD FF FF FF FF 42 46 31 30 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
 #ENCRIPTION="FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"
 #Unique ID
 #ENCRIPTION = $(call strip_quotes, "5f 5f 46 4d 41 50 5f 5f")
 
+ENCRIPTION = $(call strip_quotes, "D8 63 38 06 43 54 29 38")
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 59 20 2A")
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 26 3B 22")
+
 # End of Encription
-#ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
+ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
 
 
 #################################################

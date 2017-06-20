@@ -49,6 +49,10 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 	pci_devfn_t dev = PCI_DEV(0, 0x14, 3);
 	pci_write_config32(dev, 0x44, 0xff03ffd5);
 	pci_write_config32(dev, 0x48, 0x20ff1b);
+//	*(volatile u32 *) (0xFED80000 + 0xE00 + 0x28) &= ~(7 << 16); /* 48Mhz */
+	*(volatile u32 *) (0xFED80000 + 0xE00 + 0x28) |= (1 << 16); /* 24Mhz */
+	*(volatile u32 *) (0xFED80000 + 0xE00 + 0x40) &= ~(1 << 2); /* 24Mhz */
+
 #endif
 	hudson_lpc_port80();
 
@@ -102,6 +106,15 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx)
 		post_code(0x61);
 		prepare_for_resume();
 	}
+
+	val = 0x100;
+	while(!(DP_RX_Chip_Located()) ) { // chip location
+		val --;
+		if (!val) break;
+	}
+
+	ANX1122_Initialization ();
+
 
 	if (s3resume || acpi_is_wakeup_s4()) {
 		outb(0xEE, PM_INDEX);
