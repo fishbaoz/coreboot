@@ -87,7 +87,7 @@ static const PCIe_DDI_DESCRIPTOR DdiList [] = {
 	{
 		0,
 		PCIE_ENGINE_DATA_INITIALIZER (PcieDdiEngine, 16, 19),
-		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeDP, Aux1, Hdp1)
+		PCIE_DDI_DATA_INITIALIZER (ConnectorTypeEDP, Aux1, Hdp1)
 	},
 	/* DP1 */
 	{

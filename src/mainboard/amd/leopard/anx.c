@@ -107,9 +107,12 @@ char DP_RX_Send_Address( unsigned char slaveID,  unsigned char addrm,  unsigned 
 	int ioBase = 0xB00;
 
 	writeSmbusByteData (ioBase, ADDR_Access, slaveID, 0);
-	writeSmbusByte (ioBase, ADDR_Access, 0);
-	writeSmbusByte (ioBase, ADDR_Access, addrm);
-	writeSmbusByte (ioBase, ADDR_Access, addrl);
+	writeSmbusByteData (ioBase, ADDR_Access, 0, 1);
+	writeSmbusByteData (ioBase, ADDR_Access, addrm, 2);
+	writeSmbusByteData (ioBase, ADDR_Access, addrl, 3);
+//	writeSmbusByte (ioBase, ADDR_Access, 0);
+//	writeSmbusByte (ioBase, ADDR_Access, addrm);
+//	writeSmbusByte (ioBase, ADDR_Access, addrl);
 #endif
         return 0;
 }
