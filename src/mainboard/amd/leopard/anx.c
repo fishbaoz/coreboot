@@ -267,7 +267,7 @@ void ANX1122_Initialization(void)
 	DP_RX_Write(0x0a, 0x00, 0x17, 0x80);//
 
 	//Default output is dual port mode
-	//DP_RX_Write(0x0a, 0x00, 0x01, 0x42);//Single LVDS port output
+	DP_RX_Write(0x0a, 0x00, 0x01, 0x80);//Single LVDS port output
 
         DP_RX_Write(0x00, 0x00, 0x17, 0x00);//Force HPD high
 
