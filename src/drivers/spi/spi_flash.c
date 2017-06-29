@@ -166,7 +166,7 @@ int spi_flash_cmd_read_uniqueid(struct spi_flash *flash, u32 offset,
 {
 	u8 cmd[5];
 
-	cmd[0] = 0x0B;		/* TODO: change to 0x4B */
+	cmd[0] = 0x4B;		/* TODO: change to 0x4B */
 	cmd[4] = 0x00;
 
 	return spi_flash_cmd_read_array(flash->spi, cmd, sizeof(cmd),

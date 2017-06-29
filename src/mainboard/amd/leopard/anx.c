@@ -60,7 +60,7 @@ char DP_RX_Write_Data(unsigned char d);
 //* Input Parameters    : slaveID--register OSB addr, addrm--offset addr bit8~bit15, addrl--offset addr bit0~bit7.
 //* Output Parameters   : I2C transfer status result
 //*--------------------------------------------------------------------------------------
-char DP_RX_Send_Address( unsigned char slaveID,  unsigned char addrm,  unsigned char addrl)
+static char DP_RX_Send_Address( unsigned char slaveID,  unsigned char addrm,  unsigned char addrl)
 {
 #if 0
         i2c_send_start_bit(); //I2C start
@@ -124,7 +124,7 @@ char DP_RX_Send_Address( unsigned char slaveID,  unsigned char addrm,  unsigned 
 //* Input Parameters    : slaveID--register OSB addr, addrm--offset addr bit8~bit15, addrl--offset addr bit0~bit7, rxdata--value of register.
 //* Output Parameters   : rc-result description
 //*--------------------------------------------------------------------------------------
-unsigned char DP_RX_Read(unsigned char slaveID, unsigned char addrm, unsigned char addrl, unsigned char *rxdata)
+static unsigned char DP_RX_Read(unsigned char slaveID, unsigned char addrm, unsigned char addrl, unsigned char *rxdata)
 {
 	unsigned char rc;
         DP_RX_Send_Address(slaveID, addrm, addrl);
@@ -138,7 +138,7 @@ unsigned char DP_RX_Read(unsigned char slaveID, unsigned char addrm, unsigned ch
 //* Input Parameters    : slaveID--register OSB addr, addrm--offset addr bit8~bit15, addrl--offset addr bit0~bit7, txdata-- write in value.
 //* Output Parameters   : rc-result description
 //*--------------------------------------------------------------------------------------
-unsigned char DP_RX_Write( unsigned char slaveID,  unsigned char addrm,  unsigned char addrl,  unsigned char txdata)
+static unsigned char DP_RX_Write( unsigned char slaveID,  unsigned char addrm,  unsigned char addrl,  unsigned char txdata)
 {
 	unsigned char rc;
         DP_RX_Send_Address(slaveID, addrm, addrl);

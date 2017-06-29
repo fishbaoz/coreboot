@@ -24,8 +24,8 @@
 #define OTP_LEN 0x40
 #define UNIQUE_ID_LEN 8
 
-//#define VAL_DATA_LEN UNIQUE_ID_LEN
-#define VAL_DATA_LEN OTP_LEN
+#define VAL_DATA_LEN UNIQUE_ID_LEN
+//#define VAL_DATA_LEN OTP_LEN
 
 u8 otpdata[VAL_DATA_LEN]={[0 ... VAL_DATA_LEN-1]=0xFF};
 
@@ -84,7 +84,7 @@ static AGESA_STATUS oem_validate_otp(void)
 	#if WRITE_OTP || SHOW_OTP
 	printk(BIOS_DEBUG, "data in BIOS:\n ");
 	for (i=0; i<VAL_DATA_LEN; i++) {
-		printk(BIOS_DEBUG, " %02X", sha512_auth[i]);
+		printk(BIOS_DEBUG, " %02X", (u8)~sha512_auth[i]);
 	}
 	#endif
 
@@ -125,13 +125,18 @@ static AGESA_STATUS oem_validate_otp(void)
 	for (key = (u64 *) sha512_auth; ; key ++) {
 		#if SHOW_OTP
 		printk(BIOS_DEBUG, "data in OTP:\n %02X %02X %02X %02X %02X %02X %02X %02X\n",
-		       ((u8 *)key)[0], ((u8 *)key)[1], ((u8 *)key)[2], ((u8 *)key)[3],
-		       ((u8 *)key)[4], ((u8 *)key)[5], ((u8 *)key)[6], ((u8 *)key)[7]);
+		       (u8)~((u8 *)key)[0], (u8)~((u8 *)key)[1], (u8)~((u8 *)key)[2], (u8)~((u8 *)key)[3],
+		       (u8)~((u8 *)key)[4], (u8)~((u8 *)key)[5], (u8)~((u8 *)key)[6], (u8)~((u8 *)key)[7]);
 		#endif
-		if (*key == -1 || *key == 0)
-			for (;;);
-		if (*key == ~(*(u64 *)otpdata))
+		if (*key == -1 || *key == 0) {
+			printk(BIOS_DEBUG, "Not match\n", ~(*key), *(u64 *)otpdata);
+			//for (;;);
 			break;
+		}
+		if (~(*key) == *(u64 *)otpdata) {
+			printk(BIOS_DEBUG, "match\n");
+			break;
+		}
 	}
 	#endif
 	#if WRITE_OTP || SHOW_OTP
@@ -165,7 +170,7 @@ static AGESA_STATUS oem_write_otp(void)
 			/* print data left */
 			i ++;
 			while (i < VAL_DATA_LEN) printk(BIOS_DEBUG, " %02X", otpdata[i++]);
-			for (;;); /* Hang */
+			//for (;;); /* Hang */
 			break;
 		}
 	}
@@ -174,7 +179,7 @@ static AGESA_STATUS oem_write_otp(void)
 	spi_flash_cmd_write_otp(flash, 0, VAL_DATA_LEN, sha512_auth);
 	printk(BIOS_DEBUG, "wrote\n");
 
-//	spi_flash_cmd(flash->spi, 0x2F, NULL, 0); /* locked */
+	//spi_flash_cmd(flash->spi, 0x2F, NULL, 0); /* locked */
 	printk(BIOS_DEBUG, "locked\n");
 
 	flash->spi->rw = SPI_WRITE_FLAG;
