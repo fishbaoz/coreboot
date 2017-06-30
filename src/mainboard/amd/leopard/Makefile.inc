@@ -44,7 +44,9 @@ MACADDRESS=FF-FF-FF-FF-FF-FF
 
 ENCRIPTION = $(call strip_quotes, "D8 63 38 06 43 54 29 38")  # vxworks only mac = 60
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 59 20 2A") # mac = 63
-ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 26 3B 22")
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 26 3B 22") # mac = 61
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 2E 15 2C") # mac = 62
+
 
 # End of Encription
 ENCRIPTION+= $(call strip_quotes, "FF FF FF FF FF FF FF FF")
