@@ -57,7 +57,7 @@ chip northbridge/amd/pi/00660F01/root_complex
 						register "conf_key_mode" = "0x77"
 						device pnp 4e.0 on			# COM1
 							io 0x60 = 0x3f8
-							irq 0x70 = 4
+							irq 0x70 = 0x64			# bit4 and bit5 =1. irq=4
 						end
 						device pnp 4e.1 on			# COM2
 							io 0x60 = 0x2f8
