@@ -35,7 +35,7 @@ Device(SUPERIO_DEV) {
 	Name (_UID, SUPERIO_UID(SUPERIO_DEV,))
 
 	/* Mutex for accesses to the configuration ports */
-	Mutex(CRMX, 1)
+//	Mutex(CMMX, 1)
 
 	/* SuperIO configuration ports */
 	OperationRegion (CREG, SystemIO, SUPERIO_PNP_BASE, 0x02)
@@ -49,16 +49,16 @@ Device(SUPERIO_DEV) {
 		Offset (0x07),
 		PNP_LOGICAL_DEVICE,	8, /* Logical device selector */
 
-		Offset (0x22),
-		FDPW,			1, /* FDC Power Down */
-		,			2,
-		PRPW,			1, /* PRT Power Down */
-		UAPW,			1, /* UART A Power Down */
-		UBPW,			1, /* UART B Power Down */
-		HWPW,			1, /* HWM Power Down */
-		Offset (0x23),
-		IPD,			1, /* Immediate Chip Power Down */
-
+//		Offset (0x22),
+//		FDPW,			1, /* FDC Power Down */
+//		,			2,
+//		PRPW,			1, /* PRT Power Down */
+//		UAPW,			1, /* UART A Power Down */
+//		UBPW,			1, /* UART B Power Down */
+//		HWPW,			1, /* HWM Power Down */
+//		Offset (0x23),
+//		IPD,			1, /* Immediate Chip Power Down */
+//
 		Offset (0x30),
 		PNP_DEVICE_ACTIVE,	1, /* Logical device activation */
 
@@ -70,12 +70,12 @@ Device(SUPERIO_DEV) {
 		PNP_IO1_LOW_BYTE,	8, /* Second I/O port base - low byte */
 
 		Offset (0x70),
-		PNP_IRQ0,		8, /* First IRQ */
+		PNP_IRQ0,		4, /* First IRQ */
 		Offset (0x72),
-		PNP_IRQ1,		8, /* Second IRQ */
+		PNP_IRQ1,		4, /* Second IRQ */
 
-		Offset (0x74),
-		PNP_DMA0,		8, /* DMA */
+//		Offset (0x74),
+//		PNP_DMA0,		8, /* DMA */
 	}
 
 	Method (_CRS)
@@ -120,5 +120,6 @@ Device(SUPERIO_DEV) {
 	#undef SUPERIO_UART_PM_VAL
 	#undef SUPERIO_UART_PM_LDN
 	#define SUPERIO_UART_LDN 1
+	#include <superio/acpi/pnp_uart.asl>
 #endif
 }

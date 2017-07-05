@@ -46,6 +46,7 @@ ENCRIPTION = $(call strip_quotes, "D8 63 38 06 43 54 29 38")  # vxworks only mac
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 59 20 2A") # mac = 63
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 26 3B 22") # mac = 61
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 2E 15 2C") # mac = 62
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 57 45 2A") # mac = nic card
 
 
 # End of Encription

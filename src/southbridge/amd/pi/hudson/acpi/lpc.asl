@@ -100,4 +100,5 @@ Device(LIBR) {
 			IRQNoFlags(){13}
 		})
 	} /* End Device(_SB.PCI0.LpcIsaBr.COPR) */
+	#include "acpi/superio.asl"
 } /* end LIBR */
