@@ -129,7 +129,7 @@ static AGESA_STATUS oem_validate_otp(void)
 		       (u8)~((u8 *)key)[4], (u8)~((u8 *)key)[5], (u8)~((u8 *)key)[6], (u8)~((u8 *)key)[7]);
 		#endif
 		if (*key == -1 || *key == 0) {
-			printk(BIOS_DEBUG, "Not match\n", ~(*key), *(u64 *)otpdata);
+			printk(BIOS_DEBUG, "Not match\n");
 			for (;;);
 			break;
 		}
