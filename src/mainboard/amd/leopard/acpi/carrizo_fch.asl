@@ -46,6 +46,7 @@ Device(GPIO) {
 	}
 }
 
+/*
 Device(FUR0) {
 	Name(_HID,"AMD0020")
 	Name(_UID,0x0)
@@ -69,7 +70,8 @@ Device(FUR1) {
 			Return (0x0F)
 	}
 }
-
+*/
+/*
 Device(I2CA) {
 	Name(_HID,"AMD0010")
 	Name(_UID,0x0)
@@ -95,3 +97,4 @@ Device(I2CB)
 		Return (0x0F)
 	}
 }
+*/

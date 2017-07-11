@@ -74,8 +74,8 @@ Device(SUPERIO_DEV) {
 		Offset (0x72),
 		PNP_IRQ1,		4, /* Second IRQ */
 
-//		Offset (0x74),
-//		PNP_DMA0,		8, /* DMA */
+		Offset (0x74),
+		PNP_DMA0,		8, /* DMA */
 	}
 
 	Method (_CRS)
