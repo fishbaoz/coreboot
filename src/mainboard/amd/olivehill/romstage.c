@@ -36,7 +36,7 @@
 #include <cpu/amd/agesa/s3_resume.h>
 #include "cbmem.h"
 
-#define _SIMNOW_  1
+#define _SIMNOW_  0
 
 #if _SIMNOW_
 #include "superio/smsc/mec1308//mec1308_early_serial.c"

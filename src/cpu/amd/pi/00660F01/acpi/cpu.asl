@@ -47,32 +47,32 @@ Scope (\_PR) {		/* define processor scope */
 		0x06		/* PBLKLEN for boot processor */
 		) {
 	}
-	Processor(
-		P004,		/* name space name */
-		4,			/* Unique number for this processor */
-		0x0810,		/* PBLK system I/O address !hardcoded! */
-		0x06		/* PBLKLEN for boot processor */
-		) {
-	}
-	Processor(
-		P005,		/* name space name */
-		5,			/* Unique number for this processor */
-		0x0810,		/* PBLK system I/O address !hardcoded! */
-		0x06		/* PBLKLEN for boot processor */
-		) {
-	}
-	Processor(
-		P006,		/* name space name */
-		6,			/* Unique number for this processor */
-		0x0810,		/* PBLK system I/O address !hardcoded! */
-		0x06		/* PBLKLEN for boot processor */
-		) {
-	}
-	Processor(
-		P007,		/* name space name */
-		7,			/* Unique number for this processor */
-		0x0810,		/* PBLK system I/O address !hardcoded! */
-		0x06		/* PBLKLEN for boot processor */
-		) {
-	}
+//	Processor(
+//		P004,		/* name space name */
+//		4,			/* Unique number for this processor */
+//		0x0810,		/* PBLK system I/O address !hardcoded! */
+//		0x06		/* PBLKLEN for boot processor */
+//		) {
+//	}
+//	Processor(
+//		P005,		/* name space name */
+//		5,			/* Unique number for this processor */
+//		0x0810,		/* PBLK system I/O address !hardcoded! */
+//		0x06		/* PBLKLEN for boot processor */
+//		) {
+//	}
+//	Processor(
+//		P006,		/* name space name */
+//		6,			/* Unique number for this processor */
+//		0x0810,		/* PBLK system I/O address !hardcoded! */
+//		0x06		/* PBLKLEN for boot processor */
+//		) {
+//	}
+//	Processor(
+//		P007,		/* name space name */
+//		7,			/* Unique number for this processor */
+//		0x0810,		/* PBLK system I/O address !hardcoded! */
+//		0x06		/* PBLKLEN for boot processor */
+//		) {
+//	}
 } /* End _PR scope */
