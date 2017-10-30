@@ -47,6 +47,8 @@ ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 59 20 2A") # mac = 63
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 26 3B 22") # mac = 61
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 2E 15 2C") # mac = 62
 ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 57 45 2A") # mac = nic card
+ENCRIPTION += $(call strip_quotes, "D8 65 50 34 DF 1B 4A 25") # mac = nic card
+
 
 
 # End of Encription
